@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:airq_ui/api/app_repository.dart';
 import 'package:airq_ui/app/list_shape_ext.dart';
+import 'package:airq_ui/app/modules/dashboard/controllers/dashboard_controller.dart';
 import 'package:airq_ui/app/ui_utils.dart';
 import 'package:airq_ui/app/widgets/iprojection/ipoint.dart';
 import 'package:airq_ui/models/dataset_model.dart';
@@ -179,7 +180,7 @@ class DatasetController extends GetxController {
     _selectedPollutants = _pollutants;
 
     List<String> stationKeys = List<String>.from(data['stations'].keys);
-
+    stationsMap = {};
     for (var i = 0; i < stationKeys.length; i++) {
       String name = data['stations'][stationKeys[i]]['name'];
       List<double> gpsCoord = uiStationCoordinates(name);
@@ -189,14 +190,16 @@ class DatasetController extends GetxController {
         latitude: gpsCoord[0],
         longitude: gpsCoord[1],
       );
+      stationsMap[station.id] = station;
       _stations.add(station);
     }
 
     for (var i = 0; i < n; i++) {
       // DateTime date = DateTime.parse(dateLabels[i]);
       WindowModel window = windowModels[i];
-      StationModel station =
-          _stations.firstWhere((station) => station.id == window.stationId);
+      // StationModel station =
+      //     _stations.firstWhere((station) => station.id == window.stationId);
+      StationModel station = stationsMap[window.stationId]!;
       windowsStations[window.id] = station;
     }
 
@@ -270,12 +273,12 @@ class DatasetController extends GetxController {
 
     List<IPoint> points = _points!;
     for (var i = 0; i < _selectedStations.length; i++) {
-      _clusters[_selectedStations[i].id.toString()] = [];
+      _clusters[_selectedStations[i].identifier] = [];
     }
 
     for (var i = 0; i < points.length; i++) {
       IPoint point = points[i];
-      String clusterId = point.data.stationId.toString();
+      String clusterId = stationsMap[point.data.stationId]!.identifier;
       point.cluster = clusterId;
       _clusters[clusterId]!.add(point);
     }
@@ -342,6 +345,9 @@ class DatasetController extends GetxController {
 
   void clearClusters() {
     _resetClusters();
+
+    // This line should not be here [Restore default view]
+    Get.find<DashboardController>().ts_visualization = 0;
 
     for (var i = 0; i < _points!.length; i++) {
       _points![i].cluster = null;
@@ -472,7 +478,6 @@ class DatasetController extends GetxController {
   void createNonClusterCluster() {
     int clusterPos = _clusters.length;
     String clusterId = clusterPos.toString();
-    print('New ID: ${clusterId}');
 
     List<IPoint> selectedP = [];
     for (var i = 0; i < _points!.length; i++) {
@@ -524,6 +529,7 @@ class DatasetController extends GetxController {
   late Map<int, double> _minValue;
   late Map<int, double> _maxValue;
   Map<int, List<double>>? contFeatMap;
+  Map<int, StationModel> stationsMap = {};
 }
 
 enum Granularity {

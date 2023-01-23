@@ -111,10 +111,18 @@ class _StationsMapState extends State<StationsMap> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Icon(
-                    Icons.location_on_sharp,
-                    size: 20,
-                    color: chipColor(index),
+                  // Icon(
+                  //   Icons.location_on_sharp,
+                  //   size: 20,
+                  //   color: chipColor(index),
+                  // ),
+                  Container(
+                    height: chipSize(index),
+                    width: chipSize(index),
+                    decoration: BoxDecoration(
+                      color: chipColor(index),
+                      shape: BoxShape.circle,
+                    ),
                   ),
                   Text(
                     stations[index].name,
@@ -141,7 +149,9 @@ class _StationsMapState extends State<StationsMap> {
     });
   }
 
-  static const double minOpacity = 0.0;
+  static const double minOpacity = 30.0;
+  static const double minSize = 20.0;
+  static const double maxSize = 60.0;
 
   int get maxStationsCount {
     List<int> counts = List.generate(dashboardController.stationCounts.length,
@@ -185,6 +195,37 @@ class _StationsMapState extends State<StationsMap> {
     // }
     // print(modifiedValue);
     return rb[modifiedValue];
+  }
+
+  double chipSize(int index) {
+    if (dashboardController.infoPoint != null) {
+      if (datasetController
+              .windowsStations[dashboardController.infoPoint!.data.id]!.id ==
+          dashboardController.stations[index].id) {
+        return (minSize + maxSize) / 2;
+        ; // Dont know what is this for ....
+      }
+    }
+    if (dashboardController.allStationCounts.isEmpty) {
+      return (minSize + maxSize) / 2;
+    }
+    if (dashboardController.allStationCounts[index] == 0) {
+      return minSize;
+    }
+    int modifiedValue;
+    modifiedValue = dashboardController.stationCounts[index];
+    if (maxStationsCount == 0) {
+      return minSize;
+    }
+
+    // if (dashboardController.stationCounts[index] != 0) {
+    //   modifiedValue = dashboardController.stationCounts[index] +
+    //       dashboardController.allStationCounts[index];
+    // } else {
+    //   modifiedValue = dashboardController.stationCounts[index];
+    // }
+    // print(modifiedValue);
+    return (modifiedValue / maxStationsCount) * (maxSize - minSize);
   }
 
   // Color chipColor(int index) {

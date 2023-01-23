@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:airq_ui/app/constants/colors.dart';
 import 'package:airq_ui/app/modules/dashboard/components/selection_summary.dart';
 import 'package:airq_ui/app/modules/dashboard/controllers/dashboard_controller.dart';
 import 'package:airq_ui/app/widgets/iprojection/ipoint.dart';
@@ -12,16 +13,10 @@ import 'package:get/get_state_manager/get_state_manager.dart';
 import 'package:jiffy/jiffy.dart';
 
 class StationItem extends StatefulWidget {
-  final StationModel station;
-  List<IPoint> ipoints;
-  final List<DateTime> dates;
-  final bool selected;
+  StationDateData data;
   StationItem({
     Key? key,
-    required this.station,
-    required this.ipoints,
-    required this.selected,
-    required this.dates,
+    required this.data,
   }) : super(key: key);
 
   @override
@@ -36,63 +31,14 @@ class _StationItemState extends State<StationItem> {
 
   double get subtileHeight => 25;
 
-  late List<IPoint?>
-      orderedPoints; // Null value where there is no data from that date
-
-  int get totalWindows => dates.length;
-  List<DateTime> get dates => widget.dates;
-
   @override
   void initState() {
-    // computeTotalWindows();
-    orderPoints();
     super.initState();
   }
 
   @override
   void didUpdateWidget(covariant StationItem oldWidget) {
-    // computeTotalWindows();
-    // orderPoints();
     super.didUpdateWidget(oldWidget);
-  }
-
-  void orderPoints() {
-    print('---- Station ID: ${widget.station.name} starting ----');
-    List<IPoint> mpoint = List.from(widget.ipoints);
-    mpoint.sort((a, b) {
-      return a.data.beginDate.compareTo(b.data.beginDate);
-    });
-    print('Sort done');
-
-    orderedPoints = List.generate(totalWindows, (index) => null);
-
-    int dateP = 0;
-    int pointP = 0;
-    print('Bucle');
-    while (dateP < totalWindows) {
-      if (pointP >= mpoint.length) {
-        break;
-      }
-      if (areSameDate(mpoint[pointP].data.beginDate, dates[dateP])) {
-        orderedPoints[dateP] = mpoint[pointP];
-        pointP++;
-      }
-      dateP++;
-    }
-    if (pointP != (mpoint.length - 1) && pointP != (mpoint.length)) {
-      print('Error while ordering points');
-    }
-    print('Station ID: ${widget.station.name} completed');
-  }
-
-  bool areSameDate(DateTime a, DateTime b) {
-    if (granularity == Granularity.daily) {
-      return a.year == b.year && a.month == b.month && a.day == b.day;
-    } else if (granularity == Granularity.monthly) {
-      return a.year == b.year && a.month == b.month;
-    } else {
-      return a.year == b.year;
-    }
   }
 
   @override
@@ -116,9 +62,11 @@ class _StationItemState extends State<StationItem> {
                     padding: const EdgeInsets.all(0),
                     onPressed: () {
                       // controller.toggleStation(station.id);
+                      dashboardController.selectStation(widget.data.station);
+                      dashboardController.filterByCharts();
                     },
                     icon: Icon(
-                      widget.selected
+                      widget.data.selected
                           ? Icons.check_box
                           : Icons.check_box_outline_blank,
                     ),
@@ -127,7 +75,7 @@ class _StationItemState extends State<StationItem> {
               ),
               Expanded(
                 child: AutoSizeText(
-                  widget.station.name,
+                  widget.data.station.name,
                   minFontSize: 8,
                   maxFontSize: 12,
                   overflow: TextOverflow.ellipsis,
@@ -144,7 +92,7 @@ class _StationItemState extends State<StationItem> {
             height: subtileHeight,
             child: CustomPaint(
               painter: StationTilePainter(
-                points: orderedPoints,
+                points: widget.data.orderedPoints,
               ),
             ),
           ),
@@ -166,6 +114,8 @@ class StationTilePainter extends CustomPainter {
   int get _nDates => points.length;
 
   // SummaryController summaryController = Get.find();
+  DatasetController datasetController = Get.find();
+  DashboardController dashboardController = Get.find();
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -186,18 +136,12 @@ class StationTilePainter extends CustomPainter {
   void _drawRow() {
     Paint normalPaint = Paint()
       // ..color = colors[pos]
-      ..color = Colors.blue
+      ..color = pColorGray
       ..strokeWidth = 1
       ..style = PaintingStyle.fill;
 
     Paint selectionPaint = Paint()
-      ..color = Colors.red
-      // ..color = Color.fromRGBO(
-      //   min(255, colors[pos].red * 2.7).toInt(),
-      //   min(255, colors[pos].green * 2.7).toInt(),
-      //   min(255, colors[pos].blue * 2.7).toInt(),
-      //   colors[pos].opacity,
-
+      ..color = pColorDark
       ..strokeWidth = 1
       ..style = PaintingStyle.fill;
 
@@ -206,11 +150,23 @@ class StationTilePainter extends CustomPainter {
       ..strokeWidth = 1
       ..style = PaintingStyle.fill;
 
+    Map<String, Paint> clusterPaints = {};
+    if (datasetController.clusterIds.isNotEmpty) {
+      for (var i = 0; i < datasetController.clusterIds.length; i++) {
+        String id = datasetController.clusterIds[i];
+        clusterPaints[id] = Paint()
+          ..color = dashboardController.clusterColors[id]!
+          ..strokeWidth = 1
+          ..style = PaintingStyle.fill;
+      }
+    }
     for (var i = 0; i < _nDates; i++) {
       Paint paint;
       // if (sections[pos][i] && intersection[pos][i]) {
       if (points[i] == null) {
         paint = emptyPaint;
+      } else if (points[i]!.cluster != null && points[i]!.selected) {
+        paint = clusterPaints[points[i]!.cluster]!;
       } else if (points[i]!.selected) {
         // } else if (selectedIndexes[i]) {
         paint = selectionPaint;
@@ -231,227 +187,62 @@ class StationTilePainter extends CustomPainter {
   }
 }
 
-// class StationItem extends GetView<SummaryController> {
-//   final List<Color> colors;
-//   final List<List<bool>> sections;
-//   final List<List<bool>> intersection;
-//   final String name;
-//   final StationModel station;
-//   final bool selected;
-//   final int index;
-//   StationItem({
-//     Key? key,
-//     required this.colors,
-//     required this.sections,
-//     required this.name,
-//     required this.selected,
-//     required this.intersection,
-//     required this.station,
-//     required this.index,
-//   }) : super(key: key);
+class StationDateData {
+  final StationModel station;
+  List<IPoint> ipoints;
+  final List<DateTime> dates;
+  bool selected;
+  StationDateData({
+    required this.station,
+    required this.ipoints,
+    required this.selected,
+    required this.dates,
+  }) {
+    orderPoints();
+  }
 
-//   List<bool>? _selectedIndexes;
-//   List<bool> get selectedIndexes {
-//     if (_selectedIndexes != null) return _selectedIndexes!;
-//     _selectedIndexes = List.generate(sections.first.length, (index) => false);
+  DatasetController get datasetController => Get.find();
+  DashboardController get dashboardController => Get.find();
+  Granularity get granularity => datasetController.granularity;
+  DateTimeRange get dateRange => datasetController.dateRange;
 
-//     for (var j = 0; j < sections.first.length; j++) {
-//       bool colVal = true;
-//       for (var i = 0; i < sections.length; i++) {
-//         colVal = sections[i][j] && colVal;
-//       }
-//       _selectedIndexes![j] = colVal;
-//     }
-//     return _selectedIndexes!;
-//   }
+  late List<IPoint?>
+      orderedPoints; // Null value where there is no data from that date
 
-//   List<String> get selectedPollutants => List.generate(
-//       controller.selectedPollutants.length,
-//       (index) => controller.selectedPollutants[index].name);
-//   @override
-//   Widget build(BuildContext context) {
-//     return SizedBox(
-//       height: max(subtileHeight * sections.length, 10),
-//       child: Row(
-//         children: [
-//           SizedBox(
-//             width: selectorSpaceLeft,
-//             child: Row(
-//               mainAxisAlignment: MainAxisAlignment.start,
-//               crossAxisAlignment: CrossAxisAlignment.center,
-//               children: [
-//                 SizedBox(
-//                   height: 25,
-//                   width: 25,
-//                   child: Center(
-//                     child: IconButton(
-//                       padding: const EdgeInsets.all(0),
-//                       onPressed: () {
-//                         controller.toggleStation(station.id);
-//                       },
-//                       icon: Icon(
-//                         selected
-//                             ? Icons.check_box
-//                             : Icons.check_box_outline_blank,
-//                       ),
-//                     ),
-//                   ),
-//                 ),
-//                 Expanded(
-//                   child: Text(
-//                     "${index.toString()}.-${station.name}",
-//                     overflow: TextOverflow.ellipsis,
-//                     style: const TextStyle(
-//                       fontSize: 12,
-//                     ),
-//                   ),
-//                 ),
-//               ],
-//             ),
-//           ),
-//           Expanded(
-//             child: SizedBox(
-//               height: subtileHeight * sections.length,
-//               child: Stack(
-//                 children: [
-//                   Positioned.fill(
-//                     child: SizedBox(
-//                       height: subtileHeight * sections.length,
-//                       child: CustomPaint(
-//                         painter: StationTilePainter(
-//                           isSelected: selected,
-//                           intersection: intersection,
-//                           colors: colors,
-//                           sections: sections,
-//                           selectedIndexes: selectedIndexes,
-//                         ),
-//                       ),
-//                     ),
-//                   ),
-//                   Positioned.fill(
-//                     child: Align(
-//                       alignment: Alignment.centerRight,
-//                       child: Column(
-//                         mainAxisAlignment: MainAxisAlignment.spaceAround,
-//                         children: List.generate(
-//                           sections.length,
-//                           (index) => Text(
-//                             selectedPollutants[index],
-//                             style: const TextStyle(
-//                               fontSize: 13,
-//                               color: Colors.white,
-//                               fontWeight: FontWeight.w500,
-//                               shadows: <Shadow>[
-//                                 Shadow(
-//                                   offset: Offset(1.0, 1.0),
-//                                   blurRadius: 0.3,
-//                                   color: Color.fromARGB(255, 0, 0, 0),
-//                                 ),
-//                               ],
-//                             ),
-//                           ),
-//                         ),
-//                       ),
-//                     ),
-//                   )
-//                 ],
-//               ),
-//             ),
-//           ),
-//           const SizedBox(width: selectorSpaceRight),
-//         ],
-//       ),
-//     );
-//   }
-// }
+  int get totalWindows => dates.length;
 
-// class StationTilePainter extends CustomPainter {
-//   final List<Color> colors;
-//   final List<List<bool>> sections;
-//   final List<List<bool>> intersection;
-//   final List<bool> selectedIndexes;
-//   final bool isSelected;
+  void orderPoints() {
+    List<IPoint> mpoint = List.from(ipoints);
+    mpoint.sort((a, b) {
+      return a.data.beginDate.compareTo(b.data.beginDate);
+    });
 
-//   StationTilePainter({
-//     Key? key,
-//     required this.colors,
-//     required this.sections,
-//     required this.intersection,
-//     required this.selectedIndexes,
-//     required this.isSelected,
-//   });
+    orderedPoints = List.generate(totalWindows, (index) => null);
 
-//   late double width;
-//   late double height;
-//   late Canvas _canvas;
-//   late double _rowHeight;
-//   late double _itemWidth;
-//   int get _nDates => sections.first.length;
+    int dateP = 0;
+    int pointP = 0;
+    while (dateP < totalWindows) {
+      if (pointP >= mpoint.length) {
+        break;
+      }
+      if (areSameDate(mpoint[pointP].data.beginDate, dates[dateP])) {
+        orderedPoints[dateP] = mpoint[pointP];
+        pointP++;
+      }
+      dateP++;
+    }
+    if (pointP != (mpoint.length - 1) && pointP != (mpoint.length)) {
+      print('Error while ordering points');
+    }
+  }
 
-//   SummaryController summaryController = Get.find();
-
-//   @override
-//   void paint(Canvas canvas, Size size) {
-//     width = size.width;
-//     height = size.height;
-//     _canvas = canvas;
-
-//     _rowHeight = height / sections.length;
-//     _itemWidth = width / _nDates;
-//     for (var i = 0; i < sections.length; i++) {
-//       _drawRow(i);
-//     }
-//   }
-
-//   @override
-//   bool shouldRepaint(covariant CustomPainter oldDelegate) {
-//     return true;
-//   }
-
-//   void _drawRow(int pos) {
-//     Paint normalPaint = Paint()
-//       ..color = colors[pos]
-//       ..strokeWidth = 1
-//       ..style = PaintingStyle.fill;
-
-//     Paint intersectionPaint = Paint()
-//       ..color = Color.fromRGBO(
-//         min(255, colors[pos].red * 2.7).toInt(),
-//         min(255, colors[pos].green * 2.7).toInt(),
-//         min(255, colors[pos].blue * 2.7).toInt(),
-//         colors[pos].opacity,
-//       )
-//       ..strokeWidth = 1
-//       ..style = PaintingStyle.fill;
-
-//     Paint emptyPaint = Paint()
-//       ..color = const Color.fromRGBO(240, 190, 20, 1)
-//       ..strokeWidth = 1
-//       ..style = PaintingStyle.fill;
-
-//     for (var i = 0; i < _nDates; i++) {
-//       Paint paint;
-//       // if (sections[pos][i] && intersection[pos][i]) {
-//       if (isSelected &&
-//           selectedIndexes[i] &&
-//           summaryController.windowSelectedIndexes[i]) {
-//         paint = intersectionPaint;
-//       } else if (sections[pos][i]) {
-//         // } else if (selectedIndexes[i]) {
-//         paint = normalPaint;
-//       } else {
-//         paint = emptyPaint;
-//       }
-//       double test = 0;
-//       _canvas.drawRect(
-//         Rect.fromLTWH(
-//           i * (_itemWidth - test),
-//           pos * _rowHeight,
-//           (_itemWidth - test),
-//           _rowHeight,
-//         ),
-//         paint,
-//       );
-//     }
-//   }
-// }
+  bool areSameDate(DateTime a, DateTime b) {
+    if (granularity == Granularity.daily) {
+      return a.year == b.year && a.month == b.month && a.day == b.day;
+    } else if (granularity == Granularity.monthly) {
+      return a.year == b.year && a.month == b.month;
+    } else {
+      return a.year == b.year;
+    }
+  }
+}

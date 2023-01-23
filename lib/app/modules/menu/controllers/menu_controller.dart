@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:airq_ui/app/routes/app_pages.dart';
 import 'package:airq_ui/app/ui_utils.dart';
 import 'package:airq_ui/app/widgets/common/light_button.dart';
+import 'package:airq_ui/app/widgets/common/pdialog.dart';
 import 'package:airq_ui/controllers/dataset_controller.dart';
 import 'package:airq_ui/models/dataset_model.dart';
 import 'package:flutter/material.dart';
@@ -80,11 +81,12 @@ class MenuController extends GetxController {
 
   Future<Granularity> chooseGranularity() async {
     return await Get.dialog(
-      Dialog(
+      PDialog(
         child: SizedBox(
           height: 300,
           width: 400,
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               PButton(
                   onTap: () {

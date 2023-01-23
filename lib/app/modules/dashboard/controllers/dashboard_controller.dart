@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:airq_ui/app/ui_utils.dart';
 import 'package:airq_ui/app/visualizations/correlation_matrix.dart';
 import 'package:airq_ui/app/widgets/common/pdialog.dart';
@@ -41,7 +43,7 @@ class DashboardController extends GetxController {
   List<PollutantModel> get selectedPollutants =>
       datasetController.selectedPollutants;
   List<PollutantModel> get pollutants => datasetController.pollutants;
-  List<String> get clusterIds => datasetController.clusterIds;
+  List<String> get clusterIds => datasetController.clusterIds..sort();
   Map<String, Color> get clusterColors => datasetController.clusterColors;
 
   int get pageIndex => _pageIndex.value;
@@ -230,15 +232,20 @@ class DashboardController extends GetxController {
   }
 
   void selectStation(StationModel station) {
-    if (selectedStation != null && selectedStation!.id == station.id) {
-      selectedStation = null;
+    if (selectedStations[station.id] == null) {
+      selectedStations[station.id] = station;
     } else {
-      selectedStation = station;
+      selectedStations.remove(station.id);
     }
+    // if (selectedStation != null && selectedStation!.id == station.id) {
+    //   selectedStation = null;
+    // } else {
+    //   selectedStation = station;
+    // }
 
     for (var i = 0; i < ipoints.length; i++) {
       ipoints[i].selected = false;
-      if (ipoints[i].data.stationId == station.id) {
+      if (selectedStations[ipoints[i].data.stationId] != null) {
         ipoints[i].selected = true;
       }
     }
@@ -286,10 +293,10 @@ class DashboardController extends GetxController {
       bool withinYearRange = yearIndex >= yearBegin && yearIndex <= yearEnd;
 
       late bool withinStations;
-      if (selectedStation == null) {
+      if (selectedStations.isEmpty) {
         withinStations = true;
       } else {
-        withinStations = window.stationId == selectedStation!.id;
+        withinStations = selectedStations[window.stationId] != null;
       }
 
       if (withinDayRange &&
@@ -417,6 +424,8 @@ class DashboardController extends GetxController {
     update();
   }
 
+  // void updateData
+
   // Future<void> selectPollutant(String name) async {
   //   uiShowLoader();
   //   PollutantModel pollutant =
@@ -455,8 +464,9 @@ class DashboardController extends GetxController {
 
   int ts_visualization = 0;
 
-  StationModel? selectedStation;
+  // StationModel? selectedStation;
 
   bool showShape = false;
   RxBool pickMode = false.obs;
+  HashMap<int, StationModel> selectedStations = HashMap<int, StationModel>();
 }

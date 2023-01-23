@@ -2,6 +2,7 @@ import 'dart:core';
 import 'dart:math';
 
 import 'package:airq_ui/app/widgets/common/pbutton.dart';
+import 'package:airq_ui/app/widgets/common/pdialog.dart';
 import 'package:airq_ui/controllers/dataset_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -81,6 +82,9 @@ Map<String, List<double>> station_locations = {
   'North Bay': [46.322500, -79.4494444],
   'Sudbury': [46.49194, -81.003105],
   'Sudbury': [46.49194, -81.003105],
+  'Merlin': [42.249526, -82.2180688],
+  'Simcoe': [42.856834, -80.269722],
+  'Stouffville': [43.964580, -79.266070],
 };
 
 double uiRangeConverter(double oldValue, double oldMin, double oldMax,
@@ -353,27 +357,63 @@ Future<int> uiPickNumberInt(int minValue, int maxValue,
   }
 
   return await Get.dialog(
-    Dialog(
+    PDialog(
+      height: 300,
+      width: 300,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          Obx(
+            () => NumberPicker(
+              value: currentValue.value,
+              minValue: 0,
+              maxValue: 100,
+              onChanged: (value) {
+                currentValue.value = value;
+              },
+            ),
+          ),
+          PButton(
+            text: 'Accept',
+            onTap: () {
+              Get.back(result: currentValue.value);
+            },
+          )
+        ],
+      ),
+    ),
+  );
+}
+
+Future<String> uiPickString({String? defaultValue}) async {
+  late String currentValue;
+  if (defaultValue != null) {
+    currentValue = defaultValue;
+  } else {
+    currentValue = 'image';
+  }
+
+  return await Get.dialog(
+    PDialog(
+      height: 200,
+      width: 300,
       child: Container(
-        color: Colors.white,
-        height: 300,
-        width: 300,
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            Obx(
-              () => NumberPicker(
-                value: currentValue.value,
-                minValue: 0,
-                maxValue: 100,
-                onChanged: (value) {
-                  currentValue.value = value;
-                },
-              ),
+            TextField(
+              onChanged: (value) {
+                currentValue = value;
+              },
             ),
             PButton(
               text: 'Accept',
               onTap: () {
-                Get.back(result: currentValue.value);
+                if (currentValue.isNotEmpty) {
+                  Get.back(result: currentValue);
+                } else {
+                  Get.snackbar('Error', 'Insert a name');
+                }
               },
             )
           ],

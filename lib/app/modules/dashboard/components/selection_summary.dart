@@ -36,108 +36,147 @@ class _SelectionSummaryState extends State<SelectionSummary> {
   DateTimeRange get dateRange => datasetController.dateRange;
   late List<StationModel> stations;
   late List<DateTime> dates;
+  late List<StationDateData> stationsData;
   @override
   void initState() {
     super.initState();
     stations = datasetController.nonEmptyStations;
     computeTotalWindows();
+    createStationsData();
+    orderStationsData();
+  }
+
+  @override
+  void didUpdateWidget(covariant SelectionSummary oldWidget) {
+    orderStationsData();
+    super.didUpdateWidget(oldWidget);
   }
 
   void computeTotalWindows() {
-    print('Computing total windows');
     switch (granularity) {
       case Granularity.daily:
-        // totalWindows = dateRange.end.difference(dateRange.start).inDays;
-        // dates = [];
-        // DateTime temp = dateRange.start;
-        // while (temp.isBefore(dateRange.end)) {
-        //   dates.add(temp);
-        //   temp.add(const Duration(days: 1));
-        // }
-
         dates = [];
         Jiffy temp = Jiffy(
             [dateRange.start.year, dateRange.start.month, dateRange.start.day]);
         while (temp.isBefore(dateRange.end)) {
           dates.add(temp.dateTime);
           temp.add(days: 1);
-          // temp.add(const Duration(days: 1));
         }
         break;
       case Granularity.monthly:
-        // totalWindows =
-        //     (dateRange.end.difference(dateRange.start).inDays / 30).ceil();
         dates = [];
         Jiffy temp = Jiffy(
             [dateRange.start.year, dateRange.start.month, dateRange.start.day]);
         while (temp.isBefore(dateRange.end)) {
           dates.add(temp.dateTime);
           temp.add(months: 1);
-          // temp.add(const Duration(days: 1));
         }
         break;
       case Granularity.annual:
-        // totalWindows =
-        //     (dateRange.end.difference(dateRange.start).inDays / 365).ceil();
         dates = [];
         Jiffy temp = Jiffy(
             [dateRange.start.year, dateRange.start.month, dateRange.start.day]);
         while (temp.isBefore(dateRange.end)) {
           dates.add(temp.dateTime);
           temp.add(years: 1);
-          // temp.add(const Duration(days: 1));
         }
         break;
       default:
     }
   }
 
+  void createStationsData() {
+    stationsData = List.generate(stations.length, (index) {
+      StationModel station = stations[index];
+      List<IPoint> points =
+          datasetController.gatherIpointsFromStation(station.id);
+      return StationDateData(
+        station: station,
+        ipoints: points,
+        selected: dashboardController.selectedStations[station.id] != null,
+        dates: dates,
+      );
+    });
+  }
+
+  void orderStationsData() {
+    for (var i = 0; i < stationsData.length; i++) {
+      stationsData[i].selected =
+          dashboardController.selectedStations[stationsData[i].station.id] !=
+              null;
+    }
+    if (dashboardController.selectedPoints.isNotEmpty) {
+      stationsData.sort((a, b) {
+        int countA = 0;
+        int countB = 0;
+
+        for (var i = 0; i < a.orderedPoints.length; i++) {
+          if (a.orderedPoints[i] != null && a.orderedPoints[i]!.selected) {
+            countA++;
+          }
+        }
+        for (var i = 0; i < b.orderedPoints.length; i++) {
+          if (b.orderedPoints[i] != null && b.orderedPoints[i]!.selected) {
+            countB++;
+          }
+        }
+        return countB.compareTo(countA);
+      });
+    } else {
+      stationsData.sort((a, b) {
+        int countA = 0;
+        int countB = 0;
+
+        for (var i = 0; i < a.orderedPoints.length; i++) {
+          if (a.orderedPoints[i] != null) {
+            countA++;
+          }
+        }
+        for (var i = 0; i < b.orderedPoints.length; i++) {
+          if (b.orderedPoints[i] != null) {
+            countB++;
+          }
+        }
+        return countB.compareTo(countA);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scrollbar(
-      // controller: scrollController,
-      child: Container(
-        // color: Colors.amberAccent,
-        width: double.infinity,
-        height: double.infinity,
-        child: Padding(
-          padding: const EdgeInsets.only(
-            top: selectorSpaceTop,
-            bottom: selectorSpaceBottom,
-          ),
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: yearsSpace),
-                  child: ListView.separated(
-                    controller: scrollController,
-                    shrinkWrap: true,
-                    // physics: const NeverScrollableScrollPhysics(),
-                    itemBuilder: (_, index) {
-                      StationModel station = stations[index];
-                      // print('Gathering windows');
-                      List<IPoint> points = datasetController
-                          .gatherIpointsFromStation(station.id);
-                      // print('Gathering done');
-                      return StationItem(
-                        station: station,
-                        ipoints: points,
-                        selected: false,
-                        dates: dates,
-                      );
-                    },
-                    separatorBuilder: (c, _) => const SizedBox(
-                      height: 2,
-                    ),
-                    itemCount: stations.length,
-                    // itemCount: 3,
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      child: Padding(
+        padding: const EdgeInsets.only(
+          top: selectorSpaceTop,
+          bottom: selectorSpaceBottom,
+        ),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Padding(
+                padding: const EdgeInsets.only(top: yearsSpace),
+                child: ListView.separated(
+                  controller: scrollController,
+                  shrinkWrap: true,
+                  // physics: const NeverScrollableScrollPhysics(),
+                  itemBuilder: (_, index) {
+                    // print('Gathering done');
+                    return StationItem(
+                      data: stationsData[index],
+                    );
+                  },
+                  separatorBuilder: (c, _) => const SizedBox(
+                    height: 2,
                   ),
+                  itemCount: stationsData.length,
+                  // itemCount: 3,
                 ),
               ),
-              Positioned.fill(child: YearSeparator(dates: dates)),
-            ],
-          ),
+            ),
+            Positioned.fill(child: YearSeparator(dates: dates)),
+          ],
         ),
       ),
     );
@@ -158,9 +197,11 @@ class YearSeparator extends StatefulWidget {
 class _YearSeparatorState extends State<YearSeparator> {
   late List<int> yearPositions;
   late List<int> cumulativeYearPositions;
+
   @override
   void initState() {
     getYearPositions();
+
     super.initState();
   }
 

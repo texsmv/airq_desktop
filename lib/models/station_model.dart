@@ -4,6 +4,8 @@ class StationModel {
   double? latitude;
   double? longitude;
 
+  String get identifier => '$name - $id';
+
   late Map<String, List<DateTime>> annualDates;
   late Map<String, List<DateTime>> monthlyDates;
 
@@ -25,7 +27,6 @@ class StationModel {
     if (longitude == -1) {
       longitude = null;
     }
-    print('$latitude - $longitude');
 
     List<String> keys = List<String>.from(annualDatesJson.keys.toList());
     annualDates = {};
