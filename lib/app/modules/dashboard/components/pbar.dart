@@ -1,6 +1,8 @@
 import 'package:airq_ui/app/constants/colors.dart';
 import 'package:airq_ui/app/constants/constants.dart';
+import 'package:airq_ui/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 double barWidth = 70;
 
@@ -68,6 +70,18 @@ class _PBarState extends State<PBar> {
                 );
               },
             ),
+            const Spacer(),
+            IconButton(
+              onPressed: () {
+                Get.offAllNamed(Routes.SPLASH);
+              },
+              icon: const Icon(
+                Icons.exit_to_app,
+                size: 25,
+                color: Colors.red,
+              ),
+            ),
+            const SizedBox(height: 20),
           ],
         ),
       ),

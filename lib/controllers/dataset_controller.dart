@@ -3,9 +3,12 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:airq_ui/api/app_repository.dart';
+import 'package:airq_ui/app/constants/colors.dart';
 import 'package:airq_ui/app/list_shape_ext.dart';
 import 'package:airq_ui/app/modules/dashboard/controllers/dashboard_controller.dart';
 import 'package:airq_ui/app/ui_utils.dart';
+import 'package:airq_ui/app/widgets/common/pbutton.dart';
+import 'package:airq_ui/app/widgets/common/pdialog.dart';
 import 'package:airq_ui/app/widgets/iprojection/ipoint.dart';
 import 'package:airq_ui/models/dataset_model.dart';
 import 'package:airq_ui/models/pollutant_model.dart';
@@ -84,6 +87,103 @@ class DatasetController extends GetxController {
         List.generate(points.length, (index) => points[index].data.id);
     List<dynamic> matrix = await repositoryCorrelationMatrix(positions);
     return matrix;
+  }
+
+  Future<void> projectSeries() async {
+    List<bool> selected = List.generate(pollutants.length, (index) => false);
+    int neighbors = 15;
+    List<int> selectedPollutants = await Get.dialog(
+      PDialog(
+        height: 550,
+        child: GetBuilder<DatasetController>(
+          id: 'dialog',
+          builder: (_) => Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Umap neighbors',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                      color: pColorPrimary,
+                    ),
+                  ),
+                  PButton(
+                      text: neighbors.toString(),
+                      onTap: () async {
+                        neighbors = await uiPickNumberInt(5, 100);
+                        update(['dialog']);
+                      })
+                ],
+              ),
+              const SizedBox(height: 30),
+              const Text(
+                'Series',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: pColorPrimary,
+                ),
+              ),
+              const SizedBox(height: 10),
+              ListView.builder(
+                shrinkWrap: true,
+                itemCount: pollutants.length,
+                itemBuilder: (context, index) {
+                  return PButton(
+                    fillColor: selected[index] ? pColorPrimary : pColorLight,
+                    text: pollutants[index].name,
+                    onTap: () {
+                      selected[index] = !selected[index];
+                      update(['dialog']);
+                    },
+                  );
+                },
+              ),
+              // const SizedBox(height: 30),
+              Spacer(),
+              PButton(
+                text: 'Get projection',
+                onTap: () {
+                  bool canProject = false;
+                  for (var i = 0; i < pollutants.length; i++) {
+                    if (selected[i]) {
+                      canProject = true;
+                    }
+                  }
+                  if (!canProject) {
+                    Get.snackbar(
+                        'Projection', 'You must select at least one option');
+                  } else {
+                    List<int> positions = [];
+
+                    for (var i = 0; i < pollutants.length; i++) {
+                      if (selected[i]) {
+                        positions.add(i);
+                      }
+                    }
+                    return Get.back(result: positions);
+                  }
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    uiShowLoader();
+    List<dynamic> coords = await repositoryGetProjection(
+      pollutantPositions: selectedPollutants,
+      neighbors: neighbors,
+    );
+
+    for (var i = 0; i < _points!.length; i++) {
+      _points![i].coordinates = Offset(coords[i][0], coords[i][1]);
+    }
+    uiHideLoader();
+    Get.find<DashboardController>().update();
   }
 
   Future<void> loadDataset(
@@ -203,7 +303,9 @@ class DatasetController extends GetxController {
       windowsStations[window.id] = station;
     }
 
-    List<dynamic> coords = await repositoryGetProjection();
+    List<dynamic> coords = await repositoryGetProjection(
+      pollutantPositions: List.generate(pollutants.length, (index) => index),
+    );
 
     List<dynamic> coordsOut = await repositoryGetFdaOutliers(0);
 

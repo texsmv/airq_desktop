@@ -94,9 +94,16 @@ Future<List<int>> repositoryClustering(int n_clusters) async {
   return classes;
 }
 
-Future<List<dynamic>> repositoryGetProjection() async {
+Future<List<dynamic>> repositoryGetProjection({
+  required List<int> pollutantPositions,
+  int neighbors = 15,
+}) async {
   final response = await post(
     Uri.parse("${hostUrl}getProjection"),
+    body: {
+      'pollutantsPositions': jsonEncode(pollutantPositions),
+      'neighbors': jsonEncode(neighbors),
+    },
   );
 
   List<dynamic> coords = jsonDecode(response.body)['coords'];

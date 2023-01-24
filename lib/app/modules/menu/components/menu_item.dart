@@ -44,14 +44,14 @@ class MyMenuItem extends GetView<MenuController> {
                       width: 49,
                       child: !controller.isPollutantSelected(
                               dataset.id, dataset.pollutants[i])
-                          ? PButton(
+                          ? PButton.light(
                               text: dataset.pollutants[i],
                               onTap: () {
                                 controller.tapPollutant(
                                     dataset.id, dataset.pollutants[i]);
                               },
                             )
-                          : PButton.light(
+                          : PButton(
                               text: dataset.pollutants[i],
                               onTap: () {
                                 controller.tapPollutant(

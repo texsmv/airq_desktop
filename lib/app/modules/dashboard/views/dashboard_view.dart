@@ -47,7 +47,9 @@ class DashboardView extends GetView<DashboardController> {
                       ActionButton(
                         icon: 'assets/icons/projection_icon.png',
                         selected: false,
-                        onTap: () {},
+                        onTap: () {
+                          datasetController.projectSeries();
+                        },
                       ),
                       ActionButton(
                         icon: 'assets/icons/clustering_icon.png',
