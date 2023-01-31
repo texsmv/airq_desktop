@@ -85,8 +85,19 @@ class DatasetController extends GetxController {
   Future<List<dynamic>> getCorrelationMatrix(List<IPoint> points) async {
     final List<int> positions =
         List.generate(points.length, (index) => points[index].data.id);
-    List<dynamic> matrix = await repositoryCorrelationMatrix(positions);
-    return matrix;
+    Map<String, List<dynamic>> map =
+        await repositoryCorrelationMatrix(positions);
+
+    List<dynamic> coords = map['coords']!;
+
+    print(coords.shape);
+
+    for (var i = 0; i < _points!.length; i++) {
+      _points![i].coordinates = Offset(coords[i][0], coords[i][1]);
+    }
+
+    Get.find<DashboardController>().update();
+    return map['corrMatrix']!;
   }
 
   Future<void> projectSeries() async {
