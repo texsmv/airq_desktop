@@ -120,7 +120,7 @@ class LeftAxis extends StatelessWidget {
                   child: Text(
                     xLabels == null
                         ? (((xMaxValue - xMinValue) / (xDivisions - 1) * index)
-                            .toStringAsFixed(1))
+                            .toStringAsFixed(2))
                         : xLabels![index],
                     textAlign: TextAlign.center,
                     style: const TextStyle(
@@ -197,7 +197,7 @@ class LeftAxis extends StatelessWidget {
                 child: Text(
                   (yMaxValue -
                           (yMaxValue - yMinValue) / (yDivisions - 1) * index)
-                      .toStringAsFixed(1),
+                      .toStringAsFixed(2),
                   style: const TextStyle(
                     fontSize: 12,
                     color: Colors.black,

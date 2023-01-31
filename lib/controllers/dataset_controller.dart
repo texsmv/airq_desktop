@@ -91,7 +91,7 @@ class DatasetController extends GetxController {
 
   Future<void> projectSeries() async {
     List<bool> selected = List.generate(pollutants.length, (index) => false);
-    int neighbors = 15;
+    int neighbors = 10;
     List<int> selectedPollutants = await Get.dialog(
       PDialog(
         height: 550,
