@@ -66,7 +66,7 @@ Future<Map<String, dynamic>> repositoryLoadDataset(
   return data;
 }
 
-Future<List<dynamic>> repositoryCorrelationMatrix(
+Future<Map<String, List<dynamic>>> repositoryCorrelationMatrix(
   List<int> positions,
 ) async {
   final response = await post(
@@ -81,7 +81,14 @@ Future<List<dynamic>> repositoryCorrelationMatrix(
   List<dynamic> corrArray = data['correlation_matrix'];
   int matSize = sqrt(corrArray.length.toDouble()).toInt();
   List<dynamic> corrMatrix = corrArray.reshape([matSize, matSize]);
-  return corrMatrix;
+
+  List<dynamic> coords = jsonDecode(response.body)['coords'];
+  coords = coords.reshape([(coords.length / 2).floor(), 2]);
+
+  return {
+    'corrMatrix': corrMatrix,
+    'coords': coords,
+  };
 }
 
 Future<List<int>> repositoryClustering(int n_clusters) async {
