@@ -466,6 +466,7 @@ class DashboardController extends GetxController {
 
   // StationModel? selectedStation;
 
+  bool map_cluster_mode = false;
   bool showShape = false;
   RxBool pickMode = false.obs;
   HashMap<int, StationModel> selectedStations = HashMap<int, StationModel>();

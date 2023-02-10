@@ -374,7 +374,35 @@ class DashView extends GetView<DashboardController> {
                                 PCard(
                                   width: constraints.maxWidth * 0.2,
                                   height: double.infinity,
-                                  child: RepaintBoundary(child: StationsMap()),
+                                  child: RepaintBoundary(
+                                    child: Column(
+                                      children: [
+                                        Visibility(
+                                          visible:
+                                              controller.clusterIds.isNotEmpty,
+                                          child: Row(
+                                            children: [
+                                              Text('Cluster mode'),
+                                              Switch(
+                                                value:
+                                                    controller.map_cluster_mode,
+                                                onChanged: (value) {
+                                                  controller.map_cluster_mode =
+                                                      value;
+                                                  controller.update();
+                                                },
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Expanded(
+                                            child: StationsMap(
+                                          clusterView:
+                                              controller.map_cluster_mode,
+                                        )),
+                                      ],
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
@@ -412,379 +440,6 @@ class DashView extends GetView<DashboardController> {
             )
           ],
         ),
-      ),
-    );
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: space, vertical: space),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 4,
-            child: Column(
-              children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      PCard(
-                        child: SizedBox(
-                          width: 150,
-                          child: GetBuilder<DashboardController>(
-                            builder: (_) => ClusterItems(),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: space),
-                      Expanded(
-                        child: PCard(
-                          child: GetBuilder<DashboardController>(
-                            builder: (_) => Obx(
-                              () => Column(
-                                children: [
-                                  Switch(
-                                    value: controller.pickMode.value,
-                                    onChanged: (newVal) {
-                                      controller.pickMode.value = newVal;
-                                    },
-                                  ),
-                                  Expanded(
-                                    child: IProjection(
-                                      controller:
-                                          controller.projectionController,
-                                      points: controller.globalPoints!,
-                                      onPointsSelected:
-                                          controller.onPointsSelected,
-                                      onPointPicked: controller.onPointPicked,
-                                      isLocal: false,
-                                      pickMode: controller.pickMode.value,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: space),
-                GetBuilder<DashboardController>(builder: (_) {
-                  if (datasetController.contFeatMap == null) {
-                    return const SizedBox();
-                  }
-
-                  return SizedBox(
-                    height: 200,
-                    width: double.infinity,
-                    child: PCard(
-                      child: CFeaturesChart(
-                        // values: List.generate(
-                        //     datasetController.contrastiveFeatures!.length,
-                        //     (index) => datasetController
-                        //         .contrastiveFeatures![index]
-                        //         .sublist(0, 30)),
-                        values: datasetController.contrastiveFeatures,
-
-                        colors: List.generate(
-                            datasetController.contFeatMap!.keys.length,
-                            (index) => datasetController.clusterColors[
-                                datasetController.contFeatMap!.keys
-                                    .toList()[index]
-                                    .toString()]!),
-                        // colors: datasetController.clusterColors.values.toList(),
-                      ),
-                    ),
-                  );
-                }),
-                const SizedBox(height: space),
-                Expanded(
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: PCard(
-                          child: Container(
-                            child: GetBuilder<DashboardController>(
-                              // tag: 'local',
-                              builder: (_) => Column(
-                                children: [
-                                  _PollutantSelector(),
-                                  Divider(),
-                                  Expanded(
-                                    child: LeftAxis(
-                                      xMaxValue: controller.xMaxValue,
-                                      xMinValue: controller.xMinValue,
-                                      // yMaxValue: controller.ts_visualization ==
-                                      //         0
-                                      //     ? controller.yMaxValue
-                                      //     : datasetController.maxMeansValue ??
-                                      //         1,
-                                      // yMinValue: controller.ts_visualization ==
-                                      //         0
-                                      //     ? controller.yMinValue
-                                      //     : datasetController.minMeansValue ??
-                                      //         0,
-
-                                      yMaxValue: controller.yMaxValue,
-
-                                      yMinValue: controller.yMinValue,
-                                      yAxisLabel: 'Magnitude',
-                                      xAxisLabel: 'Shape',
-                                      yDivisions: 5,
-                                      xDivisions: 2,
-                                      child: AqiSections(
-                                        showIaqi: uiHasIaqi(
-                                            controller.projectedPollutant.name),
-                                        minValue: 0,
-                                        maxValue: uiPollutant2Aqi(
-                                            controller.yMaxValue,
-                                            controller.projectedPollutant.name),
-                                        child: Obx(
-                                          () => IProjection(
-                                            controller: controller
-                                                .localProjectionController,
-                                            points: controller.globalPoints!,
-                                            onPointsSelected:
-                                                controller.onPointsSelected,
-                                            onPointPicked:
-                                                controller.onPointPicked,
-                                            isLocal: true,
-                                            pickMode: controller.pickMode.value,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: space),
-                      Expanded(
-                        child: PCard(
-                          child: Column(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 35.0),
-                                child: Visibility(
-                                  visible: true,
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text('Visualization'),
-                                      GetBuilder<DashboardController>(
-                                        builder: (_) => Switch(
-                                            value:
-                                                controller.ts_visualization ==
-                                                    0,
-                                            onChanged: (newValue) {
-                                              if (newValue) {
-                                                controller.ts_visualization = 0;
-                                              } else {
-                                                controller.ts_visualization = 1;
-                                              }
-                                              controller.update();
-                                            }),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 35.0),
-                                child: Visibility(
-                                  visible: true,
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text('Shape'),
-                                      GetBuilder<DashboardController>(
-                                        builder: (_) => Switch(
-                                            value: controller.showShape,
-                                            onChanged: (newValue) {
-                                              controller.showShape = newValue;
-                                              controller.update();
-                                            }),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                child: Container(
-                                  height: double.infinity,
-                                  width: double.infinity,
-                                  child: GetBuilder<DashboardController>(
-                                    builder: (_) => LeftAxis(
-                                      xMaxValue: controller.xMaxValueSeries,
-                                      xMinValue: controller.xMinValueSeries,
-                                      // yMaxValue: controller.yMaxValue,
-                                      // yMinValue: controller.yMinValue,
-
-                                      yMaxValue: controller.ts_visualization ==
-                                              0
-                                          ? controller.yMaxValue
-                                          : datasetController.maxMeansValue ??
-                                              1,
-                                      yMinValue: controller.ts_visualization ==
-                                              0
-                                          ? controller.yMinValue
-                                          : datasetController.minMeansValue ??
-                                              0,
-
-                                      // yMinValue: controller.showShape
-                                      //     ? std_min
-                                      //     : controller.yMinValue,
-                                      // yMaxValue: controller.showShape
-                                      //     ? std_max
-                                      //     : controller.yMaxValue,
-                                      yAxisLabel: 'Magnitude',
-                                      xAxisLabel: 'Time',
-                                      yDivisions: 5,
-                                      xDivisions: 12,
-                                      xLabels: controller.granularity !=
-                                              Granularity.annual
-                                          ? null
-                                          : [
-                                              "Jan",
-                                              "Feb",
-                                              "Mar",
-                                              "Apr",
-                                              "May",
-                                              "Jun",
-                                              "Jul",
-                                              "Aug",
-                                              "Sep",
-                                              "Oct",
-                                              "Nov",
-                                              "Dec"
-                                            ],
-                                      child: controller.ts_visualization == 0
-                                          ? MultiChart(
-                                              minValue: controller.showShape
-                                                  ? std_min
-                                                  : controller.yMinValue,
-                                              maxValue: controller.showShape
-                                                  ? std_max
-                                                  : controller.yMaxValue,
-                                              models: controller.ipoints,
-                                            )
-                                          : ClusterMeans(),
-                                      // : StdChart(
-                                      //   minValue: controller.yMinValue,
-                                      //   maxValue: controller.yMaxValue,
-                                      //   ipoints: controller.ipoints,
-                                      // ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 10),
-                PCard(
-                  child: SizedBox(
-                    height: 80,
-                    width: double.infinity,
-                    child: GetBuilder<DashboardController>(builder: (_) {
-                      return StationData(
-                        windows: datasetController.selectedStationWindows,
-                        selectedWindow: datasetController.selectedWindow,
-                      );
-                    }),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: space),
-          Expanded(
-            flex: 2,
-            child: PCard(
-              child: GetBuilder<DashboardController>(
-                builder: (_) => SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      StationsMap(),
-                      const SizedBox(height: 10),
-                      SelectionSummary(
-                        height: 300,
-                      ),
-                      const SizedBox(height: 10),
-                      Visibility(
-                        visible: controller.granularity == Granularity.daily,
-                        child: InteractiveHistogram(
-                          isReseted: controller.isReseted,
-                          values: controller.dayCounts,
-                          allValues: controller.allDaysCounts,
-                          filterBegin: 0,
-                          filterEnd: 1,
-                          labels: const [
-                            'Mon',
-                            'Tue',
-                            'Wed',
-                            'Thu',
-                            'Fri',
-                            'Sat',
-                            'Sun',
-                          ],
-                          onRangeChanged: controller.dayRangeSelection,
-                        ),
-                      ),
-                      Visibility(
-                        visible: controller.granularity != Granularity.annual,
-                        child: InteractiveHistogram(
-                          isReseted: controller.isReseted,
-                          values: controller.monthCounts,
-                          allValues: controller.allMonthsCounts,
-                          filterBegin: 0,
-                          filterEnd: 1,
-                          labels: const [
-                            'Jan',
-                            'Feb',
-                            'Mar',
-                            'Apr',
-                            'May',
-                            'Jun',
-                            'Jul',
-                            'Aug',
-                            'Sep',
-                            'Oct',
-                            'Nov',
-                            'Dec'
-                          ],
-                          onRangeChanged: controller.monthRangeSelection,
-                        ),
-                      ),
-                      InteractiveHistogram(
-                        isReseted: controller.isReseted,
-                        values: controller.yearCounts,
-                        allValues: controller.allYearsCounts,
-                        filterBegin: 0,
-                        filterEnd: 1,
-                        labels: List.generate(controller.years.length,
-                            (index) => (controller.years[index]).toString()),
-                        onRangeChanged: controller.yearRangeSelection,
-                      ),
-                      // StationsCounts(),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

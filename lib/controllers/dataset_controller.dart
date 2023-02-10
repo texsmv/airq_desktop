@@ -90,8 +90,6 @@ class DatasetController extends GetxController {
 
     List<dynamic> coords = map['coords']!;
 
-    print(coords.shape);
-
     for (var i = 0; i < _points!.length; i++) {
       _points![i].coordinates = Offset(coords[i][0], coords[i][1]);
     }

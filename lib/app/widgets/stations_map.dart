@@ -12,7 +12,8 @@ import 'package:rainbow_color/rainbow_color.dart';
 import '../constants/colors.dart';
 
 class StationsMap extends StatefulWidget {
-  StationsMap({Key? key}) : super(key: key);
+  final bool clusterView;
+  StationsMap({Key? key, required this.clusterView}) : super(key: key);
 
   @override
   State<StationsMap> createState() => _StationsMapState();
@@ -187,13 +188,7 @@ class _StationsMapState extends State<StationsMap> {
       rangeStart: 0,
       rangeEnd: maxStationsCount,
     );
-    // if (dashboardController.stationCounts[index] != 0) {
-    //   modifiedValue = dashboardController.stationCounts[index] +
-    //       dashboardController.allStationCounts[index];
-    // } else {
-    //   modifiedValue = dashboardController.stationCounts[index];
-    // }
-    // print(modifiedValue);
+
     return rb[modifiedValue];
   }
 
@@ -218,32 +213,51 @@ class _StationsMapState extends State<StationsMap> {
       return minSize;
     }
 
-    // if (dashboardController.stationCounts[index] != 0) {
-    //   modifiedValue = dashboardController.stationCounts[index] +
-    //       dashboardController.allStationCounts[index];
-    // } else {
-    //   modifiedValue = dashboardController.stationCounts[index];
-    // }
-    // print(modifiedValue);
     return (modifiedValue / maxStationsCount) * (maxSize - minSize);
   }
-
-  // Color chipColor(int index) {
-  //   // In case a station doesn't have any count
-  //   if (dashboardController.allStationCounts[index] == 0) {
-  //     return Colors.transparent;
-  //   }
-  //   var rb = Rainbow(
-  //     spectrum: [const Color.fromRGBO(220, 220, 220, 1), pColorPrimary],
-  //     rangeStart: 0,
-  //     rangeEnd: dashboardController.allStationCounts[index],
-  //   );
-
-  //   return rb[dashboardController.stationCounts[index]];
-  // }
 
   String chipLabel(int index) {
     if (dashboardController.stationCounts.isEmpty) return "";
     return '${dashboardController.stationCounts[index]}';
   }
 }
+
+// class ClusterChipPainter extends CustomPainter {
+//   final double radius;
+//   List<int> counts;
+//   List<Color> colors;
+//   ClusterChipPainter({
+//     required this.radius,
+//     required this.counts,
+//     required this.colors,
+//   });
+
+//   @override
+//   void paint(Canvas canvas, Size size) {
+//     final Paint paint = Paint()
+//       ..strokeWidth = 60.0 // 1.
+//       ..style = PaintingStyle.stroke // 2.
+//       ..color = color!; // 3.
+
+//     double degToRad(double deg) => deg * (math.pi / 180.0);
+
+//     final path = Path()
+//       ..arcTo(
+//           // 4.
+//           Rect.fromCenter(
+//             center: Offset(size.height / 2, size.width / 2),
+//             height: size.height,
+//             width: size.width,
+//           ), // 5.
+//           degToRad(180), // 6.
+//           degToRad(sweepAngle!), // 7.
+//           false);
+
+//     canvas.drawPath(path, paint); // 8.
+//   }
+
+//   @override
+//   bool shouldRepaint(covariant CustomPainter oldDelegate) {
+//     throw UnimplementedError();
+//   }
+// }
