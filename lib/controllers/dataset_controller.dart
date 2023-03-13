@@ -22,6 +22,8 @@ import 'package:get/get_state_manager/get_state_manager.dart';
 import 'package:intl/intl.dart';
 import 'package:random_color/random_color.dart';
 
+import '../app/constants/constants.dart';
+
 class DatasetController extends GetxController {
   Map<String, List<IPoint>> get clusters => _clusters;
   Map<int, double> get minValues => _minValue;
@@ -99,6 +101,10 @@ class DatasetController extends GetxController {
   }
 
   Future<void> projectSeries() async {
+    TextEditingController deltaController =
+        TextEditingController(text: pDelta.toString());
+    TextEditingController betaController =
+        TextEditingController(text: pBeta.toString());
     List<bool> selected = List.generate(pollutants.length, (index) => false);
     int neighbors = 10;
     List<int> selectedPollutants = await Get.dialog(
@@ -151,6 +157,16 @@ class DatasetController extends GetxController {
                   );
                 },
               ),
+
+              SizedBox(
+                height: 80,
+                child: Row(children: [
+                  Text('Delta:'),
+                  TextField(
+                    controller: deltaController,
+                  ),
+                ]),
+              ),
               // const SizedBox(height: 30),
               Spacer(),
               PButton(
@@ -186,6 +202,8 @@ class DatasetController extends GetxController {
     List<dynamic> coords = await repositoryGetProjection(
       pollutantPositions: selectedPollutants,
       neighbors: neighbors,
+      beta: double.parse(betaController.text),
+      delta: double.parse(deltaController.text),
     );
 
     for (var i = 0; i < _points!.length; i++) {
@@ -314,6 +332,8 @@ class DatasetController extends GetxController {
 
     List<dynamic> coords = await repositoryGetProjection(
       pollutantPositions: List.generate(pollutants.length, (index) => index),
+      delta: pDelta,
+      beta: pBeta,
     );
 
     List<dynamic> coordsOut = await repositoryGetFdaOutliers(0);

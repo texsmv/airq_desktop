@@ -102,6 +102,8 @@ Future<List<int>> repositoryClustering(int n_clusters) async {
 }
 
 Future<List<dynamic>> repositoryGetProjection({
+  required double delta,
+  required double beta,
   required List<int> pollutantPositions,
   int neighbors = 15,
 }) async {
@@ -110,6 +112,8 @@ Future<List<dynamic>> repositoryGetProjection({
     body: {
       'pollutantsPositions': jsonEncode(pollutantPositions),
       'neighbors': jsonEncode(neighbors),
+      'delta': delta,
+      'beta': beta
     },
   );
 
