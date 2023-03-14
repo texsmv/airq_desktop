@@ -112,8 +112,28 @@ Future<List<dynamic>> repositoryGetProjection({
     body: {
       'pollutantsPositions': jsonEncode(pollutantPositions),
       'neighbors': jsonEncode(neighbors),
-      'delta': delta,
-      'beta': beta
+      'delta': jsonEncode(delta),
+      'beta': jsonEncode(beta)
+    },
+  );
+
+  List<dynamic> coords = jsonDecode(response.body)['coords'];
+  coords = coords.reshape([(coords.length / 2).floor(), 2]);
+
+  return coords;
+}
+
+Future<List<dynamic>> repositorySpatioTemporalSettings({
+  required double delta,
+  required double beta,
+  int neighbors = 15,
+}) async {
+  final response = await post(
+    Uri.parse("${hostUrl}spatioTemporalProjection"),
+    body: {
+      'neighbors': jsonEncode(neighbors),
+      'delta': jsonEncode(delta),
+      'beta': jsonEncode(beta)
     },
   );
 

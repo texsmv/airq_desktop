@@ -52,6 +52,13 @@ class DashboardView extends GetView<DashboardController> {
                         },
                       ),
                       ActionButton(
+                        icon: 'assets/icons/projection_icon.png',
+                        selected: false,
+                        onTap: () {
+                          datasetController.changeSpatioTemporalSettings();
+                        },
+                      ),
+                      ActionButton(
                         icon: 'assets/icons/clustering_icon.png',
                         selected: false,
                         onTap: () async {

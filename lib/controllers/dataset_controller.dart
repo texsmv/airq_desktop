@@ -213,6 +213,107 @@ class DatasetController extends GetxController {
     Get.find<DashboardController>().update();
   }
 
+  Future<void> changeSpatioTemporalSettings() async {
+    TextEditingController deltaController =
+        TextEditingController(text: pDelta.toString());
+    TextEditingController betaController =
+        TextEditingController(text: pBeta.toString());
+    List<bool> selected = List.generate(pollutants.length, (index) => false);
+    int neighbors = 10;
+    await Get.dialog(
+      PDialog(
+        height: 550,
+        width: 400,
+        // child: Container(),
+        child: GetBuilder<DatasetController>(
+          id: 'dialog',
+          builder: (_) => Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Umap neighbors',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                      color: pColorPrimary,
+                    ),
+                  ),
+                  PButton(
+                      text: neighbors.toString(),
+                      onTap: () async {
+                        neighbors = await uiPickNumberInt(5, 100);
+                        update(['dialog']);
+                      })
+                ],
+              ),
+              const SizedBox(height: 30),
+
+              SizedBox(
+                height: 80,
+                width: double.infinity,
+                child: Row(children: [
+                  Text('Delta:'),
+                  SizedBox(width: 70),
+                  Expanded(
+                    child: TextField(
+                      controller: deltaController,
+                    ),
+                  ),
+                ]),
+              ),
+
+              SizedBox(
+                height: 80,
+                width: double.infinity,
+                child: Row(children: [
+                  Text('Beta:'),
+                  SizedBox(width: 70),
+                  Expanded(
+                    child: TextField(
+                      controller: betaController,
+                    ),
+                  ),
+                ]),
+              ),
+
+              //         SizedBox(
+              //           height: 80,
+              //           child: Row(children: [
+              //             Text('Beta:'),
+              //             TextField(
+              //               controller: betaController,
+              //             ),
+              //           ]),
+              //         ),
+              //         // const SizedBox(height: 30),
+              Spacer(),
+              PButton(
+                text: 'Get projection',
+                onTap: () {
+                  Get.back();
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    uiShowLoader();
+    List<dynamic> coords = await repositorySpatioTemporalSettings(
+      neighbors: neighbors,
+      beta: double.parse(betaController.text),
+      delta: double.parse(deltaController.text),
+    );
+
+    for (var i = 0; i < _points!.length; i++) {
+      _points![i].coordinates = Offset(coords[i][0], coords[i][1]);
+    }
+    uiHideLoader();
+    Get.find<DashboardController>().update();
+  }
+
   Future<void> loadDataset(
       DatasetModel dataset,
       Granularity granularityCl,
