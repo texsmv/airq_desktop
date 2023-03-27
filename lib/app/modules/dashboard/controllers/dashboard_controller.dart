@@ -89,25 +89,77 @@ class DashboardController extends GetxController {
       return;
     }
 
-    List<dynamic> matrix =
+    Map<String, List<dynamic>> map =
         await datasetController.getCorrelationMatrix(selectedPoints);
+
+    List<dynamic> matrix = map['corrMatrix']!;
+    List<double> minv = List<double>.from(map['minv']!);
+    List<double> maxv = List<double>.from(map['maxv']!);
+    List<double> meanv = List<double>.from(map['meanv']!);
+    List<double> stdv = List<double>.from(map['stdv']!);
+
+    List<PollutantModel> pollutants = datasetController.pollutants;
+    print(pollutants.length);
 
     Get.dialog(
       PDialog(
-        height: 700,
-        width: 700,
+        height: 1000,
+        width: 900,
         child: PCard(
-          child: Center(
-            child: AspectRatio(
-              aspectRatio: 1,
-              child: CorrelationMatrix(
-                matrix: matrix,
-                names: List.generate(
-                  pollutants.length,
-                  (index) => pollutants[index].name,
+          child: Column(
+            children: [
+              Expanded(
+                child: Center(
+                  child: CorrelationMatrix(
+                    matrix: matrix,
+                    names: List.generate(
+                      pollutants.length,
+                      (index) => pollutants[index].name,
+                    ),
+                  ),
                 ),
               ),
-            ),
+              Container(
+                height: 100,
+                width: double.infinity,
+                child: Row(
+                  children: [
+                    Container(
+                      width: 80,
+                      child: Column(
+                        children: const [
+                          Text('Variable'),
+                          Text('Mean'),
+                          Text('Std'),
+                          Text('Min'),
+                          Text('Max'),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: pollutants.length,
+                        itemBuilder: (context, index) {
+                          return Container(
+                            width: 80,
+                            child: Column(
+                              children: [
+                                Text(pollutants[index].name),
+                                Text('${meanv[index].toStringAsFixed(3)}'),
+                                Text('${stdv[index].toStringAsFixed(3)}'),
+                                Text('${minv[index].toStringAsFixed(3)}'),
+                                Text('${maxv[index].toStringAsFixed(3)}'),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),

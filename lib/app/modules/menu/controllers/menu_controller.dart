@@ -14,6 +14,7 @@ import '../../../widgets/common/pbutton.dart';
 
 class MenuController extends GetxController {
   Map<int, List<String>> selectedPollutants = {};
+  Map<int, List<String>> selectedStations = {};
   List<DatasetModel> get datasets => datasetController.datasets;
 
   bool isPollutantSelected(int datasetId, String pollutant) {
@@ -35,6 +36,29 @@ class MenuController extends GetxController {
       selectedPollutants[datasetId]!.remove(pollutant);
     } else {
       selectedPollutants[datasetId]!.add(pollutant);
+    }
+    update();
+  }
+
+  bool isStationSelected(int datasetId, String station) {
+    List<String>? datasetStation = selectedStations[datasetId];
+    if (datasetStation == null || datasetStation.isEmpty) {
+      return false;
+    }
+
+    return datasetStation.contains(station);
+  }
+
+  void tapStation(int datasetId, String station) {
+    List<String>? datasetStation = selectedStations[datasetId];
+    if (datasetStation == null) {
+      selectedStations[datasetId] = [];
+    }
+
+    if (selectedStations[datasetId]!.contains(station)) {
+      selectedStations[datasetId]!.remove(station);
+    } else {
+      selectedStations[datasetId]!.add(station);
     }
     update();
   }
@@ -68,11 +92,19 @@ class MenuController extends GetxController {
         defaultValue: defaultSmoothSize);
 
     EasyLoading.show(status: 'Loading...');
+
+    List<String>? sStations = selectedStations[dataset.id];
+    if (sStations == null) {
+      sStations = dataset.allStations;
+    } else if (sStations.isEmpty) {
+      sStations = dataset.allStations;
+    }
     await datasetController.loadDataset(
         dataset,
         chosenGranularity,
         granularityStr,
         selectedPollutants[dataset.id]!,
+        sStations,
         shapeNormalization,
         smoothWindow);
     EasyLoading.dismiss();

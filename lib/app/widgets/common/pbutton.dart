@@ -1,4 +1,5 @@
 import 'package:airq_ui/app/constants/colors.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:nice_buttons/nice_buttons.dart';
 
@@ -58,11 +59,13 @@ class PButton extends StatelessWidget {
         onTap: (finish) {
           onTap();
         },
-        child: Text(
+        child: AutoSizeText(
           text,
+          minFontSize: 8,
+          maxLines: 1,
           style: TextStyle(
             color: textColor,
-            fontSize: 16,
+            fontSize: 15,
           ),
         ),
       ),

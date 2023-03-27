@@ -84,20 +84,23 @@ class DatasetController extends GetxController {
     //     items.length, (index) => DatasetModel.fromJson(items[index]));
   }
 
-  Future<List<dynamic>> getCorrelationMatrix(List<IPoint> points) async {
+  Future<Map<String, List<dynamic>>> getCorrelationMatrix(
+      List<IPoint> points) async {
     final List<int> positions =
         List.generate(points.length, (index) => points[index].data.id);
     Map<String, List<dynamic>> map =
         await repositoryCorrelationMatrix(positions);
+    return map;
+    // List<double> minv = List<double>.from(map['minv']!);
+    // List<double> maxv = List<double>.from(map['maxv']!);
+    // List<double> meanv = List<double>.from(map['meanv']!);
+    // List<double> stdv = List<double>.from(map['stdv']!);
+    // print(minv);
+    // print(maxv);
+    // print(meanv);
+    // print(stdv);
 
-    List<dynamic> coords = map['coords']!;
-
-    for (var i = 0; i < _points!.length; i++) {
-      _points![i].coordinates = Offset(coords[i][0], coords[i][1]);
-    }
-
-    Get.find<DashboardController>().update();
-    return map['corrMatrix']!;
+    // return map['corrMatrix']!;
   }
 
   Future<void> projectSeries() async {
@@ -213,112 +216,113 @@ class DatasetController extends GetxController {
     Get.find<DashboardController>().update();
   }
 
-  Future<void> changeSpatioTemporalSettings() async {
-    TextEditingController deltaController =
-        TextEditingController(text: pDelta.toString());
-    TextEditingController betaController =
-        TextEditingController(text: pBeta.toString());
-    List<bool> selected = List.generate(pollutants.length, (index) => false);
-    int neighbors = 10;
-    await Get.dialog(
-      PDialog(
-        height: 550,
-        width: 400,
-        // child: Container(),
-        child: GetBuilder<DatasetController>(
-          id: 'dialog',
-          builder: (_) => Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Umap neighbors',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
-                      color: pColorPrimary,
-                    ),
-                  ),
-                  PButton(
-                      text: neighbors.toString(),
-                      onTap: () async {
-                        neighbors = await uiPickNumberInt(5, 100);
-                        update(['dialog']);
-                      })
-                ],
-              ),
-              const SizedBox(height: 30),
+  // Future<void> changeSpatioTemporalSettings() async {
+  //   TextEditingController deltaController =
+  //       TextEditingController(text: pDelta.toString());
+  //   TextEditingController betaController =
+  //       TextEditingController(text: pBeta.toString());
+  //   List<bool> selected = List.generate(pollutants.length, (index) => false);
+  //   int neighbors = 10;
+  //   await Get.dialog(
+  //     PDialog(
+  //       height: 550,
+  //       width: 400,
+  //       // child: Container(),
+  //       child: GetBuilder<DatasetController>(
+  //         id: 'dialog',
+  //         builder: (_) => Column(
+  //           children: [
+  //             Row(
+  //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //               children: [
+  //                 const Text(
+  //                   'Umap neighbors',
+  //                   style: TextStyle(
+  //                     fontSize: 18,
+  //                     fontWeight: FontWeight.w500,
+  //                     color: pColorPrimary,
+  //                   ),
+  //                 ),
+  //                 PButton(
+  //                     text: neighbors.toString(),
+  //                     onTap: () async {
+  //                       neighbors = await uiPickNumberInt(5, 100);
+  //                       update(['dialog']);
+  //                     })
+  //               ],
+  //             ),
+  //             const SizedBox(height: 30),
 
-              SizedBox(
-                height: 80,
-                width: double.infinity,
-                child: Row(children: [
-                  Text('Delta:'),
-                  SizedBox(width: 70),
-                  Expanded(
-                    child: TextField(
-                      controller: deltaController,
-                    ),
-                  ),
-                ]),
-              ),
+  //             SizedBox(
+  //               height: 80,
+  //               width: double.infinity,
+  //               child: Row(children: [
+  //                 Text('Delta:'),
+  //                 SizedBox(width: 70),
+  //                 Expanded(
+  //                   child: TextField(
+  //                     controller: deltaController,
+  //                   ),
+  //                 ),
+  //               ]),
+  //             ),
 
-              SizedBox(
-                height: 80,
-                width: double.infinity,
-                child: Row(children: [
-                  Text('Beta:'),
-                  SizedBox(width: 70),
-                  Expanded(
-                    child: TextField(
-                      controller: betaController,
-                    ),
-                  ),
-                ]),
-              ),
+  //             SizedBox(
+  //               height: 80,
+  //               width: double.infinity,
+  //               child: Row(children: [
+  //                 Text('Beta:'),
+  //                 SizedBox(width: 70),
+  //                 Expanded(
+  //                   child: TextField(
+  //                     controller: betaController,
+  //                   ),
+  //                 ),
+  //               ]),
+  //             ),
 
-              //         SizedBox(
-              //           height: 80,
-              //           child: Row(children: [
-              //             Text('Beta:'),
-              //             TextField(
-              //               controller: betaController,
-              //             ),
-              //           ]),
-              //         ),
-              //         // const SizedBox(height: 30),
-              Spacer(),
-              PButton(
-                text: 'Get projection',
-                onTap: () {
-                  Get.back();
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-    uiShowLoader();
-    List<dynamic> coords = await repositorySpatioTemporalSettings(
-      neighbors: neighbors,
-      beta: double.parse(betaController.text),
-      delta: double.parse(deltaController.text),
-    );
+  //             //         SizedBox(
+  //             //           height: 80,
+  //             //           child: Row(children: [
+  //             //             Text('Beta:'),
+  //             //             TextField(
+  //             //               controller: betaController,
+  //             //             ),
+  //             //           ]),
+  //             //         ),
+  //             //         // const SizedBox(height: 30),
+  //             Spacer(),
+  //             PButton(
+  //               text: 'Get projection',
+  //               onTap: () {
+  //                 Get.back();
+  //               },
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  //   uiShowLoader();
+  //   List<dynamic> coords = await repositorySpatioTemporalSettings(
+  //     neighbors: neighbors,
+  //     beta: double.parse(betaController.text),
+  //     delta: double.parse(deltaController.text),
+  //   );
 
-    for (var i = 0; i < _points!.length; i++) {
-      _points![i].coordinates = Offset(coords[i][0], coords[i][1]);
-    }
-    uiHideLoader();
-    Get.find<DashboardController>().update();
-  }
+  //   for (var i = 0; i < _points!.length; i++) {
+  //     _points![i].coordinates = Offset(coords[i][0], coords[i][1]);
+  //   }
+  //   uiHideLoader();
+  //   Get.find<DashboardController>().update();
+  // }
 
   Future<void> loadDataset(
       DatasetModel dataset,
       Granularity granularityCl,
       String granularity,
       List<String> pollutants,
+      List<String> stations,
       bool shapeNorm,
       int smoothWindow) async {
     _pollutants = [];
@@ -326,8 +330,8 @@ class DatasetController extends GetxController {
     _dataset = dataset;
     _granularity = granularityCl;
 
-    dynamic data = await repositoryLoadDataset(
-        dataset.name, granularity, pollutants, smoothWindow, shapeNorm);
+    dynamic data = await repositoryLoadDataset(dataset.name, granularity,
+        pollutants, stations, smoothWindow, shapeNorm);
 
     List<int> stationLabels =
         List<int>.from(data['windows_labels']['stations']);
@@ -422,11 +426,13 @@ class DatasetController extends GetxController {
       _stations.add(station);
     }
 
+    print(stationsMap);
     for (var i = 0; i < n; i++) {
       // DateTime date = DateTime.parse(dateLabels[i]);
       WindowModel window = windowModels[i];
       // StationModel station =
       //     _stations.firstWhere((station) => station.id == window.stationId);
+      print(window.stationId);
       StationModel station = stationsMap[window.stationId]!;
       windowsStations[window.id] = station;
     }

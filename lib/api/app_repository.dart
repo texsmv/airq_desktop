@@ -15,9 +15,14 @@ Future<List<DatasetModel>> repositoryDatasets() async {
   int counter = 0;
   for (var key in data.keys) {
     List<String> pollutants = List<String>.from(data[key]['pollutants']);
+    List<String> stations = List<String>.from(data[key]['stations']);
     // print(data[key]['pollutants']);
-    DatasetModel dataset =
-        DatasetModel(id: counter, name: key, pollutants: pollutants);
+    DatasetModel dataset = DatasetModel(
+      id: counter,
+      name: key,
+      pollutants: pollutants,
+      allStations: stations,
+    );
     datasets.add(dataset);
 
     counter += 1;
@@ -48,6 +53,7 @@ Future<Map<String, dynamic>> repositoryLoadDataset(
   String dataset,
   String granularity,
   List<String> pollutants,
+  List<String> stations,
   int smoothWindow,
   bool normalize,
 ) async {
@@ -57,6 +63,7 @@ Future<Map<String, dynamic>> repositoryLoadDataset(
       'dataset': dataset,
       'granularity': granularity,
       'pollutants': jsonEncode(pollutants),
+      'stations': jsonEncode(stations),
       'smoothWindow': smoothWindow.toString(),
       'shapeNorm': normalize.toString(),
     },
@@ -88,6 +95,10 @@ Future<Map<String, List<dynamic>>> repositoryCorrelationMatrix(
   return {
     'corrMatrix': corrMatrix,
     'coords': coords,
+    'minv': data['minv'],
+    'maxv': data['maxv'],
+    'meanv': data['meanv'],
+    'stdv': data['stdv'],
   };
 }
 

@@ -51,91 +51,107 @@ class DashboardView extends GetView<DashboardController> {
                           datasetController.projectSeries();
                         },
                       ),
-                      ActionButton(
-                        icon: 'assets/icons/projection_icon.png',
-                        selected: false,
-                        onTap: () {
-                          datasetController.changeSpatioTemporalSettings();
-                        },
-                      ),
+                      // ActionButton(
+                      //   icon: 'assets/icons/projection_icon.png',
+                      //   selected: false,
+                      //   onTap: () {
+                      //     datasetController.changeSpatioTemporalSettings();
+                      //   },
+                      // ),
                       ActionButton(
                         icon: 'assets/icons/clustering_icon.png',
                         selected: false,
                         onTap: () async {
                           await Get.dialog(PDialog(
+                              height: 400,
                               child: Column(
-                            children: [
-                              Visibility(
-                                visible: controller.granularity !=
-                                    Granularity.annual,
-                                child: SizedBox(
-                                  height: 25,
-                                  child: PButton(
-                                    onTap: () {
-                                      controller.clusterByMonth();
-                                      Get.back();
-                                    },
-                                    text: 'Month',
+                                children: [
+                                  Visibility(
+                                    visible: controller.granularity ==
+                                        Granularity.daily,
+                                    child: SizedBox(
+                                      height: 25,
+                                      child: PButton(
+                                        onTap: () {
+                                          controller.clusterByWeekDay();
+                                          Get.back();
+                                        },
+                                        text: 'Day',
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              SizedBox(
-                                height: 25,
-                                child: PButton(
-                                    onTap: () {
-                                      controller.clusterByYear();
-                                      Get.back();
-                                    },
-                                    text: 'Year'),
-                              ),
-                              const SizedBox(height: 10),
-                              SizedBox(
-                                height: 25,
-                                child: PButton(
-                                  onTap: () {
-                                    controller.clusterByStation();
-                                    Get.back();
-                                  },
-                                  text: 'Station',
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              SizedBox(
-                                height: 25,
-                                child: PButton(
-                                  onTap: () async {
-                                    await controller.kmeansClustering();
-                                    Get.back();
-                                  },
-                                  text: 'Automatic',
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              SizedBox(
-                                height: 25,
-                                child: PButton(
-                                  onTap: () {
-                                    controller.manualCluster();
-                                    Get.back();
-                                  },
-                                  text: 'Manual',
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              SizedBox(
-                                height: 25,
-                                child: PButton(
-                                  fillColor: pColorError,
-                                  onTap: () {
-                                    controller.clearClusters();
-                                    Get.back();
-                                  },
-                                  text: 'Clear all',
-                                ),
-                              ),
-                            ],
-                          )));
+                                  const SizedBox(height: 10),
+                                  Visibility(
+                                    visible: controller.granularity !=
+                                        Granularity.annual,
+                                    child: SizedBox(
+                                      height: 25,
+                                      child: PButton(
+                                        onTap: () {
+                                          controller.clusterByMonth();
+                                          Get.back();
+                                        },
+                                        text: 'Month',
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  SizedBox(
+                                    height: 25,
+                                    child: PButton(
+                                        onTap: () {
+                                          controller.clusterByYear();
+                                          Get.back();
+                                        },
+                                        text: 'Year'),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  SizedBox(
+                                    height: 25,
+                                    child: PButton(
+                                      onTap: () {
+                                        controller.clusterByStation();
+                                        Get.back();
+                                      },
+                                      text: 'Station',
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  SizedBox(
+                                    height: 25,
+                                    child: PButton(
+                                      onTap: () async {
+                                        await controller.kmeansClustering();
+                                        Get.back();
+                                      },
+                                      text: 'Automatic',
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  SizedBox(
+                                    height: 25,
+                                    child: PButton(
+                                      onTap: () {
+                                        controller.manualCluster();
+                                        Get.back();
+                                      },
+                                      text: 'Manual',
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  SizedBox(
+                                    height: 25,
+                                    child: PButton(
+                                      fillColor: pColorError,
+                                      onTap: () {
+                                        controller.clearClusters();
+                                        Get.back();
+                                      },
+                                      text: 'Clear all',
+                                    ),
+                                  ),
+                                ],
+                              )));
                         },
                       ),
                       ActionButton(

@@ -21,7 +21,7 @@ class MenuView extends GetView<MenuController> {
         color: pColorPrimary,
         alignment: Alignment.center,
         child: Container(
-          height: 600,
+          height: 700,
           width: 1250,
           child: PCard(
             color: pColorScaffold,
