@@ -74,12 +74,12 @@ class _OutliersChartState extends State<OutliersChart> {
       borderColors[pollutant.id] = bColors;
       radius[pollutant.id] = radiusList;
       minValues[pollutant.id] = [
-        List<double>.from(coords[0]).reduce(min),
-        List<double>.from(coords[1]).reduce(min)
+        List<double>.from(coords[1]).reduce(min),
+        List<double>.from(coords[0]).reduce(min)
       ];
       maxValues[pollutant.id] = [
-        List<double>.from(coords[0]).reduce(max),
-        List<double>.from(coords[1]).reduce(max)
+        List<double>.from(coords[1]).reduce(max),
+        List<double>.from(coords[0]).reduce(max)
       ];
     }
   }

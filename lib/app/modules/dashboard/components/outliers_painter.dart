@@ -50,8 +50,8 @@ class OutliersPainter extends CustomPainter {
           ..style = PaintingStyle.fill;
 
         Offset coordinates = computeCanvasCoordinates(
-          coords[0][i],
           coords[1][i],
+          coords[0][i],
           _width,
           _height,
         );
@@ -80,8 +80,8 @@ class OutliersPainter extends CustomPainter {
           ..style = PaintingStyle.fill;
 
         Offset coordinates = computeCanvasCoordinates(
-          coords[0][i],
           coords[1][i],
+          coords[0][i],
           _width,
           _height,
         );

@@ -426,13 +426,11 @@ class DatasetController extends GetxController {
       _stations.add(station);
     }
 
-    print(stationsMap);
     for (var i = 0; i < n; i++) {
       // DateTime date = DateTime.parse(dateLabels[i]);
       WindowModel window = windowModels[i];
       // StationModel station =
       //     _stations.firstWhere((station) => station.id == window.stationId);
-      print(window.stationId);
       StationModel station = stationsMap[window.stationId]!;
       windowsStations[window.id] = station;
     }
@@ -458,7 +456,7 @@ class DatasetController extends GetxController {
       _points!.add(IPoint(
         data: windowModels[i],
         coordinates: Offset(coords[i][0], coords[i][1]),
-        localCoordinates: Offset(coordsOut[0][i], coordsOut[1][i]),
+        localCoordinates: Offset(coordsOut[1][i], coordsOut[0][i]),
       ));
     }
 
@@ -473,7 +471,7 @@ class DatasetController extends GetxController {
     List<dynamic> coordsOut = await repositoryGetFdaOutliers(pollPos);
 
     for (var i = 0; i < _points!.length; i++) {
-      _points![i].localCoordinates = Offset(coordsOut[0][i], coordsOut[1][i]);
+      _points![i].localCoordinates = Offset(coordsOut[1][i], coordsOut[0][i]);
     }
   }
 
