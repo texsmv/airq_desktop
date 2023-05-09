@@ -5,7 +5,7 @@ class MenuBinding extends Bindings {
   @override
   void dependencies() {
     Get.put(
-      MenuController(),
+      MyMenuController(),
     );
   }
 }

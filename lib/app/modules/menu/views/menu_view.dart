@@ -10,7 +10,7 @@ import 'package:glass_kit/glass_kit.dart';
 import '../controllers/menu_controller.dart';
 import '../components/menu_item.dart';
 
-class MenuView extends GetView<MenuController> {
+class MenuView extends GetView<MyMenuController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -130,7 +130,7 @@ class MenuView extends GetView<MenuController> {
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text('Shape Normalization'),
-                                    GetBuilder<MenuController>(
+                                    GetBuilder<MyMenuController>(
                                       builder: (_) {
                                         return Switch(
                                           value: controller.shapeNormalization,

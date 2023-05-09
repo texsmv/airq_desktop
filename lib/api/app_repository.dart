@@ -112,6 +112,29 @@ Future<List<int>> repositoryClustering(int n_clusters) async {
   return classes;
 }
 
+Future<Map<String, List<int>>> repositoryIaqi(List<String> pollutants) async {
+  final response = await post(Uri.parse("${hostUrl}getIaqis"), body: {
+    'pollutants': jsonEncode(pollutants),
+  });
+
+  dynamic data = jsonDecode(response.body);
+  if (data['status'] == 'ERROR') {
+    return {};
+  } else {
+    Map<String, List<int>> map = {};
+    List<String> keys = List.from(data.keys);
+
+    for (var key in keys) {
+      if (key != 'status') {
+        List<int> values = List<int>.from(data[key]);
+        map[key] = values;
+      }
+    }
+
+    return map;
+  }
+}
+
 Future<List<dynamic>> repositoryGetProjection({
   required double delta,
   required double beta,

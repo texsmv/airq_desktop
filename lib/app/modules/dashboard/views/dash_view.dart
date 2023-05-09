@@ -1,5 +1,6 @@
 import 'package:airq_ui/app/constants/colors.dart';
 import 'package:airq_ui/app/constants/constants.dart';
+import 'package:airq_ui/app/modules/dashboard/components/aqi_chart.dart';
 import 'package:airq_ui/app/modules/dashboard/components/cfeatures_chart.dart';
 import 'package:airq_ui/app/modules/dashboard/components/outliers_chart.dart';
 import 'package:airq_ui/app/modules/dashboard/components/selection_summary.dart';
@@ -211,11 +212,6 @@ class DashView extends GetView<DashboardController> {
                                                           controller.ipoints,
                                                     )
                                                   : ClusterMeans(),
-                                              // : StdChart(
-                                              //   minValue: controller.yMinValue,
-                                              //   maxValue: controller.yMaxValue,
-                                              //   ipoints: controller.ipoints,
-                                              // ),
                                             ),
                                           ),
                                         ),
@@ -224,6 +220,14 @@ class DashView extends GetView<DashboardController> {
                                   ),
                                 ),
                               ),
+                              const SizedBox(width: pCardSpace),
+                              PCard(
+                                child: AspectRatio(
+                                  aspectRatio: 1,
+                                  child: AqiChart(),
+                                ),
+                              ),
+
                               const SizedBox(width: pCardSpace),
 
                               // ** Pollutant outliers
@@ -240,25 +244,17 @@ class DashView extends GetView<DashboardController> {
                                       xAxisLabel: 'Shape',
                                       yDivisions: 5,
                                       xDivisions: 2,
-                                      child: AqiSections(
-                                        showIaqi: uiHasIaqi(
-                                            controller.projectedPollutant.name),
-                                        minValue: 0,
-                                        maxValue: uiPollutant2Aqi(
-                                            controller.yMaxValue,
-                                            controller.projectedPollutant.name),
-                                        child: Obx(
-                                          () => IProjection(
-                                            controller: controller
-                                                .localProjectionController,
-                                            points: controller.globalPoints!,
-                                            onPointsSelected:
-                                                controller.onPointsSelected,
-                                            onPointPicked:
-                                                controller.onPointPicked,
-                                            isLocal: true,
-                                            pickMode: controller.pickMode.value,
-                                          ),
+                                      child: Obx(
+                                        () => IProjection(
+                                          controller: controller
+                                              .localProjectionController,
+                                          points: controller.globalPoints!,
+                                          onPointsSelected:
+                                              controller.onPointsSelected,
+                                          onPointPicked:
+                                              controller.onPointPicked,
+                                          isLocal: true,
+                                          pickMode: controller.pickMode.value,
                                         ),
                                       ),
                                     ),

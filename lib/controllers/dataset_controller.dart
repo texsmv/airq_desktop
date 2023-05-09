@@ -77,6 +77,16 @@ class DatasetController extends GetxController {
     super.onInit();
   }
 
+  void getMeanAqiPerStation() {
+    Map<int, double> values = {};
+    for (var i = 0; i < selectedStations.length; i++) {
+      values[selectedStations[i].id] = 0;
+    }
+    for (var i = 0; i < globalPoints!.length; i++) {
+      values[globalPoints![i].data.stationId] = 0;
+    }
+  }
+
   Future<void> loadDatasets() async {
     _datasets = await repositoryDatasets();
     // List<dynamic> items = jsonDecode(data['data']);
@@ -461,6 +471,36 @@ class DatasetController extends GetxController {
     }
 
     _projectedPollutant = _pollutants.first;
+
+    await loadIaqis();
+  }
+
+  Future<void> loadIaqis() async {
+    Map<String, List<int>> data = await repositoryIaqi(
+        List.generate(pollutants.length, (index) => pollutants[index].name));
+
+    if (data.isNotEmpty) {
+      aqi = data['aqi'];
+      iaqis = {};
+      List<int> pollIds = [];
+      for (var key in data.keys) {
+        if (key != 'aqi') {
+          PollutantModel poll =
+              pollutants.firstWhere((element) => element.name == key);
+          pollIds.add(poll.id);
+          iaqis![poll.id] = data[key]!;
+        }
+      }
+
+      for (var i = 0; i < _points!.length; i++) {
+        _points![i].data.aqi = aqi![i];
+        Map<int, int> iaqi = {};
+        for (var key in pollIds) {
+          iaqi[key] = iaqis![key]![i];
+        }
+        _points![i].data.iaqis = iaqi;
+      }
+    }
   }
 
   Future<void> selectPollutant(PollutantModel pollutantModel) async {
@@ -766,6 +806,8 @@ class DatasetController extends GetxController {
   late Map<int, double> _maxValue;
   Map<int, List<double>>? contFeatMap;
   Map<int, StationModel> stationsMap = {};
+  Map<int, List<int>>? iaqis;
+  List<int>? aqi;
 }
 
 enum Granularity {

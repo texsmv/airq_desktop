@@ -7,7 +7,7 @@ import 'package:get/get.dart';
 
 import '../../../widgets/common/pbutton.dart';
 
-class MyMenuItem extends GetView<MenuController> {
+class MyMenuItem extends GetView<MyMenuController> {
   final DatasetModel dataset;
   const MyMenuItem({Key? key, required this.dataset}) : super(key: key);
 
@@ -34,7 +34,7 @@ class MyMenuItem extends GetView<MenuController> {
             flex: 1,
             child: Container(
               alignment: Alignment.center,
-              child: GetBuilder<MenuController>(
+              child: GetBuilder<MyMenuController>(
                 builder: (_) => Wrap(
                   spacing: 8,
                   children: List.generate(
@@ -68,7 +68,7 @@ class MyMenuItem extends GetView<MenuController> {
             flex: 2,
             child: Container(
               alignment: Alignment.center,
-              child: GetBuilder<MenuController>(
+              child: GetBuilder<MyMenuController>(
                 builder: (_) => Wrap(
                   spacing: 8,
                   runSpacing: 2,

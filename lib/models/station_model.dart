@@ -1,6 +1,7 @@
 class StationModel {
   late int id;
   late String name;
+  double? aqi;
   double? latitude;
   double? longitude;
 

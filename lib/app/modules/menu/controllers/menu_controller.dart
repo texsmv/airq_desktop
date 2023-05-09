@@ -12,7 +12,7 @@ import 'package:get/get.dart';
 
 import '../../../widgets/common/pbutton.dart';
 
-class MenuController extends GetxController {
+class MyMenuController extends GetxController {
   Map<int, List<String>> selectedPollutants = {};
   Map<int, List<String>> selectedStations = {};
   List<DatasetModel> get datasets => datasetController.datasets;

@@ -44,15 +44,6 @@ class _StationsMapState extends State<StationsMap> {
             'accessToken': mapBoxAccessToken,
           },
         ),
-        // TileLayerOptions(
-        //   wmsOptions: WMSTileLayerOptions(
-        //     // Set the WMS layer's CRS too
-        //     // crs: epsg3413CRS,
-        //     baseUrl:
-        //         'https://www.gebco.net/data_and_products/gebco_web_services/north_polar_view_wms/mapserv?',
-        //     layers: ['gebco_north_polar_view'],
-        //   ),
-        // ),
         MarkerLayerOptions(
           markers: _markers(),
         ),

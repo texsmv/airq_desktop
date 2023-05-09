@@ -12,6 +12,9 @@ class WindowModel {
 
   late int stationId;
 
+  Map<int, int> iaqis = {};
+  int aqi = -1;
+
   Map<int, List<double>> values = {};
   Map<int, List<double>> smoothedValues = {};
 
