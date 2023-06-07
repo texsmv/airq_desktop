@@ -472,7 +472,7 @@ class DatasetController extends GetxController {
 
     _projectedPollutant = _pollutants.first;
 
-    await loadIaqis();
+    // await loadIaqis();
   }
 
   Future<void> loadIaqis() async {
