@@ -197,6 +197,11 @@ class DashboardController extends GetxController {
     update();
   }
 
+  void clusterByOutlier() {
+    datasetController.clusterByOutlier();
+    update();
+  }
+
   void clearClusters() {
     datasetController.clearClusters();
 

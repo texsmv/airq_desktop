@@ -221,12 +221,12 @@ class DashView extends GetView<DashboardController> {
                                 ),
                               ),
                               const SizedBox(width: pCardSpace),
-                              PCard(
-                                child: AspectRatio(
-                                  aspectRatio: 1,
-                                  child: AqiChart(),
-                                ),
-                              ),
+                              // PCard(
+                              //   child: AspectRatio(
+                              //     aspectRatio: 1,
+                              //     child: AqiChart(),
+                              //   ),
+                              // ),
 
                               const SizedBox(width: pCardSpace),
 

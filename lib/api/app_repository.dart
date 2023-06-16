@@ -177,7 +177,7 @@ Future<List<dynamic>> repositorySpatioTemporalSettings({
   return coords;
 }
 
-Future<List<dynamic>> repositoryGetFdaOutliers(int pos) async {
+Future<Map<String, List<dynamic>>> repositoryGetFdaOutliers(int pos) async {
   final response = await post(
     Uri.parse("${hostUrl}getFdaOutliers"),
     body: {
@@ -189,7 +189,8 @@ Future<List<dynamic>> repositoryGetFdaOutliers(int pos) async {
 
   List<dynamic> cmean = data['cmean'];
   List<dynamic> cvar = data['cvar'];
+  List<dynamic> outliers = data['outliers'];
   List<dynamic> coords = [cmean, cvar];
 
-  return coords;
+  return {'coords': coords, 'outliers': outliers};
 }

@@ -127,6 +127,16 @@ class DashboardView extends GetView<DashboardController> {
                                       text: 'Automatic',
                                     ),
                                   ),
+                                  SizedBox(
+                                    height: 25,
+                                    child: PButton(
+                                      onTap: () {
+                                        controller.clusterByOutlier();
+                                        Get.back();
+                                      },
+                                      text: 'Outliers',
+                                    ),
+                                  ),
                                   const SizedBox(height: 10),
                                   SizedBox(
                                     height: 25,
@@ -275,6 +285,13 @@ class DashboardView extends GetView<DashboardController> {
             child: PButton(
               onTap: controller.kmeansClustering,
               text: 'Automatic',
+            ),
+          ),
+          SizedBox(
+            height: 25,
+            child: PButton(
+              onTap: controller.clusterByOutlier,
+              text: 'Outliers',
             ),
           ),
           SizedBox(

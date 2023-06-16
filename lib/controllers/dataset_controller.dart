@@ -451,23 +451,31 @@ class DatasetController extends GetxController {
       beta: pBeta,
     );
 
-    List<dynamic> coordsOut = await repositoryGetFdaOutliers(0);
+    // List<dynamic> coordsOut = await repositoryGetFdaOutliers(0);
+    var map = await repositoryGetFdaOutliers(0);
+    List<dynamic> coordsOut = map['coords']!;
+    List<dynamic> currOutliers = map['outliers']!;
 
     for (var i = 0; i < _pollutants.length; i++) {
       int pollPos =
           _pollutants.indexWhere((element) => element.id == _pollutants[i].id);
-      fdaOutliers[_pollutants[i].id] = await repositoryGetFdaOutliers(pollPos);
+      var map = await repositoryGetFdaOutliers(pollPos);
+      fdaOutliers[_pollutants[i].id] = map['coords']!;
+      List<dynamic> outliers = map['outliers']!;
+      //  = await repositoryGetFdaOutliers(pollPos);
     }
 
     _points = [];
     for (var i = 0; i < n; i++) {
       windowModels[i].global_x = coords[i][0];
       windowModels[i].global_y = coords[i][1];
-      _points!.add(IPoint(
+      IPoint point = IPoint(
         data: windowModels[i],
         coordinates: Offset(coords[i][0], coords[i][1]),
         localCoordinates: Offset(coordsOut[1][i], coordsOut[0][i]),
-      ));
+      );
+      point.isOutlier = currOutliers[i];
+      _points!.add(point);
     }
 
     _projectedPollutant = _pollutants.first;
@@ -508,10 +516,13 @@ class DatasetController extends GetxController {
 
     int pollPos =
         _pollutants.indexWhere((element) => element.id == pollutantModel.id);
-    List<dynamic> coordsOut = await repositoryGetFdaOutliers(pollPos);
+    var map = await repositoryGetFdaOutliers(pollPos);
+    List<dynamic> coordsOut = map['coords']!;
+    List<bool> outliers = List<bool>.from(map['outliers']!);
 
     for (var i = 0; i < _points!.length; i++) {
       _points![i].localCoordinates = Offset(coordsOut[1][i], coordsOut[0][i]);
+      _points![i].isOutlier = outliers[i];
     }
   }
 
@@ -675,6 +686,29 @@ class DatasetController extends GetxController {
     for (var i = 0; i < points.length; i++) {
       var point = points[i];
       String clusterId = days[point.data.beginDate.weekday]!;
+      point.cluster = clusterId;
+      _clusters[clusterId]!.add(point);
+    }
+
+    _createClusterColors();
+  }
+
+  void clusterByOutlier() {
+    _resetClusters();
+    List<IPoint> points = _points!;
+    Map<bool, String> modes = {
+      false: 'Normal',
+      true: 'Outlier',
+    };
+    // for (var i = 0; i <= 1; i++) {
+    //   _clusters[modes[i]!] = [];
+    // }
+    _clusters[modes[false]!] = [];
+    _clusters[modes[true]!] = [];
+
+    for (var i = 0; i < points.length; i++) {
+      var point = points[i];
+      String clusterId = modes[point.isOutlier]!;
       point.cluster = clusterId;
       _clusters[clusterId]!.add(point);
     }

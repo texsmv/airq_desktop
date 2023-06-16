@@ -18,6 +18,7 @@ class IPoint {
   /// -1 means it's an outlier
   String? cluster;
 
+  bool isOutlier = false;
   bool selected = false;
   bool isHighlighted = false;
   bool withinFilter = true;
