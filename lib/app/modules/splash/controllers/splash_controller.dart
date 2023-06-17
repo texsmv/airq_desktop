@@ -10,12 +10,14 @@ class SplashController extends GetxController {
   }
 
   Future<void> _initSettings() async {
+    print('Loading settings...');
     await datasetController.loadDatasets();
 
     route();
   }
 
   void route() {
+    print('routing...');
     Get.offAllNamed(Routes.MENU);
   }
 

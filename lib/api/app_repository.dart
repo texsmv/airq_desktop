@@ -139,7 +139,7 @@ Future<List<dynamic>> repositoryGetProjection({
   required double delta,
   required double beta,
   required List<int> pollutantPositions,
-  int neighbors = 15,
+  int neighbors = 5,
 }) async {
   final response = await post(
     Uri.parse("${hostUrl}getProjection"),
@@ -157,7 +157,7 @@ Future<List<dynamic>> repositoryGetProjection({
   return coords;
 }
 
-Future<List<dynamic>> repositorySpatioTemporalSettings({
+Future<List<dynamic>> repositorySpatioTemporalSetProtings({
   required double delta,
   required double beta,
   int neighbors = 15,

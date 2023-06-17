@@ -55,7 +55,7 @@ class MultiChartPainter extends CustomPainter {
     if (dashboardController.showShape) {
       values = model.data.smoothedValues[pollutant.id]!;
     } else {
-      values = model.data.values[pollutant.id]!;
+      values = model.data.smoothedValues[pollutant.id]!;
     }
 
     double value = min(values[0], maxValue);

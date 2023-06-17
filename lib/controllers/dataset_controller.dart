@@ -101,16 +101,6 @@ class DatasetController extends GetxController {
     Map<String, List<dynamic>> map =
         await repositoryCorrelationMatrix(positions);
     return map;
-    // List<double> minv = List<double>.from(map['minv']!);
-    // List<double> maxv = List<double>.from(map['maxv']!);
-    // List<double> meanv = List<double>.from(map['meanv']!);
-    // List<double> stdv = List<double>.from(map['stdv']!);
-    // print(minv);
-    // print(maxv);
-    // print(meanv);
-    // print(stdv);
-
-    // return map['corrMatrix']!;
   }
 
   Future<void> projectSeries() async {

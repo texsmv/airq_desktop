@@ -37,7 +37,7 @@ class _StdChartState extends State<StdChart> {
   List<dynamic> get allValues {
     _allValues = null;
     _allValues ??= List<dynamic>.generate(widget.ipoints.length,
-        (index) => widget.ipoints[index].data.smoothedValues[pollutant.id]!);
+        (index) => widget.ipoints[index].data.values[pollutant.id]!);
     return _allValues!;
   }
 
