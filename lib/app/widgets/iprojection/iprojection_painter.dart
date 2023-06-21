@@ -108,14 +108,18 @@ class IProjectionPainter extends CustomPainter {
     drawMark(isLocal ? point.canvasLocalCoordinates : point.canvasCoordinates,
         radius, fillPaint, point.isOutlier);
     if (point.selected || isHighlighted) {
+      // drawMark(isLocal ? point.canvasLocalCoordinates : point.canvasCoordinates,
+      //     radius, point.isOutlier ? fillPaint : borderPaint, point.isOutlier);
       drawMark(isLocal ? point.canvasLocalCoordinates : point.canvasCoordinates,
-          radius, point.isOutlier ? fillPaint : borderPaint, point.isOutlier);
+          radius, borderPaint, point.isOutlier,
+          isize: 6);
     }
   }
 
-  void drawMark(Offset offset, double radius, Paint paint, bool isOutlier) {
+  void drawMark(Offset offset, double radius, Paint paint, bool isOutlier,
+      {double isize = 8}) {
     if (isOutlier) {
-      double isize = 8;
+      // double isize = 8;
       _canvas.drawLine(offset, offset + Offset(isize, isize),
           paint..strokeWidth = radius / 3);
       _canvas.drawLine(offset + Offset(isize, 0), offset + Offset(0, isize),

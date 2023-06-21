@@ -390,8 +390,8 @@ class DatasetController extends GetxController {
           List<dynamic>.from(data['proc_windows'][pollKeys[i]]);
       List<double> windowsDPrec = List<double>.from(windows);
 
-      _maxValue[i] = windowsD.reduce(max);
-      _minValue[i] = windowsD.reduce(min);
+      _maxValue[i] = windowsDPrec.reduce(max);
+      _minValue[i] = windowsDPrec.reduce(min);
 
       windows = windows.reshape([
         n,

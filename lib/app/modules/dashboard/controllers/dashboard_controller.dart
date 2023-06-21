@@ -344,6 +344,7 @@ class DashboardController extends GetxController {
       int monthIndex = window.beginDate.month - 1;
       int yearIndex = window.beginDate.year - firstYear;
 
+      // TODO check this change
       bool withinDayRange = dayIndex >= dayBegin && dayIndex <= dayEnd;
       bool withinMonthRange =
           monthIndex >= monthBegin && monthIndex <= monthEnd;

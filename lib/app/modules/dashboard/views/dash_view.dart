@@ -159,20 +159,22 @@ class DashView extends GetView<DashboardController> {
                                                   controller.xMaxValueSeries,
                                               xMinValue:
                                                   controller.xMinValueSeries,
-                                              yMaxValue:
-                                                  controller.ts_visualization ==
-                                                          0
-                                                      ? controller.yMaxValue
-                                                      : datasetController
-                                                              .maxMeansValue ??
-                                                          1,
-                                              yMinValue:
-                                                  controller.ts_visualization ==
-                                                          0
-                                                      ? controller.yMinValue
-                                                      : datasetController
-                                                              .minMeansValue ??
-                                                          0,
+                                              yMaxValue: controller.yMaxValue,
+                                              // yMaxValue: controller.yMaxValue,
+                                              // controller.ts_visualization ==
+                                              //         0
+                                              //     ? controller.yMaxValue
+                                              //     : datasetController
+                                              //             .maxMeansValue ??
+                                              //         1,
+                                              yMinValue: controller.yMinValue,
+
+                                              // controller.ts_visualization ==
+                                              //         0
+                                              //     ? controller.yMinValue
+                                              //     : datasetController
+                                              //             .minMeansValue ??
+                                              //         0,
                                               yAxisLabel: 'Magnitude',
                                               xAxisLabel: 'Time',
                                               yDivisions: 5,
@@ -204,6 +206,10 @@ class DashView extends GetView<DashboardController> {
                                                               : controller
                                                                   .yMinValue,
                                                       maxValue:
+                                                          // controller.showShape
+                                                          //     ? std_max
+                                                          //     : controller
+                                                          //         .yMaxValue,
                                                           controller.showShape
                                                               ? std_max
                                                               : controller
