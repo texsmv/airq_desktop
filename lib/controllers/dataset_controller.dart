@@ -113,6 +113,7 @@ class DatasetController extends GetxController {
     List<int> selectedPollutants = await Get.dialog(
       PDialog(
         height: 550,
+        width: 800,
         child: GetBuilder<DatasetController>(
           id: 'dialog',
           builder: (_) => Column(
@@ -161,15 +162,16 @@ class DatasetController extends GetxController {
                 },
               ),
 
-              SizedBox(
-                height: 80,
-                child: Row(children: [
-                  Text('Delta:'),
-                  TextField(
-                    controller: deltaController,
-                  ),
-                ]),
-              ),
+              // SizedBox(
+              //   height: 80,
+              //   width: 200,
+              //   child: Row(children: [
+              //     Text('Delta:'),
+              //     TextField(
+              //       controller: deltaController,
+              //     ),
+              //   ]),
+              // ),
               // const SizedBox(height: 30),
               Spacer(),
               PButton(
@@ -202,16 +204,17 @@ class DatasetController extends GetxController {
       ),
     );
     uiShowLoader();
-    List<dynamic> coords = await repositoryGetProjection(
+    List<bool> filtered =
+        List.generate(_points!.length, (index) => _points![index].withinFilter);
+    List<dynamic> coords = await repositoryGetCustomProjection(
       pollutantPositions: selectedPollutants,
       neighbors: neighbors,
-      beta: double.parse(betaController.text),
-      delta: double.parse(deltaController.text),
+      filteredWindows: filtered,
     );
-
-    for (var i = 0; i < _points!.length; i++) {
-      _points![i].coordinates = Offset(coords[i][0], coords[i][1]);
-    }
+    print(coords);
+    // for (var i = 0; i < _points!.length; i++) {
+    //   _points![i].coordinates = Offset(coords[i][0], coords[i][1]);
+    // }
     uiHideLoader();
     Get.find<DashboardController>().update();
   }
@@ -832,6 +835,7 @@ class DatasetController extends GetxController {
   Map<int, StationModel> stationsMap = {};
   Map<int, List<int>>? iaqis;
   List<int>? aqi;
+  List<IPoint>? subset;
 }
 
 enum Granularity {

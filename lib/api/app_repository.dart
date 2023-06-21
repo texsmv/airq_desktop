@@ -157,6 +157,26 @@ Future<List<dynamic>> repositoryGetProjection({
   return coords;
 }
 
+Future<List<dynamic>> repositoryGetCustomProjection({
+  required List<int> pollutantPositions,
+  required List<bool> filteredWindows,
+  int neighbors = 5,
+}) async {
+  final response = await post(
+    Uri.parse("${hostUrl}getCustomProjection"),
+    body: {
+      'pollutantsPositions': jsonEncode(pollutantPositions),
+      'neighbors': jsonEncode(neighbors),
+      'itemsPositions': jsonEncode(filteredWindows)
+    },
+  );
+
+  List<dynamic> coords = jsonDecode(response.body)['coords'];
+  coords = coords.reshape([(coords.length / 2).floor(), 2]);
+
+  return coords;
+}
+
 Future<List<dynamic>> repositorySpatioTemporalSetProtings({
   required double delta,
   required double beta,

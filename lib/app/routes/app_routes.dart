@@ -7,6 +7,7 @@ abstract class Routes {
   static const MENU = _Paths.MENU;
   static const SPLASH = _Paths.SPLASH;
   static const DASHBOARD = _Paths.DASHBOARD;
+  static const SUBSET = _Paths.SUBSET;
 }
 
 abstract class _Paths {
@@ -15,4 +16,5 @@ abstract class _Paths {
   static const MENU = '/menu';
   static const SPLASH = '/splash';
   static const DASHBOARD = '/dashboard';
+  static const SUBSET = '/subset';
 }
