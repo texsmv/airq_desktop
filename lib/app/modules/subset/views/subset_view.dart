@@ -4,21 +4,23 @@ import 'package:get/get.dart';
 
 import '../controllers/subset_controller.dart';
 
-class SubsetView extends GetView<SubsetController> {
-  const SubsetView({Key? key}) : super(key: key);
+class SubsetView extends StatefulWidget {
+  const SubsetView({super.key});
+
+  @override
+  State<SubsetView> createState() => _SubsetViewState();
+}
+
+class _SubsetViewState extends State<SubsetView> {
+  // SubsetController controller = Get.put();
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('SubsetView'),
-        centerTitle: true,
-      ),
-      body: const Center(
-        child: Text(
-          'SubsetView is working',
-          style: TextStyle(fontSize: 20),
-        ),
-      ),
-    );
+    return Container();
   }
 }

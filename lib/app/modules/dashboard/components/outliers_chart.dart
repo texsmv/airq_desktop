@@ -129,6 +129,7 @@ class _OutliersChartState extends State<OutliersChart> {
                     height: double.infinity,
                     child: CustomPaint(
                       painter: OutliersPainter(
+                        saveCanvasCoords: false,
                         ipoints: datasetController.globalPoints!,
                         borderColors: borderColors[pollutant.id]!,
                         fillColors: fillColors[pollutant.id]!,

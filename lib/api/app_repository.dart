@@ -158,6 +158,8 @@ Future<List<dynamic>> repositoryGetProjection({
 }
 
 Future<List<dynamic>> repositoryGetCustomProjection({
+  required double delta,
+  required double beta,
   required List<int> pollutantPositions,
   required List<bool> filteredWindows,
   int neighbors = 5,
@@ -167,7 +169,9 @@ Future<List<dynamic>> repositoryGetCustomProjection({
     body: {
       'pollutantsPositions': jsonEncode(pollutantPositions),
       'neighbors': jsonEncode(neighbors),
-      'itemsPositions': jsonEncode(filteredWindows)
+      'itemsPositions': jsonEncode(filteredWindows),
+      'delta': jsonEncode(delta),
+      'beta': jsonEncode(beta),
     },
   );
 

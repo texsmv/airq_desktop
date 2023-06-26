@@ -5,11 +5,14 @@ import 'dart:math';
 import 'package:airq_ui/api/app_repository.dart';
 import 'package:airq_ui/app/constants/colors.dart';
 import 'package:airq_ui/app/list_shape_ext.dart';
+import 'package:airq_ui/app/modules/dashboard/components/outliers_painter.dart';
 import 'package:airq_ui/app/modules/dashboard/controllers/dashboard_controller.dart';
+import 'package:airq_ui/app/modules/subset/controllers/subset_controller.dart';
 import 'package:airq_ui/app/ui_utils.dart';
 import 'package:airq_ui/app/widgets/common/pbutton.dart';
 import 'package:airq_ui/app/widgets/common/pdialog.dart';
 import 'package:airq_ui/app/widgets/iprojection/ipoint.dart';
+import 'package:airq_ui/app/widgets/subset/subset_projection.dart';
 import 'package:airq_ui/models/dataset_model.dart';
 import 'package:airq_ui/models/pollutant_model.dart';
 import 'package:airq_ui/models/station_model.dart';
@@ -18,7 +21,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_state_manager/get_state_manager.dart';
 import 'package:intl/intl.dart';
 import 'package:random_color/random_color.dart';
 
@@ -161,18 +163,32 @@ class DatasetController extends GetxController {
                   );
                 },
               ),
-
-              // SizedBox(
-              //   height: 80,
-              //   width: 200,
-              //   child: Row(children: [
-              //     Text('Delta:'),
-              //     TextField(
-              //       controller: deltaController,
-              //     ),
-              //   ]),
-              // ),
-              // const SizedBox(height: 30),
+              SizedBox(
+                height: 80,
+                width: 200,
+                child: Row(children: [
+                  Text('Delta:'),
+                  Expanded(
+                    child: TextField(
+                      controller: deltaController,
+                    ),
+                  ),
+                ]),
+              ),
+              const SizedBox(height: 30),
+              SizedBox(
+                height: 80,
+                width: 200,
+                child: Row(children: [
+                  Text('Beta:'),
+                  Expanded(
+                    child: TextField(
+                      controller: betaController,
+                    ),
+                  ),
+                ]),
+              ),
+              const SizedBox(height: 30),
               Spacer(),
               PButton(
                 text: 'Get projection',
@@ -210,13 +226,14 @@ class DatasetController extends GetxController {
       pollutantPositions: selectedPollutants,
       neighbors: neighbors,
       filteredWindows: filtered,
+      beta: double.parse(betaController.text),
+      delta: double.parse(deltaController.text),
     );
-    print(coords);
-    // for (var i = 0; i < _points!.length; i++) {
-    //   _points![i].coordinates = Offset(coords[i][0], coords[i][1]);
-    // }
+    gerateSubset(coords);
+
     uiHideLoader();
     Get.find<DashboardController>().update();
+    showSubset();
   }
 
   // Future<void> changeSpatioTemporalSettings() async {
@@ -794,6 +811,35 @@ class DatasetController extends GetxController {
     _clusterColors[clusterId] = color;
 
     update();
+  }
+
+  void gerateSubset(List<dynamic> coords) {
+    List<IPoint> spoints = [];
+    int coord_pos = 0;
+    for (var i = 0; i < _points!.length; i++) {
+      if (_points![i].withinFilter) {
+        IPoint point = IPoint(
+          data: _points![i].data,
+          coordinates: Offset(coords[coord_pos][0], coords[coord_pos][1]),
+          localCoordinates: Offset(coords[coord_pos][0], coords[coord_pos][1]),
+        );
+        coord_pos++;
+        spoints.add(point);
+      }
+    }
+    subset = spoints;
+  }
+
+  void showSubset() async {
+    print('Show subset');
+    List<double> xcoords = List<double>.generate(
+        subset!.length, (index) => subset![index].coordinates.dx);
+    List<double> ycoords = List<double>.generate(
+        subset!.length, (index) => subset![index].coordinates.dy);
+
+    await Get.dialog(
+      PDialog(width: 1600, height: 700, child: SubsectProjection()),
+    );
   }
 
   List<List<double>>? contrastiveFeatures;

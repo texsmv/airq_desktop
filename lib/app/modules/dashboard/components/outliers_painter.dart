@@ -15,6 +15,7 @@ class OutliersPainter extends CustomPainter {
   final double maxX;
   final double minY;
   final double maxY;
+  final bool saveCanvasCoords;
   OutliersPainter({
     required this.coords,
     required this.fillColors,
@@ -25,6 +26,7 @@ class OutliersPainter extends CustomPainter {
     required this.minX,
     required this.maxX,
     required this.ipoints,
+    required this.saveCanvasCoords,
   });
 
   late Canvas _canvas;
@@ -55,6 +57,10 @@ class OutliersPainter extends CustomPainter {
           _width,
           _height,
         );
+
+        if (saveCanvasCoords) {
+          ipoints[i].canvasCoordinates = coordinates;
+        }
 
         _canvas.drawCircle(
           coordinates,
