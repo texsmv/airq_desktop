@@ -73,17 +73,52 @@ class DashView extends GetView<DashboardController> {
                               PCard(
                                 child: AspectRatio(
                                   aspectRatio: 1,
-                                  child: GetBuilder<DashboardController>(
-                                    builder: (_) => Obx(
-                                      () => IProjection(
-                                        controller:
-                                            controller.projectionController,
-                                        points: controller.globalPoints!,
-                                        onPointsSelected:
-                                            controller.onPointsSelected,
-                                        onPointPicked: controller.onPointPicked,
-                                        isLocal: false,
-                                        pickMode: controller.pickMode.value,
+                                  child: GetBuilder<DatasetController>(
+                                    builder: (_) =>
+                                        GetBuilder<DashboardController>(
+                                      builder: (_) => Obx(
+                                        () => Stack(
+                                          children: [
+                                            Positioned.fill(
+                                              child: Visibility(
+                                                visible: !datasetController
+                                                    .show_filtered,
+                                                child: IProjection(
+                                                  controller: controller
+                                                      .projectionController,
+                                                  points:
+                                                      controller.globalPoints!,
+                                                  onPointsSelected: controller
+                                                      .onPointsSelected,
+                                                  onPointPicked:
+                                                      controller.onPointPicked,
+                                                  mode: 0,
+                                                  pickMode:
+                                                      controller.pickMode.value,
+                                                ),
+                                              ),
+                                            ),
+                                            Positioned.fill(
+                                              child: Visibility(
+                                                visible: datasetController
+                                                    .show_filtered,
+                                                child: IProjection(
+                                                  controller: controller
+                                                      .filterProjectionController,
+                                                  points:
+                                                      controller.globalPoints!,
+                                                  onPointsSelected: controller
+                                                      .onPointsSelected,
+                                                  onPointPicked:
+                                                      controller.onPointPicked,
+                                                  mode: 2,
+                                                  pickMode:
+                                                      controller.pickMode.value,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -251,16 +286,47 @@ class DashView extends GetView<DashboardController> {
                                       yDivisions: 5,
                                       xDivisions: 2,
                                       child: Obx(
-                                        () => IProjection(
-                                          controller: controller
-                                              .localProjectionController,
-                                          points: controller.globalPoints!,
-                                          onPointsSelected:
-                                              controller.onPointsSelected,
-                                          onPointPicked:
-                                              controller.onPointPicked,
-                                          isLocal: true,
-                                          pickMode: controller.pickMode.value,
+                                        () => Stack(
+                                          children: [
+                                            Positioned.fill(
+                                              child: Visibility(
+                                                visible: !datasetController
+                                                    .show_filtered,
+                                                child: IProjection(
+                                                  controller: controller
+                                                      .localProjectionController,
+                                                  points:
+                                                      controller.globalPoints!,
+                                                  onPointsSelected: controller
+                                                      .onPointsSelected,
+                                                  onPointPicked:
+                                                      controller.onPointPicked,
+                                                  mode: 1,
+                                                  pickMode:
+                                                      controller.pickMode.value,
+                                                ),
+                                              ),
+                                            ),
+                                            Positioned.fill(
+                                              child: Visibility(
+                                                visible: datasetController
+                                                    .show_filtered,
+                                                child: IProjection(
+                                                  controller: controller
+                                                      .outliersProjectionController,
+                                                  points:
+                                                      controller.globalPoints!,
+                                                  onPointsSelected: controller
+                                                      .onPointsSelected,
+                                                  onPointPicked:
+                                                      controller.onPointPicked,
+                                                  mode: 3,
+                                                  pickMode:
+                                                      controller.pickMode.value,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ),

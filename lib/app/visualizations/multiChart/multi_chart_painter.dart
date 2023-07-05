@@ -49,6 +49,9 @@ class MultiChartPainter extends CustomPainter {
   }
 
   void paintModelLine(IPoint model) {
+    if (datasetController.show_filtered && !model.withinFilter) {
+      return;
+    }
     Path path = Path();
 
     List<double> values;

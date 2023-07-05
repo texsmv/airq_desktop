@@ -9,8 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class IProjectionController extends GetxController {
-  IProjectionController({required this.isLocal});
-  final bool isLocal;
+  IProjectionController({required this.mode});
+  final int mode;
   late List<IPoint> points;
   late List<Offset> currentCoordinates;
   late List<Offset> newCoordinates;
@@ -28,10 +28,7 @@ class IProjectionController extends GetxController {
   double get minX {
     if (_minX != null) return _minX!;
     List<double> xValues = List.generate(
-        points.length,
-        (index) => isLocal
-            ? points[index].localCoordinates.dx
-            : points[index].coordinates.dx);
+        points.length, (index) => points[index].getCoords(mode).dx);
     _minX = xValues.reduce(min);
     return _minX!;
   }
@@ -39,10 +36,7 @@ class IProjectionController extends GetxController {
   double get maxX {
     if (_maxX != null) return _maxX!;
     List<double> xValues = List.generate(
-        points.length,
-        (index) => isLocal
-            ? points[index].localCoordinates.dx
-            : points[index].coordinates.dx);
+        points.length, (index) => points[index].getCoords(mode).dx);
     _maxX = xValues.reduce(max);
     return _maxX!;
   }
@@ -50,10 +44,7 @@ class IProjectionController extends GetxController {
   double get minY {
     if (_minY != null) return _minY!;
     List<double> yValues = List.generate(
-        points.length,
-        (index) => isLocal
-            ? points[index].localCoordinates.dy
-            : points[index].coordinates.dy);
+        points.length, (index) => points[index].getCoords(mode).dy);
     _minY = yValues.reduce(min);
     return _minY!;
   }
@@ -61,10 +52,7 @@ class IProjectionController extends GetxController {
   double get maxY {
     if (_maxY != null) return _maxY!;
     List<double> yValues = List.generate(
-        points.length,
-        (index) => isLocal
-            ? points[index].localCoordinates.dy
-            : points[index].coordinates.dy);
+        points.length, (index) => points[index].getCoords(mode).dy);
     _maxY = yValues.reduce(max);
     return _maxY!;
   }
@@ -133,12 +121,8 @@ class IProjectionController extends GetxController {
     IPoint? nearest = null;
     double minDistance = double.infinity;
     for (var i = 0; i < points.length; i++) {
-      double x = isLocal
-          ? points[i].canvasLocalCoordinates.dx
-          : points[i].canvasCoordinates.dx;
-      double y = isLocal
-          ? points[i].canvasLocalCoordinates.dy
-          : points[i].canvasCoordinates.dy;
+      double x = points[i].getCanvasCoords(mode).dx;
+      double y = points[i].getCanvasCoords(mode).dy;
 
       if (nearest == null) {
         nearest = points[i];
@@ -146,7 +130,6 @@ class IProjectionController extends GetxController {
         double distance = sqrt(pow((pointer.dx - x), 2).toDouble() +
             pow((pointer.dy - y), 2).toDouble());
 
-        print(distance);
         if (minDistance > distance && distance < threshold) {
           nearest = points[i];
           minDistance = distance;
@@ -160,12 +143,8 @@ class IProjectionController extends GetxController {
   List<IPoint> selectPoints() {
     List<IPoint> selected = [];
     for (var i = 0; i < points.length; i++) {
-      double x = isLocal
-          ? points[i].canvasLocalCoordinates.dx
-          : points[i].canvasCoordinates.dx;
-      double y = isLocal
-          ? points[i].canvasLocalCoordinates.dy
-          : points[i].canvasCoordinates.dy;
+      double x = points[i].getCanvasCoords(mode).dx;
+      double y = points[i].getCanvasCoords(mode).dy;
       if ((x >
               min(selectionHorizontalStart,
                   selectionHorizontalStart + selectionWidth)) &&
@@ -197,12 +176,8 @@ class IProjectionController extends GetxController {
       spoints = dashboardController.selectedPoints;
     }
     for (var i = 0; i < spoints.length; i++) {
-      double x = isLocal
-          ? spoints[i].canvasLocalCoordinates.dx
-          : spoints[i].canvasCoordinates.dx;
-      double y = isLocal
-          ? spoints[i].canvasLocalCoordinates.dy
-          : spoints[i].canvasCoordinates.dy;
+      double x = points[i].getCanvasCoords(mode).dx;
+      double y = points[i].getCanvasCoords(mode).dy;
       double dist = sqrt(pow(x - tapX, 2) + pow(y - tapY, 2));
       if (dist < minDist) {
         minDist = dist;
@@ -221,11 +196,9 @@ class IProjectionController extends GetxController {
       if (allowSelection) {
         clearSelection();
         final List<IPoint> selectedPoints = selectPoints();
-        if (onPointsSelected != null) {
-          onPointsSelected(selectedPoints);
-        }
-        selectionBeginPosition = Offset(0, 0);
-        selectionEndPosition = Offset(0, 0);
+        onPointsSelected(selectedPoints);
+        selectionBeginPosition = const Offset(0, 0);
+        selectionEndPosition = const Offset(0, 0);
         allowSelection = true;
       }
     }
@@ -281,15 +254,9 @@ class IProjectionController extends GetxController {
     oldCoordinates = List.generate(points.length, (index) => Offset(0, 0));
     newCoordinates = List.generate(points.length, (index) => Offset(0, 0));
     for (var i = 0; i < points.length; i++) {
-      if (isLocal) {
-        currentCoordinates[i] = points[i].localCoordinates;
-        oldCoordinates[i] = points[i].localCoordinates;
-        newCoordinates[i] = points[i].localCoordinates;
-      } else {
-        currentCoordinates[i] = points[i].coordinates;
-        oldCoordinates[i] = points[i].coordinates;
-        newCoordinates[i] = points[i].coordinates;
-      }
+      currentCoordinates[i] = points[i].getCoords(mode);
+      oldCoordinates[i] = points[i].getCoords(mode);
+      newCoordinates[i] = points[i].getCoords(mode);
     }
     // print("INIT DONE");
     // print(currentCoordinates);
@@ -303,11 +270,8 @@ class IProjectionController extends GetxController {
     _minY = null;
     newCoordinates = List.generate(points.length, (index) => Offset(0, 0));
     for (var i = 0; i < points.length; i++) {
-      if (isLocal) {
-        newCoordinates[i] = points[i].localCoordinates;
-      } else {
-        newCoordinates[i] = points[i].coordinates;
-      }
+      newCoordinates[i] = points[i].getCoords(mode);
+
       oldCoordinates[i] = currentCoordinates[i];
       // if (i == 0) {
       //   print(newCoordinates[i]);

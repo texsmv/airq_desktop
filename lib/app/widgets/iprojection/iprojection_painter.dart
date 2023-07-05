@@ -9,10 +9,22 @@ import 'package:get/get.dart';
 
 class IProjectionPainter extends CustomPainter {
   late IProjectionController controller;
-  IProjectionPainter({required this.isLocal}) {
-    controller = Get.find(tag: isLocal ? 'local' : 'global');
+  IProjectionPainter({required this.mode}) {
+    controller = Get.find(tag: tag);
   }
-  final bool isLocal;
+  final int mode;
+
+  String get tag {
+    if (mode == 0) {
+      return 'global';
+    } else if (mode == 1) {
+      return 'local';
+    } else if (mode == 2) {
+      return 'filter';
+    } else {
+      return 'outlier';
+    }
+  }
 
   late Canvas _canvas;
   late double _width;
@@ -85,11 +97,14 @@ class IProjectionPainter extends CustomPainter {
         controller.currentCoordinates[position].dy,
         _width,
         _height);
-    if (isLocal) {
+    if (mode == 1) {
       point.canvasLocalCoordinates = canvasCoordinates;
-      // print(point.canvasLocalCoordinates);
-    } else {
+    } else if (mode == 0) {
       point.canvasCoordinates = canvasCoordinates;
+    } else if (mode == 2) {
+      point.canvasHighlightedCoordinates = canvasCoordinates;
+    } else {
+      point.canvasOutlierCoordinates = canvasCoordinates;
     }
 
     double radius = 4;
@@ -105,19 +120,32 @@ class IProjectionPainter extends CustomPainter {
       radius = 10;
     }
 
-    drawMark(isLocal ? point.canvasLocalCoordinates : point.canvasCoordinates,
-        radius, fillPaint, point.isOutlier);
+    drawMark(
+      point.getCanvasCoords(mode),
+      radius,
+      fillPaint,
+      point.isOutlier,
+      isFiltered: point.withinFilter,
+    );
     if (point.selected || isHighlighted) {
       // drawMark(isLocal ? point.canvasLocalCoordinates : point.canvasCoordinates,
       //     radius, point.isOutlier ? fillPaint : borderPaint, point.isOutlier);
-      drawMark(isLocal ? point.canvasLocalCoordinates : point.canvasCoordinates,
-          radius, borderPaint, point.isOutlier,
-          isize: 6);
+      drawMark(
+        point.getCanvasCoords(mode),
+        radius,
+        borderPaint,
+        point.isOutlier,
+        isize: 6,
+        isFiltered: point.withinFilter,
+      );
     }
   }
 
   void drawMark(Offset offset, double radius, Paint paint, bool isOutlier,
-      {double isize = 8}) {
+      {double isize = 8, bool isFiltered = false}) {
+    if ((mode == 2 || mode == 3) && !isFiltered) {
+      return;
+    }
     if (isOutlier) {
       // double isize = 8;
       _canvas.drawLine(offset, offset + Offset(isize, isize),

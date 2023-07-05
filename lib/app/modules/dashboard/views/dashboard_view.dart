@@ -179,6 +179,15 @@ class DashboardView extends GetView<DashboardController> {
                           controller.selectionCorrelationMatrix();
                         },
                       ),
+                      ActionButton(
+                        icon: 'assets/icons/statistics_icon.png',
+                        selected: !controller.datasetController.show_filtered,
+                        onTap: () {
+                          controller.datasetController.show_filtered =
+                              !controller.datasetController.show_filtered;
+                          controller.datasetController.update();
+                        },
+                      ),
                     ],
                   ),
                 ),

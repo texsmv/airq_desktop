@@ -157,17 +157,17 @@ Future<List<dynamic>> repositoryGetProjection({
   return coords;
 }
 
-Future<List<dynamic>> repositoryGetCustomProjection({
+Future<Map<String, List<dynamic>>> repositoryGetCustomProjection({
   required double delta,
   required double beta,
-  required List<int> pollutantPositions,
+  required pollutantPosition,
   required List<bool> filteredWindows,
   int neighbors = 5,
 }) async {
   final response = await post(
     Uri.parse("${hostUrl}getCustomProjection"),
     body: {
-      'pollutantsPositions': jsonEncode(pollutantPositions),
+      'pollutantPosition': jsonEncode(pollutantPosition),
       'neighbors': jsonEncode(neighbors),
       'itemsPositions': jsonEncode(filteredWindows),
       'delta': jsonEncode(delta),
@@ -175,10 +175,17 @@ Future<List<dynamic>> repositoryGetCustomProjection({
     },
   );
 
-  List<dynamic> coords = jsonDecode(response.body)['coords'];
+  dynamic data = jsonDecode(response.body);
+
+  List<dynamic> coords = data['coords'];
   coords = coords.reshape([(coords.length / 2).floor(), 2]);
 
-  return coords;
+  List<dynamic> cmean = data['cmean'];
+  List<dynamic> cvar = data['cvar'];
+  List<dynamic> outliers = data['outliers'];
+  List<dynamic> shapeCoords = [cmean, cvar];
+
+  return {'coords': coords, 'outliers': outliers, 'shapeCoords': shapeCoords};
 }
 
 Future<List<dynamic>> repositorySpatioTemporalSetProtings({

@@ -36,8 +36,7 @@ class DatasetController extends GetxController {
   DateTimeRange get dateRange =>
       DateTimeRange(start: _beginDate, end: _endDate);
 
-  // double get minMeansValue => _minValue[_projectedPollutant.id]!;
-  // double get maxMeansValue => _maxValue[_projectedPollutant.id]!;
+  // double get minMeansValue => _minValue[_projectedPollutant.id]!;  // double get maxMeansValue => _maxValue[_projectedPollutant.id]!;
   double? minMeansValue;
   double? maxMeansValue;
   List<StationModel> get selectedStations => stations;
@@ -114,7 +113,7 @@ class DatasetController extends GetxController {
     int neighbors = 10;
     List<int> selectedPollutants = await Get.dialog(
       PDialog(
-        height: 550,
+        height: 850,
         width: 800,
         child: GetBuilder<DatasetController>(
           id: 'dialog',
@@ -222,18 +221,21 @@ class DatasetController extends GetxController {
     uiShowLoader();
     List<bool> filtered =
         List.generate(_points!.length, (index) => _points![index].withinFilter);
-    List<dynamic> coords = await repositoryGetCustomProjection(
-      pollutantPositions: selectedPollutants,
+    Map<String, List<dynamic>> map = await repositoryGetCustomProjection(
+      pollutantPosition: _projectedPollutant.id,
       neighbors: neighbors,
       filteredWindows: filtered,
       beta: double.parse(betaController.text),
       delta: double.parse(deltaController.text),
     );
-    gerateSubset(coords);
+
+    gerateSubset(map);
 
     uiHideLoader();
     Get.find<DashboardController>().update();
-    showSubset();
+    show_filtered = true;
+    update();
+    // showSubset();
   }
 
   // Future<void> changeSpatioTemporalSettings() async {
@@ -483,6 +485,8 @@ class DatasetController extends GetxController {
         data: windowModels[i],
         coordinates: Offset(coords[i][0], coords[i][1]),
         localCoordinates: Offset(coordsOut[1][i], coordsOut[0][i]),
+        highlightedCoordinates: Offset(0, 0),
+        outlierCoordinates: Offset(0, 0),
       );
       point.isOutlier = currOutliers[i];
       _points!.add(point);
@@ -524,15 +528,42 @@ class DatasetController extends GetxController {
   Future<void> selectPollutant(PollutantModel pollutantModel) async {
     _projectedPollutant = pollutantModel;
 
-    int pollPos =
-        _pollutants.indexWhere((element) => element.id == pollutantModel.id);
-    var map = await repositoryGetFdaOutliers(pollPos);
-    List<dynamic> coordsOut = map['coords']!;
-    List<bool> outliers = List<bool>.from(map['outliers']!);
+    if (show_filtered) {
+      List<bool> filtered = List.generate(
+          _points!.length, (index) => _points![index].withinFilter);
+      Map<String, List<dynamic>> map = await repositoryGetCustomProjection(
+        pollutantPosition: _projectedPollutant.id,
+        neighbors: 10,
+        filteredWindows: filtered,
+        beta: 0,
+        delta: 0,
+      );
+      List<dynamic> shapeCoords = map['shapeCoords']!;
+      List<dynamic> currOutliers = map['outliers']!;
+      int coord_pos = 0;
+      for (var i = 0; i < _points!.length; i++) {
+        if (_points![i].withinFilter) {
+          _points![i].outlierCoordinates =
+              Offset(shapeCoords[1][coord_pos], shapeCoords[0][coord_pos]);
+          _points![i].isOutlier = currOutliers[coord_pos];
+          coord_pos++;
+        } else {
+          _points![i].outlierCoordinates =
+              Offset(shapeCoords[1][0], shapeCoords[0][0]);
+          _points![i].isOutlier = false;
+        }
+      }
+    } else {
+      int pollPos =
+          _pollutants.indexWhere((element) => element.id == pollutantModel.id);
+      var map = await repositoryGetFdaOutliers(pollPos);
+      List<dynamic> coordsOut = map['coords']!;
+      List<bool> outliers = List<bool>.from(map['outliers']!);
 
-    for (var i = 0; i < _points!.length; i++) {
-      _points![i].localCoordinates = Offset(coordsOut[1][i], coordsOut[0][i]);
-      _points![i].isOutlier = outliers[i];
+      for (var i = 0; i < _points!.length; i++) {
+        _points![i].localCoordinates = Offset(coordsOut[1][i], coordsOut[0][i]);
+        _points![i].isOutlier = outliers[i];
+      }
     }
   }
 
@@ -813,18 +844,26 @@ class DatasetController extends GetxController {
     update();
   }
 
-  void gerateSubset(List<dynamic> coords) {
+  void gerateSubset(Map<String, List<dynamic>> dataMap) {
+    List<dynamic> coords = dataMap['coords']!;
+    List<dynamic> currOutliers = dataMap['outliers']!;
+    List<dynamic> shapeCoords = dataMap['shapeCoords']!;
+
     List<IPoint> spoints = [];
     int coord_pos = 0;
     for (var i = 0; i < _points!.length; i++) {
       if (_points![i].withinFilter) {
-        IPoint point = IPoint(
-          data: _points![i].data,
-          coordinates: Offset(coords[coord_pos][0], coords[coord_pos][1]),
-          localCoordinates: Offset(coords[coord_pos][0], coords[coord_pos][1]),
-        );
+        _points![i].highlightedCoordinates =
+            Offset(coords[coord_pos][0], coords[coord_pos][1]);
+        _points![i].outlierCoordinates =
+            Offset(shapeCoords[1][coord_pos], shapeCoords[0][coord_pos]);
+        _points![i].isOutlier = currOutliers[coord_pos];
         coord_pos++;
-        spoints.add(point);
+      } else {
+        _points![i].highlightedCoordinates = Offset(coords[0][0], coords[0][1]);
+        _points![i].outlierCoordinates =
+            Offset(shapeCoords[1][0], shapeCoords[0][0]);
+        _points![i].isOutlier = false;
       }
     }
     subset = spoints;
@@ -882,6 +921,8 @@ class DatasetController extends GetxController {
   Map<int, List<int>>? iaqis;
   List<int>? aqi;
   List<IPoint>? subset;
+
+  bool show_filtered = false;
 }
 
 enum Granularity {

@@ -10,7 +10,7 @@ class IProjection extends StatefulWidget {
   final void Function(List<IPoint> points) onPointsSelected;
   final void Function(IPoint point) onPointPicked;
   final IProjectionController controller;
-  final bool isLocal;
+  final int mode;
   final bool pickMode;
   const IProjection({
     Key? key,
@@ -18,7 +18,7 @@ class IProjection extends StatefulWidget {
     required this.controller,
     required this.onPointsSelected,
     required this.onPointPicked,
-    required this.isLocal,
+    required this.mode,
     required this.pickMode,
   }) : super(key: key);
 
@@ -55,7 +55,11 @@ class _IProjectionState extends State<IProjection>
   @override
   Widget build(BuildContext context) {
     return GetBuilder<IProjectionController>(
-      tag: widget.isLocal ? 'local' : 'global',
+      tag: (widget.mode == 1)
+          ? 'local'
+          : (widget.mode == 0)
+              ? 'global'
+              : 'filter',
       builder: (_) => Container(
         width: double.infinity,
         height: double.infinity,
@@ -77,7 +81,7 @@ class _IProjectionState extends State<IProjection>
                           controller.updatePositions();
                           return CustomPaint(
                             painter: IProjectionPainter(
-                              isLocal: widget.isLocal,
+                              mode: widget.mode,
                             ),
                             willChange: false,
                             isComplex: true,
