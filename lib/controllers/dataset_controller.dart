@@ -550,7 +550,7 @@ class DatasetController extends GetxController {
         } else {
           _points![i].outlierCoordinates =
               Offset(shapeCoords[1][0], shapeCoords[0][0]);
-          _points![i].isOutlier = false;
+          _points![i].isOutlier = 0;
         }
       }
     } else {
@@ -558,7 +558,7 @@ class DatasetController extends GetxController {
           _pollutants.indexWhere((element) => element.id == pollutantModel.id);
       var map = await repositoryGetFdaOutliers(pollPos);
       List<dynamic> coordsOut = map['coords']!;
-      List<bool> outliers = List<bool>.from(map['outliers']!);
+      List<int> outliers = List<int>.from(map['outliers']!);
 
       for (var i = 0; i < _points!.length; i++) {
         _points![i].localCoordinates = Offset(coordsOut[1][i], coordsOut[0][i]);
@@ -863,7 +863,7 @@ class DatasetController extends GetxController {
         _points![i].highlightedCoordinates = Offset(coords[0][0], coords[0][1]);
         _points![i].outlierCoordinates =
             Offset(shapeCoords[1][0], shapeCoords[0][0]);
-        _points![i].isOutlier = false;
+        _points![i].isOutlier = 0;
       }
     }
     subset = spoints;

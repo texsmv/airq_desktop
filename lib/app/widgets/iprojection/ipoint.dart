@@ -24,7 +24,7 @@ class IPoint {
   /// -1 means it's an outlier
   String? cluster;
 
-  bool isOutlier = false;
+  int isOutlier = 0; // 1, 2 for lower and upper outliers
   bool selected = false;
   bool isHighlighted = false;
   bool withinFilter = true;

@@ -141,17 +141,24 @@ class IProjectionPainter extends CustomPainter {
     }
   }
 
-  void drawMark(Offset offset, double radius, Paint paint, bool isOutlier,
+  void drawMark(Offset offset, double radius, Paint paint, int isOutlier,
       {double isize = 8, bool isFiltered = false}) {
     if ((mode == 2 || mode == 3) && !isFiltered) {
       return;
     }
-    if (isOutlier) {
+    if (isOutlier == 2) {
       // double isize = 8;
       _canvas.drawLine(offset, offset + Offset(isize, isize),
           paint..strokeWidth = radius / 3);
       _canvas.drawLine(offset + Offset(isize, 0), offset + Offset(0, isize),
           paint..strokeWidth = radius / 3);
+    } else if (isOutlier == 1) {
+      // double isize = 8;
+      _canvas.drawCircle(
+        offset,
+        2,
+        paint,
+      );
     } else {
       _canvas.drawCircle(
         offset,
