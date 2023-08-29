@@ -13,7 +13,10 @@ import '../constants/colors.dart';
 
 class StationsMap extends StatefulWidget {
   final bool clusterView;
-  StationsMap({Key? key, required this.clusterView}) : super(key: key);
+  final bool selectedBased;
+  StationsMap(
+      {Key? key, required this.clusterView, required this.selectedBased})
+      : super(key: key);
 
   @override
   State<StationsMap> createState() => _StationsMapState();
@@ -103,35 +106,15 @@ class _StationsMapState extends State<StationsMap> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  // Icon(
-                  //   Icons.location_on_sharp,
-                  //   size: 20,
-                  //   color: chipColor(index),
-                  // ),
-                  Container(
-                    height: chipSize(index),
-                    width: chipSize(index),
-                    decoration: BoxDecoration(
-                      color: chipColor(index),
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  Text(
-                    stations[index].name,
-                    overflow: TextOverflow.clip,
-                    style: TextStyle(
-                      color: chipColor(index),
-                      fontSize: 9,
-                    ),
-                  ),
-                  Text(
-                    chipLabel(index),
-                    style: TextStyle(
-                      color: chipColor(index),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 9,
-                    ),
-                  ),
+                  MarkerChart(
+                    clusterColors: datasetController.clusterColors,
+                    clusterCounts: datasetController
+                        .clustersStationCounts[stations[index].id],
+                    maxCount: maxStationsCount,
+                    clusterView: widget.clusterView,
+                    index: index,
+                    selectionBased: widget.selectedBased,
+                  )
                 ],
               ),
             ),
@@ -151,39 +134,85 @@ class _StationsMapState extends State<StationsMap> {
     return counts.reduce(max);
   }
 
-  Color chipColor(int index) {
-    if (dashboardController.infoPoint != null) {
-      if (datasetController
-              .windowsStations[dashboardController.infoPoint!.data.id]!.id ==
-          dashboardController.stations[index].id) {
-        return Colors.red;
-      }
-    }
-    if (dashboardController.allStationCounts.isEmpty) {
-      return const Color.fromRGBO(200, 200, 200, minOpacity);
-    }
-    if (dashboardController.allStationCounts[index] == 0) {
-      return Colors.transparent;
-    }
-    int modifiedValue;
-    modifiedValue = dashboardController.stationCounts[index];
-    if (maxStationsCount == 0) {
-      return const Color.fromRGBO(80, 80, 80, minOpacity);
-    }
-    var rb = Rainbow(
-      spectrum: [
-        const Color.fromRGBO(80, 80, 80, minOpacity),
-        Color.fromARGB(255, 82, 128, 182),
-        // Colors.red,
-      ],
-      rangeStart: 0,
-      rangeEnd: maxStationsCount,
-    );
+  String chipLabel(int index) {
+    if (dashboardController.stationCounts.isEmpty) return "";
+    return '${dashboardController.stationCounts[index]}';
+  }
+}
 
-    return rb[modifiedValue];
+class MarkerChart extends StatefulWidget {
+  final Map<String, Color> clusterColors;
+  final Map<String, int>? clusterCounts;
+  final int maxCount;
+  final int index;
+  final bool clusterView;
+  final bool selectionBased;
+  const MarkerChart({
+    super.key,
+    required this.clusterColors,
+    required this.clusterCounts,
+    required this.maxCount,
+    required this.index,
+    required this.clusterView,
+    required this.selectionBased,
+  });
+
+  @override
+  State<MarkerChart> createState() => _MarkerChartState();
+}
+
+class _MarkerChartState extends State<MarkerChart> {
+  List<double> ratios = [];
+  List<Color> colors = [];
+
+  DatasetController datasetController = Get.find<DatasetController>();
+  DashboardController dashboardController = Get.find();
+  int get index => widget.index;
+
+  double stationSizeRatio() {
+    if (widget.selectionBased && !widget.clusterView) {
+      return dashboardController.stationCounts[index] /
+          dashboardController.stationCounts.reduce(max);
+      // dashboardController.stationCounts.reduce(max);
+    } else {
+      return 1 / 1.5;
+      return dashboardController.allStationCounts[index] /
+          dashboardController.allStationCounts.reduce(max);
+    }
   }
 
-  double chipSize(int index) {
+  static const double minSize = 20.0;
+  static const double maxSize = 60.0;
+  static const double minOpacity = 30.0;
+  @override
+  void didUpdateWidget(covariant MarkerChart oldWidget) {
+    createLists();
+    super.didUpdateWidget(oldWidget);
+  }
+
+  @override
+  void initState() {
+    createLists();
+    super.initState();
+  }
+
+  void createLists() {
+    if (widget.clusterCounts != null) {
+      List<int> counts = [];
+      ratios = [];
+      colors = [];
+      List<String> clusters = widget.clusterColors.keys.toList();
+      for (String cluster in clusters) {
+        counts.add(widget.clusterCounts![cluster]!);
+        colors.add(widget.clusterColors[cluster]!);
+      }
+
+      ratios = List.generate(counts.length,
+          (index) => counts[index] / counts.reduce((a, b) => a + b));
+    }
+  }
+
+  double markerSize() {
     if (dashboardController.infoPoint != null) {
       if (datasetController
               .windowsStations[dashboardController.infoPoint!.data.id]!.id ==
@@ -192,63 +221,100 @@ class _StationsMapState extends State<StationsMap> {
         ; // Dont know what is this for ....
       }
     }
+
     if (dashboardController.allStationCounts.isEmpty) {
       return (minSize + maxSize) / 2;
     }
+
     if (dashboardController.allStationCounts[index] == 0) {
       return minSize;
     }
-    int modifiedValue;
-    modifiedValue = dashboardController.stationCounts[index];
-    if (maxStationsCount == 0) {
+
+    if (widget.maxCount == 0) {
       return minSize;
     }
 
-    return (modifiedValue / maxStationsCount) * (maxSize - minSize);
+    return stationSizeRatio() * (maxSize - minSize);
   }
 
-  String chipLabel(int index) {
-    if (dashboardController.stationCounts.isEmpty) return "";
-    return '${dashboardController.stationCounts[index]}';
+  Color chipColor(int index) {
+    return Color.fromARGB(255, 82, 128, 182);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          datasetController.selectedStations[index].name,
+          style: const TextStyle(
+            color: Color.fromRGBO(240, 190, 50, 1),
+            fontSize: 8,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Container(
+          height: markerSize(),
+          width: markerSize(),
+          child: widget.clusterView
+              ? CustomPaint(
+                  painter: MarkerChartPainter(
+                    colors: colors,
+                    ratios: ratios,
+                  ),
+                )
+              : Container(
+                  decoration: BoxDecoration(
+                    color: chipColor(index),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+        ),
+      ],
+    );
   }
 }
 
-// class ClusterChipPainter extends CustomPainter {
-//   final double radius;
-//   List<int> counts;
-//   List<Color> colors;
-//   ClusterChipPainter({
-//     required this.radius,
-//     required this.counts,
-//     required this.colors,
-//   });
+class MarkerChartPainter extends CustomPainter {
+  final List<Color> colors;
+  final List<double> ratios;
+  MarkerChartPainter({required this.colors, required this.ratios});
 
-//   @override
-//   void paint(Canvas canvas, Size size) {
-//     final Paint paint = Paint()
-//       ..strokeWidth = 60.0 // 1.
-//       ..style = PaintingStyle.stroke // 2.
-//       ..color = color!; // 3.
+  @override
+  void paint(Canvas canvas, Size size) {
+    double startAngle = 0;
+    double totalAngle = 3.1415 * 2;
+    for (var i = 0; i < colors.length; i++) {
+      // double endDegree = startDegree + totalDegree * ratios[i];
+      double sweepAngle = totalAngle * ratios[i];
+      Paint paint = Paint()..color = colors[i];
+      canvas.drawArc(
+        Rect.fromLTWH(0, 0, size.width, size.height),
+        startAngle,
+        sweepAngle,
+        true,
+        paint,
+      );
+      startAngle = startAngle + sweepAngle;
+    }
 
-//     double degToRad(double deg) => deg * (math.pi / 180.0);
+    // List<double> radius = [];
+    // double totalRadius = size.width / 2;
+    // double currRadius = 0;
+    // for (var i = 0; i < colors.length; i++) {
+    //   // double endDegree = startDegree + totalDegree * ratios[i];
+    //   currRadius = totalRadius * ratios[i] + currRadius;
+    //   radius.add(currRadius);
+    // }
 
-//     final path = Path()
-//       ..arcTo(
-//           // 4.
-//           Rect.fromCenter(
-//             center: Offset(size.height / 2, size.width / 2),
-//             height: size.height,
-//             width: size.width,
-//           ), // 5.
-//           degToRad(180), // 6.
-//           degToRad(sweepAngle!), // 7.
-//           false);
+    // for (var i = colors.length - 1; i >= 0; i--) {
+    //   Paint paint = Paint()..color = colors[i];
+    //   canvas.drawCircle(Offset.zero, radius[i], paint);
+    // }
+  }
 
-//     canvas.drawPath(path, paint); // 8.
-//   }
-
-//   @override
-//   bool shouldRepaint(covariant CustomPainter oldDelegate) {
-//     throw UnimplementedError();
-//   }
-// }
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
+  }
+}

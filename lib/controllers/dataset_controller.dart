@@ -612,6 +612,7 @@ class DatasetController extends GetxController {
     }
 
     _createClusterColors();
+    _createStaionClusterCounts();
   }
 
   void clusterByMonth() {
@@ -648,6 +649,8 @@ class DatasetController extends GetxController {
     for (var i = 0; i < clusterIds.length; i++) {
       _clusterColors[clusterIds[i]] = colors[i];
     }
+
+    _createStaionClusterCounts();
   }
 
   Future<void> kmeansClustering() async {
@@ -655,7 +658,7 @@ class DatasetController extends GetxController {
     List<IPoint> points = _points!;
 
     int nClusters = await uiPickNumberInt(2, 20);
-    List<int> classes = await repositoryClustering(nClusters);
+    List<int> classes = await repositoryKmeansClustering(nClusters);
 
     for (var i = 0; i < nClusters; i++) {
       _clusters[i.toString()] = [];
@@ -665,10 +668,60 @@ class DatasetController extends GetxController {
       var point = points[i];
       String clusterId = classes[i].toString();
       point.cluster = clusterId;
+      // print(clusterId);
       _clusters[clusterId]!.add(point);
     }
 
     _createClusterColors();
+    _createStaionClusterCounts();
+  }
+
+  Future<void> dbscanClustering() async {
+    _resetClusters();
+    List<IPoint> points = _points!;
+
+    // int nClusters = await uiPickNumberInt(2, 20);
+    double eps = 0.1;
+
+    String epsStr = await uiPickString(defaultValue: '0.1');
+    eps = double.parse(epsStr);
+
+    Map<String, dynamic> data = await repositoryDbscanClustering(eps);
+    List<int> classes = data['labels'];
+    int nClusters = data['n_classes'];
+    print(nClusters);
+
+    for (var i = 0; i < nClusters; i++) {
+      _clusters[i.toString()] = [];
+    }
+
+    for (var i = 0; i < points.length; i++) {
+      var point = points[i];
+      String clusterId = classes[i].toString();
+      point.cluster = clusterId;
+      // print(clusterId);
+      _clusters[clusterId]!.add(point);
+    }
+
+    _createClusterColors();
+    _createStaionClusterCounts();
+  }
+
+  void _createStaionClusterCounts() {
+    Map<int, Map<String, int>> stationCounts = {};
+    for (var station in stations) {
+      stationCounts[station.id] = {};
+      for (String cluster in clusterIds) {
+        stationCounts[station.id]![cluster] = 0;
+      }
+    }
+
+    for (var i = 0; i < _points!.length; i++) {
+      IPoint point = _points![i];
+      stationCounts[point.data.stationId]![point.cluster!] =
+          stationCounts[point.data.stationId]![point.cluster!]! + 1;
+    }
+    clustersStationCounts = stationCounts;
   }
 
   void clearClusters() {
@@ -706,6 +759,8 @@ class DatasetController extends GetxController {
     for (var i = 0; i < clusterIds.length; i++) {
       _clusterColors[clusterIds[i]] = colors[i];
     }
+
+    _createStaionClusterCounts();
   }
 
   void clusterByDay() {
@@ -732,20 +787,23 @@ class DatasetController extends GetxController {
     }
 
     _createClusterColors();
+    _createStaionClusterCounts();
   }
 
   void clusterByOutlier() {
     _resetClusters();
     List<IPoint> points = _points!;
-    Map<bool, String> modes = {
-      false: 'Normal',
-      true: 'Outlier',
+    Map<int, String> modes = {
+      0: 'Normal',
+      1: 'Lower',
+      2: 'Upper',
     };
     // for (var i = 0; i <= 1; i++) {
     //   _clusters[modes[i]!] = [];
     // }
-    _clusters[modes[false]!] = [];
-    _clusters[modes[true]!] = [];
+    _clusters[modes[0]!] = [];
+    _clusters[modes[1]!] = [];
+    _clusters[modes[2]!] = [];
 
     for (var i = 0; i < points.length; i++) {
       var point = points[i];
@@ -755,6 +813,7 @@ class DatasetController extends GetxController {
     }
 
     _createClusterColors();
+    _createStaionClusterCounts();
   }
 
   void createClusterFromSelection() {
@@ -848,7 +907,7 @@ class DatasetController extends GetxController {
     List<dynamic> coords = dataMap['coords']!;
     List<dynamic> currOutliers = dataMap['outliers']!;
     List<dynamic> shapeCoords = dataMap['shapeCoords']!;
-
+    print(currOutliers);
     List<IPoint> spoints = [];
     int coord_pos = 0;
     for (var i = 0; i < _points!.length; i++) {
@@ -896,7 +955,6 @@ class DatasetController extends GetxController {
   late DateTime _beginDate;
   late DateTime _endDate;
   late Granularity _granularity;
-  Map<int, List<WindowModel>> _windows = {};
   List<WindowModel> _allWindows = [];
   Map<String, List<IPoint>> _clusters = {};
   Map<String, Color> _clusterColors = {};
@@ -921,6 +979,8 @@ class DatasetController extends GetxController {
   Map<int, List<int>>? iaqis;
   List<int>? aqi;
   List<IPoint>? subset;
+
+  Map<int, Map<String, int>> clustersStationCounts = {};
 
   bool show_filtered = false;
 }

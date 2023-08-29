@@ -117,7 +117,7 @@ class _StationDataState extends State<StationData> {
                         widget.windows![index].beginDate.month;
                     bool isSelected =
                         widget.selectedWindow!.id == widget.windows![index].id;
-                    return Container(
+                    return SizedBox(
                       width: 80,
                       child: Column(
                         children: [
@@ -135,6 +135,7 @@ class _StationDataState extends State<StationData> {
                                         widget.windows![index].id
                                     ? pColorPrimary.withOpacity(0.4)
                                     : Colors.white,
+                                // color: widget.windows![index].
                                 child: CustomPaint(
                                   painter: BarChartPainter(
                                     color: widget.selectedWindow!.id ==

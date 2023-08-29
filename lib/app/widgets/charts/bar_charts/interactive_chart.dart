@@ -13,12 +13,16 @@ class InteractiveHistogram extends StatefulWidget {
   final List<int> values;
   final List<int> allValues;
   final List<String> labels;
+  final Map<String, List<int>> clusterCounts;
+  final Map<String, Color> clusterColors;
+  final bool clusterMode;
   final int filterBegin;
 
   /// not inclusive values in range don't include this value
   final int filterEnd;
   final RangeChangeCallback onRangeChanged;
   final bool showHandlers;
+  bool percentageMode = false;
 
   InteractiveHistogram({
     Key? key,
@@ -29,6 +33,10 @@ class InteractiveHistogram extends StatefulWidget {
     required this.filterEnd,
     required this.onRangeChanged,
     required this.isReseted,
+    required this.percentageMode,
+    required this.clusterCounts,
+    required this.clusterColors,
+    required this.clusterMode,
     this.showHandlers = true,
   }) : super(key: key);
 
@@ -54,7 +62,8 @@ class _InteractiveHistogramState extends State<InteractiveHistogram> {
   late int beginRange;
   late int endRange;
 
-  int get maxCount => widget.allValues.reduce(max);
+  int get allMaxCount => widget.allValues.reduce(max);
+  int get maxCount => widget.values.reduce(max);
 
   bool firstBuild = true;
 
@@ -63,16 +72,20 @@ class _InteractiveHistogramState extends State<InteractiveHistogram> {
     super.initState();
   }
 
-  // @override
-  // void didUpdateWidget(InteractiveHistogram oldWidget) {
-  //   beginRange = widget.filterBegin;
-  //   endRange = widget.filterEnd;
-  //   super.didUpdateWidget(oldWidget);
-  // }
-
   double plotBarHeight(int value) {
-    final double newVal = uiRangeConverter(
-        value.toDouble(), 0, maxCount.toDouble() + 1, 0, _height);
+    double maxBarHeight;
+    if (widget.percentageMode && !widget.clusterMode) {
+      maxBarHeight = maxCount.toDouble();
+    } else {
+      maxBarHeight = allMaxCount.toDouble();
+    }
+
+    if (widget.clusterMode) {
+      maxBarHeight = allMaxCount.toDouble();
+    }
+
+    final double newVal =
+        uiRangeConverter(value.toDouble(), 0, maxBarHeight, 0, _height);
     return newVal;
   }
 
@@ -87,21 +100,21 @@ class _InteractiveHistogramState extends State<InteractiveHistogram> {
     if (widget.values.length != widget.allValues.length) {
       return SizedBox();
     }
-    return Container(
-      child: LayoutBuilder(builder: (context, constraints) {
-        _height = constraints.maxHeight;
-        _width = constraints.maxWidth;
-        if (firstBuild) {
-          beginPosition = range2Width(widget.filterBegin.toDouble());
-          endPosition = range2Width(widget.filterEnd.toDouble() - 1);
-          beginRange = widget.filterBegin;
-          endRange = widget.filterEnd;
-        }
-        firstBuild = false;
-        return Column(
-          children: [
-            Expanded(
-              child: Stack(
+    return Column(
+      children: [
+        Expanded(
+          child: Container(
+            child: LayoutBuilder(builder: (context, constraints) {
+              _height = constraints.maxHeight;
+              _width = constraints.maxWidth;
+              if (firstBuild) {
+                beginPosition = range2Width(widget.filterBegin.toDouble());
+                endPosition = range2Width(widget.filterEnd.toDouble() - 1);
+                beginRange = widget.filterBegin;
+                endRange = widget.filterEnd;
+              }
+              firstBuild = false;
+              return Stack(
                 clipBehavior: Clip.none,
                 children: [
                   Positioned.fill(
@@ -115,9 +128,9 @@ class _InteractiveHistogramState extends State<InteractiveHistogram> {
                             child: AnimatedContainer(
                               decoration: BoxDecoration(
                                 border: Border.all(width: 1),
-                                color: Color.fromRGBO(200, 200, 200, 1),
+                                color: const Color.fromRGBO(200, 200, 200, 1),
                               ),
-                              duration: Duration(milliseconds: 250),
+                              duration: const Duration(milliseconds: 250),
                               width: 20,
                               // height: 100,
                               height: plotBarHeight(
@@ -138,82 +151,123 @@ class _InteractiveHistogramState extends State<InteractiveHistogram> {
                       ),
                     ),
                   ),
-                  Positioned.fill(
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: _dragWidth),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: List.generate(
-                          widget.values.length,
-                          (index) => Expanded(
-                            child: AnimatedContainer(
-                              decoration: BoxDecoration(
-                                border: Border.all(width: 1),
-                                color: pColorPrimary,
-                              ),
-                              duration: Duration(milliseconds: 250),
-                              width: 20,
-                              // height: 100,
-                              height: plotBarHeight(
-                                widget.values[index],
-                              ),
-                              child: Center(
-                                child: Text(
-                                  '${widget.values[index].toString()}',
-                                  style: const TextStyle(
-                                    color: pTextColorPrimary,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+                  // _selectionBars(),
+                  widget.clusterMode ? _clusterBars() : _selectionBars(),
                   _wholeArea(),
                   _selectedArea(constraints),
                   _leftHanfler(constraints),
                   _rightHanfler(constraints),
                 ],
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: _dragWidth),
-              child: Row(
-                // mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: List.generate(
-                  widget.labels.length,
-                  (index) => Expanded(
-                    child: Column(
-                      children: [
-                        RotatedBox(
-                          quarterTurns: 1,
-                          child: Container(
-                            alignment: Alignment.centerLeft,
-                            padding: const EdgeInsets.symmetric(horizontal: 5),
-                            child: Text(
-                              widget.labels[index],
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 13,
-                              ),
-                            ),
+              );
+            }),
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: _dragWidth),
+          child: Row(
+            // mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: List.generate(
+              widget.labels.length,
+              (index) => Expanded(
+                child: Column(
+                  children: [
+                    RotatedBox(
+                      quarterTurns: 1,
+                      child: Container(
+                        alignment: Alignment.centerLeft,
+                        padding: const EdgeInsets.symmetric(horizontal: 5),
+                        child: Text(
+                          widget.labels[index],
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
                           ),
                         ),
-                        // Text(widget.allValues[index].toString()),
-                        // Text(),
-                      ],
+                      ),
+                    ),
+                    // Text(widget.allValues[index].toString()),
+                    // Text(),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        )
+      ],
+    );
+  }
+
+  Widget _clusterBars() {
+    List<String> clusterIds = widget.clusterColors.keys.toList();
+    // print('BAR PLOT');
+    // print(allMaxCount);
+    // print(plotBarHeight(allMaxCount));
+    // print('');
+    return Positioned.fill(
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: _dragWidth),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: List.generate(widget.values.length, (index) {
+            // print('INDEX');
+            // print(index);
+            return Expanded(
+              child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: List.generate(clusterIds.length, (clustIndex) {
+                    int clusterCounts =
+                        widget.clusterCounts[clusterIds[clustIndex]]![index];
+                    // print(clusterCounts);
+                    // print(plotBarHeight(clusterCounts));
+                    return Container(
+                      decoration: BoxDecoration(
+                          border: Border.all(width: 1),
+                          color: widget.clusterColors[clusterIds[clustIndex]]),
+                      height: plotBarHeight(clusterCounts),
+                    );
+                  })),
+            );
+          }),
+        ),
+      ),
+    );
+  }
+
+  Widget _selectionBars() {
+    return Positioned.fill(
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: _dragWidth),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: List.generate(
+            widget.values.length,
+            (index) => Expanded(
+              child: AnimatedContainer(
+                decoration: BoxDecoration(
+                  border: Border.all(width: 1),
+                  color: pColorPrimary,
+                ),
+                duration: Duration(milliseconds: 250),
+                // width: 20,
+                // height: 100,
+                height: plotBarHeight(
+                  widget.values[index],
+                ),
+                child: Center(
+                  child: Text(
+                    '${widget.values[index].toString()}',
+                    style: const TextStyle(
+                      color: pTextColorPrimary,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
               ),
-            )
-          ],
-        );
-      }),
+            ),
+          ),
+        ),
+      ),
     );
   }
 

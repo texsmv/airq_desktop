@@ -37,7 +37,8 @@ class _ClusterMeansState extends State<ClusterMeans> {
       for (var clusterId in datasetController.clusterIds) {
         _allValues![clusterId] = List<dynamic>.generate(
             clusters[clusterId]!.length,
-            (index) => clusters[clusterId]![index].data.values[pollutant.id]!);
+            (index) =>
+                clusters[clusterId]![index].data.smoothedValues[pollutant.id]!);
       }
     }
     return _allValues!;

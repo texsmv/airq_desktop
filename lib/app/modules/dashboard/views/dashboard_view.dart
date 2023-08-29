@@ -40,213 +40,174 @@ class DashboardView extends GetView<DashboardController> {
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.8),
               ),
-              child: Row(children: [
-                Obx(
-                  () => PBar(
-                    actions: [
-                      ActionButton(
-                        icon: 'assets/icons/projection_icon.png',
-                        selected: false,
-                        onTap: () {
-                          datasetController.projectSeries();
-                        },
-                      ),
-                      // ActionButton(
-                      //   icon: 'assets/icons/projection_icon.png',
-                      //   selected: false,
-                      //   onTap: () {
-                      //     datasetController.changeSpatioTemporalSettings();
-                      //   },
-                      // ),
-                      ActionButton(
-                        icon: 'assets/icons/clustering_icon.png',
-                        selected: false,
-                        onTap: () async {
-                          await Get.dialog(PDialog(
-                              height: 400,
-                              child: Column(
-                                children: [
-                                  Visibility(
-                                    visible: controller.granularity ==
-                                        Granularity.daily,
-                                    child: SizedBox(
+              child: GetBuilder<DatasetController>(builder: (c) {
+                return Row(children: [
+                  Obx(
+                    () => PBar(
+                      actions: [
+                        ActionButton(
+                          icon: 'assets/icons/projection_icon.png',
+                          selected: false,
+                          onTap: () {
+                            datasetController.projectSeries();
+                          },
+                        ),
+                        // ActionButton(
+                        //   icon: 'assets/icons/projection_icon.png',
+                        //   selected: false,
+                        //   onTap: () {
+                        //     datasetController.changeSpatioTemporalSettings();
+                        //   },
+                        // ),
+                        ActionButton(
+                          icon: 'assets/icons/clustering_icon.png',
+                          selected: false,
+                          onTap: () async {
+                            await Get.dialog(PDialog(
+                                height: 400,
+                                child: Column(
+                                  children: [
+                                    Visibility(
+                                      visible: controller.granularity ==
+                                          Granularity.daily,
+                                      child: SizedBox(
+                                        height: 25,
+                                        child: PButton(
+                                          onTap: () {
+                                            controller.clusterByWeekDay();
+                                            Get.back();
+                                          },
+                                          text: 'Day',
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Visibility(
+                                      visible: controller.granularity !=
+                                          Granularity.annual,
+                                      child: SizedBox(
+                                        height: 25,
+                                        child: PButton(
+                                          onTap: () {
+                                            controller.clusterByMonth();
+                                            Get.back();
+                                          },
+                                          text: 'Month',
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    SizedBox(
+                                      height: 25,
+                                      child: PButton(
+                                          onTap: () {
+                                            controller.clusterByYear();
+                                            Get.back();
+                                          },
+                                          text: 'Year'),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    SizedBox(
                                       height: 25,
                                       child: PButton(
                                         onTap: () {
-                                          controller.clusterByWeekDay();
+                                          controller.clusterByStation();
                                           Get.back();
                                         },
-                                        text: 'Day',
+                                        text: 'Station',
                                       ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Visibility(
-                                    visible: controller.granularity !=
-                                        Granularity.annual,
-                                    child: SizedBox(
+                                    const SizedBox(height: 10),
+                                    SizedBox(
+                                      height: 25,
+                                      child: PButton(
+                                        onTap: () async {
+                                          await controller.kmeansClustering();
+                                          Get.back();
+                                        },
+                                        text: 'Kmeans',
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    SizedBox(
+                                      height: 25,
+                                      child: PButton(
+                                        onTap: () async {
+                                          await controller.dbscanClustering();
+                                          Get.back();
+                                        },
+                                        text: 'DBSCAN',
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    SizedBox(
                                       height: 25,
                                       child: PButton(
                                         onTap: () {
-                                          controller.clusterByMonth();
+                                          controller.clusterByOutlier();
                                           Get.back();
                                         },
-                                        text: 'Month',
+                                        text: 'Outliers',
                                       ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  SizedBox(
-                                    height: 25,
-                                    child: PButton(
+                                    const SizedBox(height: 10),
+                                    SizedBox(
+                                      height: 25,
+                                      child: PButton(
                                         onTap: () {
-                                          controller.clusterByYear();
+                                          controller.manualCluster();
                                           Get.back();
                                         },
-                                        text: 'Year'),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  SizedBox(
-                                    height: 25,
-                                    child: PButton(
-                                      onTap: () {
-                                        controller.clusterByStation();
-                                        Get.back();
-                                      },
-                                      text: 'Station',
+                                        text: 'Manual',
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  SizedBox(
-                                    height: 25,
-                                    child: PButton(
-                                      onTap: () async {
-                                        await controller.kmeansClustering();
-                                        Get.back();
-                                      },
-                                      text: 'Automatic',
+                                    const SizedBox(height: 20),
+                                    SizedBox(
+                                      height: 25,
+                                      child: PButton(
+                                        fillColor: pColorError,
+                                        onTap: () {
+                                          controller.clearClusters();
+                                          Get.back();
+                                        },
+                                        text: 'Clear all',
+                                      ),
                                     ),
-                                  ),
-                                  SizedBox(
-                                    height: 25,
-                                    child: PButton(
-                                      onTap: () {
-                                        controller.clusterByOutlier();
-                                        Get.back();
-                                      },
-                                      text: 'Outliers',
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  SizedBox(
-                                    height: 25,
-                                    child: PButton(
-                                      onTap: () {
-                                        controller.manualCluster();
-                                        Get.back();
-                                      },
-                                      text: 'Manual',
-                                    ),
-                                  ),
-                                  const SizedBox(height: 20),
-                                  SizedBox(
-                                    height: 25,
-                                    child: PButton(
-                                      fillColor: pColorError,
-                                      onTap: () {
-                                        controller.clearClusters();
-                                        Get.back();
-                                      },
-                                      text: 'Clear all',
-                                    ),
-                                  ),
-                                ],
-                              )));
-                        },
-                      ),
-                      ActionButton(
-                        icon: 'assets/icons/selection_icon.png',
-                        selected: controller.pickMode.value,
-                        onTap: () {
-                          controller.pickMode.value =
-                              !controller.pickMode.value;
-                        },
-                      ),
-                      ActionButton(
-                        icon: 'assets/icons/statistics_icon.png',
-                        selected: false,
-                        onTap: () {
-                          controller.selectionCorrelationMatrix();
-                        },
-                      ),
-                      ActionButton(
-                        icon: 'assets/icons/statistics_icon.png',
-                        selected: !controller.datasetController.show_filtered,
-                        onTap: () {
-                          controller.datasetController.show_filtered =
-                              !controller.datasetController.show_filtered;
-                          controller.datasetController.update();
-                        },
-                      ),
-                    ],
+                                  ],
+                                )));
+                          },
+                        ),
+                        ActionButton(
+                          icon: 'assets/icons/selection_icon.png',
+                          selected: controller.pickMode.value,
+                          onTap: () {
+                            controller.pickMode.value =
+                                !controller.pickMode.value;
+                          },
+                        ),
+                        ActionButton(
+                          icon: 'assets/icons/statistics.png',
+                          selected: false,
+                          onTap: () {
+                            controller.selectionCorrelationMatrix();
+                          },
+                        ),
+                        ActionButton(
+                          icon: 'assets/icons/filter.png',
+                          selected: controller.datasetController.show_filtered,
+                          onTap: () {
+                            controller.datasetController.show_filtered =
+                                !controller.datasetController.show_filtered;
+                            controller.datasetController.update();
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const Expanded(child: DashView()),
-              ]),
+                  const Expanded(child: DashView()),
+                ]);
+              }),
             ),
-          ),
-        ),
-      ),
-    );
-    return SafeArea(
-      child: Scaffold(
-        body: Container(
-          decoration: BoxDecoration(
-              image: DecorationImage(
-                  image: NetworkImage(
-                      'https://images.alphacoders.com/238/238683.jpg'))),
-          child: Row(
-            children: [
-              // SideBar(
-              //   tabs: [
-              //     ViewTab(
-              //       icon: Icons.ac_unit_outlined,
-              //       onTap: () {
-              //         controller.pageIndex = 0;
-              //       },
-              //       text: controller.dataset.name,
-              //       // text: 'DatasetName',
-              //       options: dashOptions(),
-              //     ),
-              //     // ViewTab(
-              //     //   icon: Icons.sd_card,
-              //     //   onTap: () {
-              //     //     controller.pageIndex = 1;
-              //     //   },
-              //     //   text: "Summary",
-              //     //   options: summaryOptions(),
-              //     // ),
-              //   ],
-              //   selectedTab: 0,
-              // ),
-              Expanded(
-                child: Container(
-                  color: pColorScaffold,
-                  child: DashView(),
-                  // child: Obx(
-                  //   () => IndexedStack(
-                  //     index: controller.pageIndex,
-                  //     children: [
-                  //       GetBuilder<DatasetController>(builder: (_) {
-                  //         return DashView();
-                  //       }),
-                  //       // SummaryView(),
-                  //     ],
-                  //   ),
-                  // ),
-                ),
-              )
-            ],
           ),
         ),
       ),

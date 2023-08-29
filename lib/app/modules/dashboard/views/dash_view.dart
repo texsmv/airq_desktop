@@ -195,42 +195,49 @@ class DashView extends GetView<DashboardController> {
                                               xMinValue:
                                                   controller.xMinValueSeries,
                                               yMaxValue: controller.yMaxValue,
-                                              // yMaxValue: controller.yMaxValue,
-                                              // controller.ts_visualization ==
-                                              //         0
-                                              //     ? controller.yMaxValue
-                                              //     : datasetController
-                                              //             .maxMeansValue ??
-                                              //         1,
                                               yMinValue: controller.yMinValue,
-
-                                              // controller.ts_visualization ==
-                                              //         0
-                                              //     ? controller.yMinValue
-                                              //     : datasetController
-                                              //             .minMeansValue ??
-                                              //         0,
-                                              yAxisLabel: 'Magnitude',
-                                              xAxisLabel: 'Time',
+                                              yAxisLabel: datasetController
+                                                  .projectedPollutant.name,
+                                              xAxisLabel:
+                                                  controller.granularity !=
+                                                          Granularity.daily
+                                                      ? 'days'
+                                                      : 'hours',
                                               yDivisions: 5,
-                                              xDivisions: 12,
-                                              xLabels: controller.granularity !=
-                                                      Granularity.annual
+                                              xDivisions: controller
+                                                          .granularity ==
+                                                      Granularity.daily
+                                                  ? 24
+                                                  : controller.granularity ==
+                                                          Granularity.monthly
+                                                      ? 5
+                                                      : 12,
+                                              xLabels: controller.granularity ==
+                                                      Granularity.daily
                                                   ? null
-                                                  : [
-                                                      "Jan",
-                                                      "Feb",
-                                                      "Mar",
-                                                      "Apr",
-                                                      "May",
-                                                      "Jun",
-                                                      "Jul",
-                                                      "Aug",
-                                                      "Sep",
-                                                      "Oct",
-                                                      "Nov",
-                                                      "Dec"
-                                                    ],
+                                                  : controller.granularity ==
+                                                          Granularity.monthly
+                                                      ? [
+                                                          "0",
+                                                          "7",
+                                                          "14",
+                                                          '21',
+                                                          "29"
+                                                        ]
+                                                      : [
+                                                          "Jan",
+                                                          "Feb",
+                                                          "Mar",
+                                                          "Apr",
+                                                          "May",
+                                                          "Jun",
+                                                          "Jul",
+                                                          "Aug",
+                                                          "Sep",
+                                                          "Oct",
+                                                          "Nov",
+                                                          "Dec"
+                                                        ],
                                               child: controller
                                                           .ts_visualization ==
                                                       0
@@ -273,67 +280,101 @@ class DashView extends GetView<DashboardController> {
 
                               // ** Pollutant outliers
                               PCard(
-                                child: AspectRatio(
-                                  aspectRatio: 1,
-                                  child: GetBuilder<DashboardController>(
-                                    builder: (_) => LeftAxis(
-                                      xMaxValue: controller.xMaxValue,
-                                      xMinValue: controller.xMinValue,
-                                      yMaxValue: controller.yMaxValue,
-                                      yMinValue: controller.yMinValue,
-                                      yAxisLabel: 'Magnitude',
-                                      xAxisLabel: 'Shape',
-                                      yDivisions: 5,
-                                      xDivisions: 2,
-                                      child: Obx(
-                                        () => Stack(
-                                          children: [
-                                            Positioned.fill(
-                                              child: Visibility(
-                                                visible: !datasetController
-                                                    .show_filtered,
-                                                child: IProjection(
-                                                  controller: controller
-                                                      .localProjectionController,
-                                                  points:
-                                                      controller.globalPoints!,
-                                                  onPointsSelected: controller
-                                                      .onPointsSelected,
-                                                  onPointPicked:
-                                                      controller.onPointPicked,
-                                                  mode: 1,
-                                                  pickMode:
-                                                      controller.pickMode.value,
-                                                ),
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      datasetController.projectedPollutant.name,
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w700,
+                                        color: pColorPrimary,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: AspectRatio(
+                                        aspectRatio: 1,
+                                        child: GetBuilder<DashboardController>(
+                                          builder: (_) => LeftAxis(
+                                            xMaxValue: controller.xMaxValue,
+                                            xMinValue: controller.xMinValue,
+                                            yMaxValue: controller.yMaxValue,
+                                            yMinValue: controller.yMinValue,
+                                            xAxisLabel: 'Magnitude',
+                                            yAxisLabel: 'Shape',
+                                            yDivisions: 5,
+                                            xDivisions: 2,
+                                            child: Obx(
+                                              () => Stack(
+                                                children: [
+                                                  Positioned.fill(
+                                                    child: Visibility(
+                                                      visible:
+                                                          !datasetController
+                                                              .show_filtered,
+                                                      child: IProjection(
+                                                        controller: controller
+                                                            .localProjectionController,
+                                                        points: controller
+                                                            .globalPoints!,
+                                                        onPointsSelected:
+                                                            controller
+                                                                .onPointsSelected,
+                                                        onPointPicked:
+                                                            controller
+                                                                .onPointPicked,
+                                                        mode: 1,
+                                                        pickMode: controller
+                                                            .pickMode.value,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Positioned.fill(
+                                                    child: Visibility(
+                                                      visible: datasetController
+                                                          .show_filtered,
+                                                      child: IProjection(
+                                                        controller: controller
+                                                            .outliersProjectionController,
+                                                        points: controller
+                                                            .globalPoints!,
+                                                        onPointsSelected:
+                                                            controller
+                                                                .onPointsSelected,
+                                                        onPointPicked:
+                                                            controller
+                                                                .onPointPicked,
+                                                        mode: 3,
+                                                        pickMode: controller
+                                                            .pickMode.value,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                             ),
-                                            Positioned.fill(
-                                              child: Visibility(
-                                                visible: datasetController
-                                                    .show_filtered,
-                                                child: IProjection(
-                                                  controller: controller
-                                                      .outliersProjectionController,
-                                                  points:
-                                                      controller.globalPoints!,
-                                                  onPointsSelected: controller
-                                                      .onPointsSelected,
-                                                  onPointPicked:
-                                                      controller.onPointPicked,
-                                                  mode: 3,
-                                                  pickMode:
-                                                      controller.pickMode.value,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
+                                          ),
                                         ),
                                       ),
                                     ),
-                                  ),
+                                  ],
                                 ),
                               ),
                             ],
+                          ),
+                        ),
+                        const SizedBox(height: pCardSpace),
+                        PCard(
+                          height: constraints.maxHeight * 0.14,
+                          width: double.infinity,
+                          child: GetBuilder<DashboardController>(
+                            builder: (_) => RepaintBoundary(
+                              child: StationData(
+                                windows:
+                                    datasetController.selectedStationWindows,
+                                selectedWindow:
+                                    datasetController.selectedWindow,
+                              ),
+                            ),
                           ),
                         ),
                         const SizedBox(height: pCardSpace),
@@ -352,90 +393,143 @@ class DashView extends GetView<DashboardController> {
                                   ),
                                 ),
                                 const SizedBox(width: pCardSpace),
-                                PCard(
-                                  width: constraints.minWidth * 0.28,
-                                  height: double.infinity,
-                                  child: Column(
-                                    children: [
-                                      Expanded(
-                                        child: RepaintBoundary(
-                                          child: Visibility(
-                                            visible: controller.granularity ==
-                                                Granularity.daily,
+                                Obx(
+                                  () => PCard(
+                                    width: constraints.minWidth * 0.28,
+                                    height: double.infinity,
+                                    child: Column(
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Text('Scale'),
+                                            Switch(
+                                                value: controller
+                                                    .binsPercentage.value,
+                                                onChanged: (val) {
+                                                  controller.binsPercentage
+                                                      .value = val;
+                                                }),
+                                            Text('Cluster mode'),
+                                            Switch(
+                                                value: controller
+                                                    .binsClusterMode.value,
+                                                onChanged: (val) {
+                                                  controller.binsClusterMode
+                                                      .value = val;
+                                                }),
+                                          ],
+                                        ),
+                                        controller.granularity ==
+                                                Granularity.daily
+                                            ? Expanded(
+                                                child: RepaintBoundary(
+                                                  child: Visibility(
+                                                    visible: controller
+                                                            .granularity ==
+                                                        Granularity.daily,
+                                                    child: InteractiveHistogram(
+                                                      percentageMode: controller
+                                                          .binsPercentage.value,
+                                                      isReseted:
+                                                          controller.isReseted,
+                                                      values:
+                                                          controller.dayCounts,
+                                                      allValues: controller
+                                                          .allDaysCounts,
+                                                      clusterCounts: controller
+                                                          .clustersDayCounts,
+                                                      clusterColors: controller
+                                                          .clusterColors,
+                                                      clusterMode: controller
+                                                          .binsClusterMode
+                                                          .value,
+                                                      filterBegin: 0,
+                                                      filterEnd: 1,
+                                                      labels: const [
+                                                        'Mon',
+                                                        'Tue',
+                                                        'Wed',
+                                                        'Thu',
+                                                        'Fri',
+                                                        'Sat',
+                                                        'Sun',
+                                                      ],
+                                                      onRangeChanged: controller
+                                                          .dayRangeSelection,
+                                                    ),
+                                                  ),
+                                                ),
+                                              )
+                                            : const SizedBox(),
+                                        Expanded(
+                                          child: RepaintBoundary(
+                                            child: Visibility(
+                                              visible: controller.granularity !=
+                                                  Granularity.annual,
+                                              child: InteractiveHistogram(
+                                                percentageMode: controller
+                                                    .binsPercentage.value,
+                                                isReseted: controller.isReseted,
+                                                values: controller.monthCounts,
+                                                allValues:
+                                                    controller.allMonthsCounts,
+                                                clusterCounts: controller
+                                                    .clustersMonthCounts,
+                                                clusterColors:
+                                                    controller.clusterColors,
+                                                clusterMode: controller
+                                                    .binsClusterMode.value,
+                                                filterBegin: 0,
+                                                filterEnd: 1,
+                                                labels: const [
+                                                  'Jan',
+                                                  'Feb',
+                                                  'Mar',
+                                                  'Apr',
+                                                  'May',
+                                                  'Jun',
+                                                  'Jul',
+                                                  'Aug',
+                                                  'Sep',
+                                                  'Oct',
+                                                  'Nov',
+                                                  'Dec'
+                                                ],
+                                                onRangeChanged: controller
+                                                    .monthRangeSelection,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: RepaintBoundary(
                                             child: InteractiveHistogram(
+                                              percentageMode: controller
+                                                  .binsPercentage.value,
                                               isReseted: controller.isReseted,
-                                              values: controller.dayCounts,
+                                              values: controller.yearCounts,
                                               allValues:
-                                                  controller.allDaysCounts,
+                                                  controller.allYearsCounts,
+                                              clusterCounts: controller
+                                                  .clustersYearsCounts,
+                                              clusterColors:
+                                                  controller.clusterColors,
+                                              clusterMode: controller
+                                                  .binsClusterMode.value,
                                               filterBegin: 0,
                                               filterEnd: 1,
-                                              labels: const [
-                                                'Mon',
-                                                'Tue',
-                                                'Wed',
-                                                'Thu',
-                                                'Fri',
-                                                'Sat',
-                                                'Sun',
-                                              ],
+                                              labels: List.generate(
+                                                  controller.years.length,
+                                                  (index) =>
+                                                      (controller.years[index])
+                                                          .toString()),
                                               onRangeChanged:
-                                                  controller.dayRangeSelection,
+                                                  controller.yearRangeSelection,
                                             ),
                                           ),
                                         ),
-                                      ),
-                                      Expanded(
-                                        child: RepaintBoundary(
-                                          child: Visibility(
-                                            visible: controller.granularity !=
-                                                Granularity.annual,
-                                            child: InteractiveHistogram(
-                                              isReseted: controller.isReseted,
-                                              values: controller.monthCounts,
-                                              allValues:
-                                                  controller.allMonthsCounts,
-                                              filterBegin: 0,
-                                              filterEnd: 1,
-                                              labels: const [
-                                                'Jan',
-                                                'Feb',
-                                                'Mar',
-                                                'Apr',
-                                                'May',
-                                                'Jun',
-                                                'Jul',
-                                                'Aug',
-                                                'Sep',
-                                                'Oct',
-                                                'Nov',
-                                                'Dec'
-                                              ],
-                                              onRangeChanged: controller
-                                                  .monthRangeSelection,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: RepaintBoundary(
-                                          child: InteractiveHistogram(
-                                            isReseted: controller.isReseted,
-                                            values: controller.yearCounts,
-                                            allValues:
-                                                controller.allYearsCounts,
-                                            filterBegin: 0,
-                                            filterEnd: 1,
-                                            labels: List.generate(
-                                                controller.years.length,
-                                                (index) =>
-                                                    (controller.years[index])
-                                                        .toString()),
-                                            onRangeChanged:
-                                                controller.yearRangeSelection,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(width: pCardSpace),
@@ -447,9 +541,21 @@ class DashView extends GetView<DashboardController> {
                                       children: [
                                         Visibility(
                                           visible:
-                                              controller.clusterIds.isNotEmpty,
+                                              // controller.clusterIds.isNotEmpty,
+                                              true,
                                           child: Row(
                                             children: [
+                                              // Text('Selection based'),
+                                              // Switch(
+                                              //   value: controller
+                                              //       .map_selection_mode,
+                                              //   onChanged: (value) {
+                                              //     controller
+                                              //             .map_selection_mode =
+                                              //         value;
+                                              //     controller.update();
+                                              //   },
+                                              // ),
                                               Text('Cluster mode'),
                                               Switch(
                                                 value:
@@ -465,6 +571,8 @@ class DashView extends GetView<DashboardController> {
                                         ),
                                         Expanded(
                                             child: StationsMap(
+                                          selectedBased:
+                                              controller.map_selection_mode,
                                           clusterView:
                                               controller.map_cluster_mode,
                                         )),
@@ -473,21 +581,6 @@ class DashView extends GetView<DashboardController> {
                                   ),
                                 ),
                               ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: pCardSpace),
-                        PCard(
-                          height: constraints.maxHeight * 0.14,
-                          width: double.infinity,
-                          child: GetBuilder<DashboardController>(
-                            builder: (_) => RepaintBoundary(
-                              child: StationData(
-                                windows:
-                                    datasetController.selectedStationWindows,
-                                selectedWindow:
-                                    datasetController.selectedWindow,
-                              ),
                             ),
                           ),
                         ),

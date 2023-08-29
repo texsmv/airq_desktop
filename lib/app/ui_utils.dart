@@ -109,7 +109,8 @@ Map<String, List<double>> station_locations = {
 
 double uiRangeConverter(double oldValue, double oldMin, double oldMax,
     double newMin, double newMax) {
-  return (((oldValue - oldMin) * (newMax - newMin)) / (oldMax - oldMin)) +
+  return (((oldValue - oldMin) * (newMax - newMin)) /
+          (oldMax - oldMin + 0.0001)) +
       newMin;
 }
 
@@ -404,6 +405,8 @@ Future<int> uiPickNumberInt(int minValue, int maxValue,
     ),
   );
 }
+
+
 
 Future<String> uiPickString({String? defaultValue}) async {
   late String currentValue;

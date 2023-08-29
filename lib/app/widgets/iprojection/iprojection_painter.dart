@@ -47,11 +47,12 @@ class IProjectionPainter extends CustomPainter {
   Paint highlightedBorderPaint = Paint()
     ..color = pColorPrimary
     ..style = PaintingStyle.stroke
-    ..strokeWidth = 3;
+    ..strokeWidth = 1;
 
   @override
   void paint(Canvas canvas, Size size) {
     // print("painting");
+    canvas.clipRect(Rect.fromLTWH(0, 0, size.width, size.height));
     _canvas = canvas;
     _height = size.height;
     _width = size.width;
@@ -107,17 +108,17 @@ class IProjectionPainter extends CustomPainter {
       point.canvasOutlierCoordinates = canvasCoordinates;
     }
 
-    double radius = 4;
+    double radius = 5;
     if (point.selected) {
-      radius = 8;
+      radius = 9;
     }
     if (point.isHighlighted) {
-      radius = 12;
+      radius = 13;
     }
 
     if (isHighlighted) {
       borderPaint = highlightedBorderPaint;
-      radius = 10;
+      radius = 11;
     }
 
     drawMark(
@@ -148,21 +149,35 @@ class IProjectionPainter extends CustomPainter {
     }
     if (isOutlier == 2) {
       // double isize = 8;
-      _canvas.drawLine(offset, offset + Offset(isize, isize),
-          paint..strokeWidth = radius / 3);
-      _canvas.drawLine(offset + Offset(isize, 0), offset + Offset(0, isize),
-          paint..strokeWidth = radius / 3);
+      _canvas.drawRect(
+          Rect.fromLTWH(
+              offset.dx - radius / 2, offset.dy + radius / 2, radius, radius),
+          paint);
+
+      // _canvas.drawLine(
+      //     offset, offset + Offset(isize, isize), paint..strokeWidth = 1);
+      // _canvas.drawLine(offset + Offset(isize, 0), offset + Offset(0, isize),
+      //     paint..strokeWidth = 1);
     } else if (isOutlier == 1) {
       // double isize = 8;
-      _canvas.drawCircle(
-        offset,
-        2,
-        paint,
-      );
+      var path = Path();
+
+      path.moveTo(offset.dx, offset.dy - radius * 1);
+      path.lineTo(offset.dx + radius / 2, offset.dy);
+      path.lineTo(offset.dx - radius / 2, offset.dy);
+      path.close();
+
+      _canvas.drawPath(path, paint);
+
+      // _canvas.drawCircle(
+      //   offset,
+      //   2,
+      //   paint,
+      // );
     } else {
       _canvas.drawCircle(
         offset,
-        radius,
+        radius / 2,
         paint,
       );
     }

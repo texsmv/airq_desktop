@@ -89,12 +89,12 @@ Future<Map<String, List<dynamic>>> repositoryCorrelationMatrix(
   int matSize = sqrt(corrArray.length.toDouble()).toInt();
   List<dynamic> corrMatrix = corrArray.reshape([matSize, matSize]);
 
-  List<dynamic> coords = jsonDecode(response.body)['coords'];
-  coords = coords.reshape([(coords.length / 2).floor(), 2]);
+  // List<dynamic> coords = jsonDecode(response.body)['coords'];
+  // coords = coords.reshape([(coords.length / 2).floor(), 2]);
 
   return {
     'corrMatrix': corrMatrix,
-    'coords': coords,
+    // 'coords': coords,
     'minv': data['minv'],
     'maxv': data['maxv'],
     'meanv': data['meanv'],
@@ -102,7 +102,7 @@ Future<Map<String, List<dynamic>>> repositoryCorrelationMatrix(
   };
 }
 
-Future<List<int>> repositoryClustering(int n_clusters) async {
+Future<List<int>> repositoryKmeansClustering(int n_clusters) async {
   final response = await post(Uri.parse("${hostUrl}kmeans"), body: {
     'n_clusters': jsonEncode(n_clusters),
   });
@@ -110,6 +110,16 @@ Future<List<int>> repositoryClustering(int n_clusters) async {
   dynamic data = jsonDecode(response.body);
   List<int> classes = List<int>.from(data['classes']);
   return classes;
+}
+
+Future<Map<String, dynamic>> repositoryDbscanClustering(double eps) async {
+  final response = await post(Uri.parse("${hostUrl}dbscan"), body: {
+    'eps': jsonEncode(eps),
+  });
+
+  dynamic data = jsonDecode(response.body);
+  List<int> classes = List<int>.from(data['classes']);
+  return {'labels': classes, 'n_classes': data['n_classes']};
 }
 
 Future<Map<String, List<int>>> repositoryIaqi(List<String> pollutants) async {

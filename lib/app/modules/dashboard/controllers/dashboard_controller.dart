@@ -326,6 +326,11 @@ class DashboardController extends GetxController {
     update();
   }
 
+  Future<void> dbscanClustering() async {
+    await datasetController.dbscanClustering();
+    update();
+  }
+
   void selectCluster(String clusterId) {
     for (var i = 0; i < ipoints.length; i++) {
       ipoints[i].selected = false;
@@ -373,35 +378,32 @@ class DashboardController extends GetxController {
     return selection;
   }
 
-  // List<IPoint> getSelectedMonthRange(int begin, int end){
-  //   List<IPoint> selection = [];
-  //   for (var i = 0; i < ipoints.length; i++) {
-  //     WindowModel window = ipoints[i].data as WindowModel;
-  //     int index = window.beginDate.weekday - 1;
-  //     if(index >= begin && index <= end){
-  //       selection.add(ipoints[i]);
-  //     }
-  //   }
-  //   return selection;
-  // }
-
   void fillDays(List<IPoint> points) {
     dayCounts = List.generate(7, (index) => 0);
+
     for (var i = 0; i < points.length; i++) {
       WindowModel window = points[i].data as WindowModel;
       dayCounts[window.beginDate.weekday - 1]++;
     }
-    // print('dayCounts: $dayCounts');
   }
 
   void fillAllDays() {
     allDaysCounts = List.generate(7, (index) => 0);
 
+    if (haveClusters) {
+      for (String id in clusterIds) {
+        clustersDayCounts[id] = List.generate(7, (index) => 0);
+      }
+    }
+
     for (var i = 0; i < ipoints.length; i++) {
       WindowModel window = ipoints[i].data as WindowModel;
       allDaysCounts[window.beginDate.weekday - 1]++;
+      // if (haveClusters) {
+      if (ipoints[i].cluster != null) {
+        clustersDayCounts[ipoints[i].cluster!]![window.beginDate.weekday - 1]++;
+      }
     }
-    // print('allDayCounts: $allDaysCounts');
   }
 
   void fillStations(List<IPoint> points) {
@@ -436,18 +438,30 @@ class DashboardController extends GetxController {
 
   void fillMonths(List<IPoint> points) {
     monthCounts = List.generate(12, (index) => 0);
+
     for (var i = 0; i < points.length; i++) {
       WindowModel window = points[i].data as WindowModel;
       monthCounts[window.beginDate.month - 1]++;
     }
+    // print(clustersMonthCounts);
     // print('monthCounts: $monthCounts');
   }
 
   void fillAllMonths() {
     allMonthsCounts = List.generate(12, (index) => 0);
+
+    if (haveClusters) {
+      for (String id in clusterIds) {
+        clustersMonthCounts[id] = List.generate(12, (index) => 0);
+      }
+    }
     for (var i = 0; i < ipoints.length; i++) {
       WindowModel window = ipoints[i].data as WindowModel;
       allMonthsCounts[window.beginDate.month - 1]++;
+      // if (haveClusters) {
+      if (ipoints[i].cluster != null) {
+        clustersMonthCounts[ipoints[i].cluster!]![window.beginDate.month - 1]++;
+      }
     }
     // print('allMonthsCounts: $allMonthsCounts');
   }
@@ -456,9 +470,22 @@ class DashboardController extends GetxController {
     int firstYear = datasetController.years.first;
     allYearsCounts =
         List.generate(datasetController.years.length, (index) => 0);
+
+    if (haveClusters) {
+      for (String id in clusterIds) {
+        clustersYearsCounts[id] =
+            List.generate(datasetController.years.length, (index) => 0);
+      }
+    }
     for (var i = 0; i < ipoints.length; i++) {
       WindowModel window = ipoints[i].data as WindowModel;
       allYearsCounts[window.beginDate.year - firstYear]++;
+
+      // if (haveClusters) {
+      if (ipoints[i].cluster != null) {
+        clustersYearsCounts[ipoints[i].cluster!]![
+            window.beginDate.year - firstYear]++;
+      }
     }
     // print('allYearCounts: $allYearsCounts');
   }
@@ -469,16 +496,11 @@ class DashboardController extends GetxController {
     int firstYear = datasetController.years.first;
 
     yearCounts = List.generate(datasetController.years.length, (index) => 0);
+
     for (var i = 0; i < points.length; i++) {
       WindowModel window = points[i].data as WindowModel;
       yearCounts[window.beginDate.year - firstYear]++;
-
-      // for (var j = 0; j < selectedPollutants.length; j++) {
-      //   yearMeans[selectedPollutants[j].id]![window.beginDate.year -
-      //       firstYear] += window.magnitude[selectedPollutants[j].id]!;
-      // }
     }
-    // print('yearCounts: $yearCounts');
   }
 
   void manualCluster() {
@@ -529,7 +551,17 @@ class DashboardController extends GetxController {
   // StationModel? selectedStation;
 
   bool map_cluster_mode = false;
+  bool map_selection_mode = true;
   bool showShape = false;
   RxBool pickMode = false.obs;
+  RxBool binsPercentage = false.obs;
+  RxBool binsClusterMode = false.obs;
+  Map<String, List<int>> clustersDayCounts = {};
+  Map<String, List<int>> clustersMonthCounts = {};
+  Map<String, List<int>> clustersYearsCounts = {};
+
+  bool get haveClusters => datasetController.clusterIds.isNotEmpty;
+  List<String> get clurtersIds => datasetController.clusterIds;
+
   HashMap<int, StationModel> selectedStations = HashMap<int, StationModel>();
 }
