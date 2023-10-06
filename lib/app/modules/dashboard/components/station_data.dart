@@ -135,14 +135,25 @@ class _StationDataState extends State<StationData> {
                                         widget.windows![index].id
                                     ? pColorPrimary.withOpacity(0.4)
                                     : Colors.white,
-                                // color: widget.windows![index].
+                                // color: widget.windows![index].cluster != null
+                                //     ? dashboardController.clusterColors[
+                                //             widget.windows![index].cluster]!
+                                //         .withOpacity(0.15)
+                                //     : Colors.white,
+                                // color: widget.windows![index].cluster
                                 child: CustomPaint(
                                   painter: BarChartPainter(
-                                    color: widget.selectedWindow!.id ==
-                                            widget.windows![index].id
-                                        ? pColorPrimary
+                                    color: widget.windows![index].cluster !=
+                                            null
+                                        ? dashboardController.clusterColors[
+                                                widget.windows![index].cluster]!
+                                            .withOpacity(0.85)
                                         : Color.fromRGBO(123, 123, 123, 1),
-                                    minValue: 0,
+                                    // color: widget.selectedWindow!.id ==
+                                    //         widget.windows![index].id
+                                    //     ? pColorPrimary
+                                    //     : Color.fromRGBO(123, 123, 123, 1),
+                                    minValue: minValue,
                                     maxValue: maxValue,
                                     values: widget.windows![index].values[
                                         controller.projectedPollutant.id]!,

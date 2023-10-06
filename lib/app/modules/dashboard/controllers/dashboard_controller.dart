@@ -18,8 +18,8 @@ class DashboardController extends GetxController {
   List<int> get years => datasetController.years;
   double xMaxValue = 1;
   double xMinValue = 0;
-  double get yMaxValue => datasetController.maxValue;
-  double get yMinValue => datasetController.minValue;
+  double get yMaxValue => datasetController.maxSmoothedValue;
+  double get yMinValue => datasetController.minSmoothedValue;
   // double get yMagnitudMaxValue => datasetController.windowsMagnitudMaxValue;
   // double get yMagnitudMinValue => datasetController.windowsMagnitudMinValue;
   double get xMinValueSeries => 1;
@@ -103,7 +103,6 @@ class DashboardController extends GetxController {
     List<double> stdv = List<double>.from(map['stdv']!);
 
     List<PollutantModel> pollutants = datasetController.pollutants;
-    print(pollutants.length);
 
     Get.dialog(
       PDialog(
@@ -168,8 +167,6 @@ class DashboardController extends GetxController {
         ),
       ),
     );
-
-    print(matrix);
   }
 
   Future<void> selectPollutant(String name) async {
@@ -492,7 +489,6 @@ class DashboardController extends GetxController {
 
   void fillYears(List<IPoint> points) {
     yearEnd = datasetController.years.length - 1;
-
     int firstYear = datasetController.years.first;
 
     yearCounts = List.generate(datasetController.years.length, (index) => 0);

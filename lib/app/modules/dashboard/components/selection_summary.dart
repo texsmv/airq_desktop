@@ -5,13 +5,14 @@ import 'package:airq_ui/app/modules/dashboard/controllers/dashboard_controller.d
 import 'package:airq_ui/app/widgets/iprojection/ipoint.dart';
 import 'package:airq_ui/controllers/dataset_controller.dart';
 import 'package:airq_ui/models/station_model.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jiffy/jiffy.dart';
 
 import '../../../widgets/pcard.dart';
 
-const double selectorSpaceLeft = 80;
+const double selectorSpaceLeft = 110;
 const double selectorSpaceRight = 10;
 const double selectorSpaceTop = 30;
 const double selectorSpaceBottom = 50;
@@ -37,6 +38,7 @@ class _SelectionSummaryState extends State<SelectionSummary> {
   late List<StationModel> stations;
   late List<DateTime> dates;
   late List<StationDateData> stationsData;
+
   @override
   void initState() {
     super.initState();
@@ -49,6 +51,9 @@ class _SelectionSummaryState extends State<SelectionSummary> {
   @override
   void didUpdateWidget(covariant SelectionSummary oldWidget) {
     orderStationsData();
+    computeTotalWindows();
+
+    // print(dateRange);
     super.didUpdateWidget(oldWidget);
   }
 
@@ -58,6 +63,7 @@ class _SelectionSummaryState extends State<SelectionSummary> {
         dates = [];
         Jiffy temp = Jiffy(
             [dateRange.start.year, dateRange.start.month, dateRange.start.day]);
+        // temp.isBefore(input)
         while (temp.isBefore(dateRange.end)) {
           dates.add(temp.dateTime);
           temp.add(days: 1);
@@ -65,21 +71,30 @@ class _SelectionSummaryState extends State<SelectionSummary> {
         break;
       case Granularity.monthly:
         dates = [];
+        // Jiffy temp = Jiffy.parseFromList(
+
+        //     [dateRange.start.year, dateRange.start.month, dateRange.start.day]);
         Jiffy temp = Jiffy(
             [dateRange.start.year, dateRange.start.month, dateRange.start.day]);
         while (temp.isBefore(dateRange.end)) {
+          // while (temp.isBefore(Jiffy.parseFromDateTime(dateRange.end))) {
           dates.add(temp.dateTime);
           temp.add(months: 1);
         }
         break;
       case Granularity.annual:
         dates = [];
+
         Jiffy temp = Jiffy(
             [dateRange.start.year, dateRange.start.month, dateRange.start.day]);
         while (temp.isBefore(dateRange.end)) {
           dates.add(temp.dateTime);
           temp.add(years: 1);
         }
+        dates.add(temp.dateTime);
+        temp.add(years: 1);
+
+        // print(dates);
         break;
       default:
     }
@@ -144,6 +159,7 @@ class _SelectionSummaryState extends State<SelectionSummary> {
 
   @override
   Widget build(BuildContext context) {
+    // return Container();
     return Container(
       width: double.infinity,
       height: double.infinity,
@@ -162,7 +178,6 @@ class _SelectionSummaryState extends State<SelectionSummary> {
                   shrinkWrap: true,
                   // physics: const NeverScrollableScrollPhysics(),
                   itemBuilder: (_, index) {
-                    // print('Gathering done');
                     return StationItem(
                       data: stationsData[index],
                     );
@@ -233,6 +248,7 @@ class _YearSeparatorState extends State<YearSeparator> {
 
   @override
   Widget build(BuildContext context) {
+    double acum = 0;
     return IgnorePointer(
       child: Padding(
         padding: const EdgeInsets.only(left: selectorSpaceLeft),
@@ -242,21 +258,41 @@ class _YearSeparatorState extends State<YearSeparator> {
               children: List.generate(
                 yearPositions.length,
                 (index) {
+                  if (index != yearPositions.length - 1) {
+                    acum = acum +
+                        (constraints.maxWidth / widget.dates.length) *
+                            yearPositions[index];
+                  }
                   return Column(
                     children: [
                       Container(
                         height: yearsSpace,
-                        child: RotatedBox(
-                          quarterTurns: 3,
-                          child: Text(widget
-                              .dates[cumulativeYearPositions[index] - 1].year
-                              .toString()),
+                        width: (index == yearPositions.length - 1)
+                            ? constraints.maxWidth - acum
+                            : (constraints.maxWidth / widget.dates.length) *
+                                yearPositions[index],
+                        clipBehavior: Clip.hardEdge,
+                        decoration: BoxDecoration(),
+                        child: Center(
+                          child: RotatedBox(
+                            quarterTurns: 3,
+                            child: AutoSizeText(
+                              widget.dates[cumulativeYearPositions[index] - 1]
+                                  .year
+                                  .toString(),
+                              minFontSize: 6,
+                              maxFontSize: 14,
+                              style: TextStyle(fontSize: 14),
+                            ),
+                          ),
                         ),
                       ),
                       Expanded(
                         child: Container(
-                          width: (constraints.maxWidth / widget.dates.length) *
-                              yearPositions[index],
+                          width: (index == yearPositions.length - 1)
+                              ? constraints.maxWidth - acum
+                              : (constraints.maxWidth / widget.dates.length) *
+                                  yearPositions[index],
                           decoration: BoxDecoration(
                             border: Border.all(
                               width: 0.4,

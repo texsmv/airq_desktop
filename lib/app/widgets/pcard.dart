@@ -8,7 +8,8 @@ import 'package:airq_ui/app/constants/colors.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:widget_to_image/widget_to_image.dart';
+// import 'package:widget_to_image/widget_to_image.dart';
+import 'package:widgets_to_image/widgets_to_image.dart';
 
 class PCard extends StatefulWidget {
   final Widget? child;
@@ -16,6 +17,8 @@ class PCard extends StatefulWidget {
   final Color color;
   final double? height;
   final double? width;
+  final bool expand;
+  final int flex;
   const PCard({
     Key? key,
     this.child,
@@ -23,6 +26,8 @@ class PCard extends StatefulWidget {
     this.color = pColorBackground,
     this.height,
     this.width,
+    this.expand = false,
+    this.flex = 1,
   }) : super(key: key);
 
   @override
@@ -36,8 +41,10 @@ class _PCardState extends State<PCard> {
   static const double hideSize = 40;
   GlobalKey _globalKey = GlobalKey();
 
+  WidgetsToImageController controller = WidgetsToImageController();
+
   Widget build(BuildContext context) {
-    return MouseRegion(
+    Widget child = MouseRegion(
       onEnter: (_) {
         setState(() {
           hovered = true;
@@ -48,8 +55,8 @@ class _PCardState extends State<PCard> {
           hovered = false;
         });
       },
-      child: RepaintBoundary(
-        key: _globalKey,
+      child: WidgetsToImage(
+        controller: controller,
         child: Container(
             height: hide ? hideSize : widget.height,
             width: hide ? hideSize : widget.width,
@@ -92,6 +99,13 @@ class _PCardState extends State<PCard> {
                   )),
       ),
     );
+    if (widget.expand && !hide) {
+      child = Expanded(
+        child: child,
+        flex: widget.flex,
+      );
+    }
+    return child;
   }
 
   Widget expandIcon() {
@@ -143,14 +157,22 @@ class _PCardState extends State<PCard> {
         ),
       ),
       onTap: () async {
-        ByteData byteData =
-            await WidgetToImage.repaintBoundaryToImage(_globalKey);
+        // ByteData byteData =
+        // await WidgetToImage.repaintBoundaryToImage(_globalKey);
+
+        await controller.capture();
+        Uint8List? bytes = await controller.capture();
+
         // await FileSaver.instance.saveFile(String name, Uint8List bytes, String ext, mimeType: MimeType);
-        // Directory appDocDir = await getApplicationDocumentsDirectory();
-        // String appDocPath = appDocDir.path;
+        Directory appDocDir = await getApplicationDocumentsDirectory();
+        String appDocPath = appDocDir.path;
         String imageName = await uiPickString();
         String path = p.join(imageName);
-        FileSaver.instance.saveFile(path, byteData.buffer.asUint8List(), 'png');
+        FileSaver.instance.saveFile(
+            // name: path, bytes: byteData.buffer.asUint8List(), ext: 'png');
+            name: path,
+            bytes: bytes,
+            ext: 'png');
 
         Get.showSnackbar(
           GetSnackBar(

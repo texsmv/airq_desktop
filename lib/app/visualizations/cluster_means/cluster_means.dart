@@ -64,43 +64,47 @@ class _ClusterMeansState extends State<ClusterMeans> {
     means = {};
     stds = {};
     for (var clusterId in datasetController.clusterIds) {
-      List<double> meansl = List.generate(timeLen, (index) => 0);
-      List<double> stdsl = List.generate(timeLen, (index) => 0);
+      means[clusterId] = datasetController.clustersData[clusterId]!
+          .meanValues[datasetController.projectedPollutant.id]!;
+      stds[clusterId] = datasetController.clustersData[clusterId]!
+          .stdValues[datasetController.projectedPollutant.id]!;
+      // List<double> meansl = List.generate(timeLen, (index) => 0);
+      // List<double> stdsl = List.generate(timeLen, (index) => 0);
 
-      n = 0;
-      for (var i = 0; i < clusters[clusterId]!.length; i++) {
-        n++;
-        for (var j = 0; j < timeLen; j++) {
-          meansl[j] += allValues[clusterId]![i][j];
-        }
-      }
-      for (var j = 0; j < timeLen; j++) {
-        meansl[j] = meansl[j] / n;
-      }
-
+      // n = 0;
       // for (var i = 0; i < clusters[clusterId]!.length; i++) {
+      //   n++;
       //   for (var j = 0; j < timeLen; j++) {
-      //     stdsl[j] += pow(allValues[clusterId]![i][j] - meansl[j], 2);
+      //     meansl[j] += allValues[clusterId]![i][j];
       //   }
       // }
       // for (var j = 0; j < timeLen; j++) {
-      //   stdsl[j] = sqrt(stdsl[j] / n);
+      //   meansl[j] = meansl[j] / n;
       // }
-      means[clusterId] = meansl;
-      stds[clusterId] = stdsl;
-      print(meansl);
+
+      // // for (var i = 0; i < clusters[clusterId]!.length; i++) {
+      // //   for (var j = 0; j < timeLen; j++) {
+      // //     stdsl[j] += pow(allValues[clusterId]![i][j] - meansl[j], 2);
+      // //   }
+      // // }
+      // // for (var j = 0; j < timeLen; j++) {
+      // //   stdsl[j] = sqrt(stdsl[j] / n);
+      // // }
+      // means[clusterId] = meansl;
+      // stds[clusterId] = stdsl;
+      // }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // print(means);
-    // print(stds);
     return datasetController.clusterIds.isNotEmpty
         ? CustomPaint(
             painter: ClusterMeansPainter(
               means: means,
               stds: stds,
+              minV: dashboardController.yMinValue,
+              maxV: dashboardController.yMaxValue,
             ),
           )
         : SizedBox();

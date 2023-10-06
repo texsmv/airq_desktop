@@ -93,7 +93,6 @@ class SubsetProjectionController extends GetxController {
         double distance = sqrt(pow((pointer.dx - x), 2).toDouble() +
             pow((pointer.dy - y), 2).toDouble());
 
-        print(distance);
         if (minDistance > distance && distance < threshold) {
           nearest = points[i];
           minDistance = distance;

@@ -18,6 +18,16 @@ class WindowModel {
   Map<int, List<double>> values = {};
   Map<int, List<double>> smoothedValues = {};
 
+  // cluster id
+  //
+  //  -1 means it's an outlier
+  String? cluster;
+
+  int isOutlier = 0; // 1, 2 for lower and upper outliers
+  bool selected = false;
+  bool isHighlighted = false;
+  bool withinFilter = true;
+
   WindowModel({
     required this.id,
     required this.beginDate,

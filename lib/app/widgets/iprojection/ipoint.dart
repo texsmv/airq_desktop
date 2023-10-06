@@ -19,15 +19,17 @@ class IPoint {
     required this.outlierCoordinates,
   });
 
-  /// cluster id
-  ///
-  /// -1 means it's an outlier
-  String? cluster;
+  String? get cluster => data.cluster;
+  int get isOutlier => data.isOutlier;
+  bool get selected => data.selected;
+  bool get isHighlighted => data.isHighlighted;
+  bool get withinFilter => data.withinFilter;
 
-  int isOutlier = 0; // 1, 2 for lower and upper outliers
-  bool selected = false;
-  bool isHighlighted = false;
-  bool withinFilter = true;
+  set cluster(String? v) => data.cluster = v;
+  set isOutlier(int v) => data.isOutlier = v;
+  set selected(bool v) => data.selected = v;
+  set isHighlighted(bool v) => data.isHighlighted = v;
+  set withinFilter(bool v) => data.withinFilter = v;
 
   Offset getCoords(int mode) {
     if (mode == 0) {

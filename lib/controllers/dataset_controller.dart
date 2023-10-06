@@ -30,8 +30,39 @@ class DatasetController extends GetxController {
   Map<String, List<IPoint>> get clusters => _clusters;
   Map<int, double> get minValues => _minValue;
   Map<int, double> get maxValues => _maxValue;
+
+  Map<int, double> get minSmoothedValues => _minValue;
+  Map<int, double> get maxSmoothedValues => _maxValue;
+
   double get minValue => _minValue[_projectedPollutant.id]!;
   double get maxValue => _maxValue[_projectedPollutant.id]!;
+
+  double get minSmoothedValue => _minSmoothedValue[_projectedPollutant.id]!;
+  double get maxSmoothedValue => _maxSmoothedValue[_projectedPollutant.id]!;
+
+  double get minMagOutlier {
+    List<dynamic> cmean = fdaOutliers[projectedPollutant.id]![0];
+    double minv = List<double>.from(cmean).reduce(min);
+    return minv;
+  }
+
+  double get maxMagOutlier {
+    List<dynamic> cmean = fdaOutliers[projectedPollutant.id]![0];
+    double maxv = List<double>.from(cmean).reduce(max);
+    return maxv;
+  }
+
+  double get minShapeOutlier {
+    List<dynamic> cvar = fdaOutliers[projectedPollutant.id]![1];
+    double minv = List<double>.from(cvar).reduce(min);
+    return minv;
+  }
+
+  double get maxShapeOutlier {
+    List<dynamic> cvar = fdaOutliers[projectedPollutant.id]![1];
+    double maxv = List<double>.from(cvar).reduce(max);
+    return maxv;
+  }
 
   DateTimeRange get dateRange =>
       DateTimeRange(start: _beginDate, end: _endDate);
@@ -63,11 +94,15 @@ class DatasetController extends GetxController {
   List<PollutantModel> get selectedPollutants => _selectedPollutants;
   List<WindowModel> get allWindows => _allWindows;
   List<String> get clusterIds => _clusters.keys.toList();
+
   List<int> get years {
-    // int n = (_endDate.difference(_beginDate).inDays / 365).ceil();
     int n = _endDate.year - _beginDate.year + 1;
-    return List.generate(
-        n, (i) => _beginDate.add(Duration(days: 366 * i)).year);
+    // * This works?
+    // List<int> years =
+    //     List.generate(n, (i) => _beginDate.add(Duration(days: 365 * i)).year);
+
+    List<int> years = List.generate(n, (i) => _beginDate.year + i);
+    return years;
   }
 
   Map<String, Color> get clusterColors => _clusterColors;
@@ -394,6 +429,9 @@ class DatasetController extends GetxController {
     _minValue = {};
     _maxValue = {};
 
+    _minSmoothedValue = {};
+    _maxSmoothedValue = {};
+
     for (var i = 0; i < pollKeys.length; i++) {
       PollutantModel pollutant = PollutantModel(
         id: i,
@@ -408,6 +446,9 @@ class DatasetController extends GetxController {
       List<dynamic> windowsPrec =
           List<dynamic>.from(data['proc_windows'][pollKeys[i]]);
       List<double> windowsDPrec = List<double>.from(windows);
+
+      _maxSmoothedValue[i] = List<double>.from(windowsPrec).reduce(max);
+      _minSmoothedValue[i] = List<double>.from(windowsPrec).reduce(min);
 
       _maxValue[i] = windowsDPrec.reduce(max);
       _minValue[i] = windowsDPrec.reduce(min);
@@ -494,7 +535,7 @@ class DatasetController extends GetxController {
 
     _projectedPollutant = _pollutants.first;
 
-    // await loadIaqis();
+    await loadIaqis();
   }
 
   Future<void> loadIaqis() async {
@@ -522,6 +563,8 @@ class DatasetController extends GetxController {
         }
         _points![i].data.iaqis = iaqi;
       }
+    } else {
+      print('No aqis found');
     }
   }
 
@@ -535,7 +578,7 @@ class DatasetController extends GetxController {
         pollutantPosition: _projectedPollutant.id,
         neighbors: 10,
         filteredWindows: filtered,
-        beta: 0,
+        beta: 5,
         delta: 0,
       );
       List<dynamic> shapeCoords = map['shapeCoords']!;
@@ -612,6 +655,7 @@ class DatasetController extends GetxController {
     }
 
     _createClusterColors();
+    _createClusterData();
     _createStaionClusterCounts();
   }
 
@@ -650,6 +694,8 @@ class DatasetController extends GetxController {
       _clusterColors[clusterIds[i]] = colors[i];
     }
 
+    _createClusterColors();
+    _createClusterData();
     _createStaionClusterCounts();
   }
 
@@ -673,6 +719,7 @@ class DatasetController extends GetxController {
     }
 
     _createClusterColors();
+    _createClusterData();
     _createStaionClusterCounts();
   }
 
@@ -689,7 +736,6 @@ class DatasetController extends GetxController {
     Map<String, dynamic> data = await repositoryDbscanClustering(eps);
     List<int> classes = data['labels'];
     int nClusters = data['n_classes'];
-    print(nClusters);
 
     for (var i = 0; i < nClusters; i++) {
       _clusters[i.toString()] = [];
@@ -704,6 +750,7 @@ class DatasetController extends GetxController {
     }
 
     _createClusterColors();
+    _createClusterData();
     _createStaionClusterCounts();
   }
 
@@ -718,8 +765,10 @@ class DatasetController extends GetxController {
 
     for (var i = 0; i < _points!.length; i++) {
       IPoint point = _points![i];
-      stationCounts[point.data.stationId]![point.cluster!] =
-          stationCounts[point.data.stationId]![point.cluster!]! + 1;
+      if (point.cluster != null) {
+        stationCounts[point.data.stationId]![point.cluster!] =
+            stationCounts[point.data.stationId]![point.cluster!]! + 1;
+      }
     }
     clustersStationCounts = stationCounts;
   }
@@ -760,6 +809,8 @@ class DatasetController extends GetxController {
       _clusterColors[clusterIds[i]] = colors[i];
     }
 
+    _createClusterColors();
+    _createClusterData();
     _createStaionClusterCounts();
   }
 
@@ -787,6 +838,7 @@ class DatasetController extends GetxController {
     }
 
     _createClusterColors();
+    _createClusterData();
     _createStaionClusterCounts();
   }
 
@@ -813,6 +865,7 @@ class DatasetController extends GetxController {
     }
 
     _createClusterColors();
+    _createClusterData();
     _createStaionClusterCounts();
   }
 
@@ -831,6 +884,7 @@ class DatasetController extends GetxController {
     Color color = uiGetColor(clusterPos);
     _clusterColors[clusterId] = color;
 
+    _createStaionClusterCounts();
     update();
   }
 
@@ -848,12 +902,22 @@ class DatasetController extends GetxController {
     }
   }
 
+  void _createClusterData() {
+    clustersData = {};
+    for (var i = 0; i < clusterIds.length; i++) {
+      List<IPoint> ipoints = _clusters[clusterIds[i]]!;
+      Color color = _clusterColors[clusterIds[i]]!;
+      clustersData[clusterIds[i]] =
+          ClusterData(id: clusterIds[i], color: color, ipoints: ipoints);
+      clustersData[clusterIds[i]]!.computeStatistics();
+    }
+  }
+
   Future<void> getContrastiveFeatures() async {
     if (clusterIds.length == 0 || clusterIds.length == 1) {
       Get.snackbar('System', 'Make at least two clusters');
       return;
     }
-    // print();
     if (!areAllClustered()) {
       createNonClusterCluster();
     }
@@ -907,7 +971,6 @@ class DatasetController extends GetxController {
     List<dynamic> coords = dataMap['coords']!;
     List<dynamic> currOutliers = dataMap['outliers']!;
     List<dynamic> shapeCoords = dataMap['shapeCoords']!;
-    print(currOutliers);
     List<IPoint> spoints = [];
     int coord_pos = 0;
     for (var i = 0; i < _points!.length; i++) {
@@ -929,7 +992,6 @@ class DatasetController extends GetxController {
   }
 
   void showSubset() async {
-    print('Show subset');
     List<double> xcoords = List<double>.generate(
         subset!.length, (index) => subset![index].coordinates.dx);
     List<double> ycoords = List<double>.generate(
@@ -974,6 +1036,10 @@ class DatasetController extends GetxController {
 
   late Map<int, double> _minValue;
   late Map<int, double> _maxValue;
+
+  late Map<int, double> _minSmoothedValue;
+  late Map<int, double> _maxSmoothedValue;
+
   Map<int, List<double>>? contFeatMap;
   Map<int, StationModel> stationsMap = {};
   Map<int, List<int>>? iaqis;
@@ -981,6 +1047,7 @@ class DatasetController extends GetxController {
   List<IPoint>? subset;
 
   Map<int, Map<String, int>> clustersStationCounts = {};
+  Map<String, ClusterData> clustersData = {};
 
   bool show_filtered = false;
 }
@@ -989,4 +1056,96 @@ enum Granularity {
   annual,
   monthly,
   daily,
+}
+
+List<double> sumLists(List<double> list1, List<double> list2) {
+  // Check if the lists have the same length
+  if (list1.length != list2.length) {
+    throw ArgumentError("Lists must have the same length");
+  }
+
+  List<double> result = [];
+
+  for (int i = 0; i < list1.length; i++) {
+    double sum = list1[i] + list2[i];
+    result.add(sum);
+  }
+
+  return result;
+}
+
+List<double> squareDiffLists(List<double> list1, List<double> list2) {
+  // Check if the lists have the same length
+  if (list1.length != list2.length) {
+    throw ArgumentError("Lists must have the same length");
+  }
+
+  List<double> result = [];
+
+  for (int i = 0; i < list1.length; i++) {
+    double sum = pow(list1[i] - list2[i], 2).toDouble();
+    result.add(sum);
+  }
+
+  return result;
+}
+
+class ClusterData {
+  final String id;
+
+  // Mean values along time for each pollutant
+  Map<int, List<double>> meanValues = {};
+  // Std values along time for each pollutant
+  Map<int, List<double>> stdValues = {};
+
+  final Color color;
+
+  Map<int, Offset> minMaxValues = {};
+
+  final List<IPoint> ipoints;
+
+  ClusterData({
+    required this.id,
+    required this.color,
+    required this.ipoints,
+  });
+
+  void computeStatistics() {
+    List<int> pollutantIds = ipoints.first.data.smoothedValues.keys.toList();
+
+    for (var pollId in pollutantIds) {
+      double minValue = double.maxFinite;
+      double maxValue = -double.maxFinite;
+      List<double> sums = List.generate(
+          ipoints.first.data.smoothedValues.values.first.length, (index) => 0);
+      for (var i = 0; i < ipoints.length; i++) {
+        sums = sumLists(sums, ipoints[i].data.smoothedValues[pollId]!);
+        double tempMax = ipoints[i].data.smoothedValues[pollId]!.reduce(max);
+        double tempMin = ipoints[i].data.smoothedValues[pollId]!.reduce(min);
+        if (tempMax > maxValue) {
+          maxValue = tempMax;
+        }
+        if (tempMin < minValue) {
+          minValue = tempMin;
+        }
+      }
+
+      List<double> means =
+          List.generate(sums.length, (index) => sums[index] / ipoints.length);
+
+      sums = List.generate(
+          ipoints.first.data.smoothedValues.values.first.length, (index) => 0);
+
+      for (var i = 0; i < ipoints.length; i++) {
+        // print(squareDiffLists(ipoints[i].data.smoothedValues[pollId]!, means));
+        sums = sumLists(sums,
+            squareDiffLists(ipoints[i].data.smoothedValues[pollId]!, means));
+      }
+      List<double> stds = List.generate(
+          sums.length, (index) => sqrt(sums[index] / (ipoints.length - 1)));
+      meanValues[pollId] = means;
+      stdValues[pollId] = stds;
+      minMaxValues[pollId] = Offset(minValue, maxValue);
+    }
+  }
 }

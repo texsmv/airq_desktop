@@ -38,8 +38,8 @@ class _StationsMapState extends State<StationsMap> {
         center: _getCenter(),
         zoom: 6.0,
       ),
-      layers: [
-        TileLayerOptions(
+      children: [
+        TileLayer(
           urlTemplate:
               "https://api.mapbox.com/styles/v1/texs/{mapStyleId}/tiles/256/{z}/{x}/{y}@2x?access_token={accessToken}",
           additionalOptions: {
@@ -47,9 +47,9 @@ class _StationsMapState extends State<StationsMap> {
             'accessToken': mapBoxAccessToken,
           },
         ),
-        MarkerLayerOptions(
+        MarkerLayer(
           markers: _markers(),
-        ),
+        )
       ],
     );
   }

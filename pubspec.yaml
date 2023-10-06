@@ -36,28 +36,29 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
   get: ^4.6.5
-  glass_kit: ^2.0.1
+  glass_kit: ^3.0.0
   random_color: ^1.0.6-nullsafety
   easy_debounce: ^2.0.2+1
-  charts_painter: ^2.0.0+2
+  charts_painter: ^3.1.1
   jiffy: ^5.0.0
   flutter_easyloading: ^3.0.5
-  http: ^0.13.5
-  dropdown_button2: ^1.1.1
-  fl_chart: ^0.55.2
-  intl: ^0.17.0
+  http: ^1.1.0
+  dropdown_button2: ^2.3.9
+  fl_chart: ^0.63.0
+  intl: ^0.18.1
   rainbow_color: ^2.0.1
-  d_chart: ^0.1.0
-  flutter_map: ^0.14.0
-  scroll_to_index: ^1.0.6
+  d_chart: ^2.6.2
+  flutter_map: ^5.0.0
+  scroll_to_index: ^3.0.1
   numberpicker: ^2.1.1
   auto_size_text: ^3.0.0
   blurrycontainer: ^1.0.2
   nice_buttons: ^0.0.2
-  widget_to_image: ^2.0.0
-  file_saver: ^0.1.1
+  # widget_to_image: ^2.0.0
+  file_saver: ^0.2.8
   path_provider: ^2.0.11
-  get_cli: ^0.2.30
+  get_cli: ^1.8.1
+  widgets_to_image: ^0.0.2
 
 dev_dependencies:
   flutter_test:

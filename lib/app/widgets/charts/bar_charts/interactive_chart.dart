@@ -136,15 +136,15 @@ class _InteractiveHistogramState extends State<InteractiveHistogram> {
                               height: plotBarHeight(
                                 widget.allValues[index],
                               ),
-                              child: Center(
-                                child: Text(
-                                  '${widget.values[index].toString()}',
-                                  style: const TextStyle(
-                                    color: pTextColorPrimary,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
+                              // child: Center(
+                              //   child: Text(
+                              //     '${widget.values[index].toString()}',
+                              //     style: const TextStyle(
+                              //       color: pTextColorPrimary,
+                              //       fontWeight: FontWeight.w500,
+                              //     ),
+                              //   ),
+                              // ),
                             ),
                           ),
                         ),
@@ -153,6 +153,7 @@ class _InteractiveHistogramState extends State<InteractiveHistogram> {
                   ),
                   // _selectionBars(),
                   widget.clusterMode ? _clusterBars() : _selectionBars(),
+                  _countsPerBar(),
                   _wholeArea(),
                   _selectedArea(constraints),
                   _leftHanfler(constraints),
@@ -200,18 +201,12 @@ class _InteractiveHistogramState extends State<InteractiveHistogram> {
 
   Widget _clusterBars() {
     List<String> clusterIds = widget.clusterColors.keys.toList();
-    // print('BAR PLOT');
-    // print(allMaxCount);
-    // print(plotBarHeight(allMaxCount));
-    // print('');
     return Positioned.fill(
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: _dragWidth),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: List.generate(widget.values.length, (index) {
-            // print('INDEX');
-            // print(index);
             return Expanded(
               child: Column(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -229,6 +224,51 @@ class _InteractiveHistogramState extends State<InteractiveHistogram> {
                   })),
             );
           }),
+        ),
+      ),
+    );
+  }
+
+  Widget _countsPerBar() {
+    return Positioned.fill(
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: _dragWidth),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: List.generate(
+            widget.values.length,
+            (index) => Expanded(
+              child: Container(
+                height: plotBarHeight(
+                  widget.allValues[index],
+                ),
+                child: Center(
+                  child: Stack(
+                    children: [
+                      Text(
+                        '${widget.values[index].toString()}',
+                        style: TextStyle(
+                          // color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                          foreground: Paint()
+                            ..style = PaintingStyle.stroke
+                            ..strokeWidth = 1.8
+                            ..color = Colors.black,
+                        ),
+                      ),
+                      Text(
+                        '${widget.values[index].toString()}',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -254,15 +294,15 @@ class _InteractiveHistogramState extends State<InteractiveHistogram> {
                 height: plotBarHeight(
                   widget.values[index],
                 ),
-                child: Center(
-                  child: Text(
-                    '${widget.values[index].toString()}',
-                    style: const TextStyle(
-                      color: pTextColorPrimary,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
+                // child: Center(
+                //   child: Text(
+                //     '${widget.values[index].toString()}',
+                //     style: const TextStyle(
+                //       color: Colors.white,
+                //       fontWeight: FontWeight.w500,
+                //     ),
+                //   ),
+                // ),
               ),
             ),
           ),

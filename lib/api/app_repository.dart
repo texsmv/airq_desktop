@@ -129,17 +129,21 @@ Future<Map<String, List<int>>> repositoryIaqi(List<String> pollutants) async {
 
   dynamic data = jsonDecode(response.body);
   if (data['status'] == 'ERROR') {
+    print('Iaqis ERROR!!');
     return {};
   } else {
     Map<String, List<int>> map = {};
     List<String> keys = List.from(data.keys);
-
+    print('Iaqis loading ....');
     for (var key in keys) {
       if (key != 'status') {
+        print(key);
         List<int> values = List<int>.from(data[key]);
         map[key] = values;
       }
     }
+
+    print('----');
 
     return map;
   }

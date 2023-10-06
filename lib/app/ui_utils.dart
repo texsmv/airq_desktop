@@ -143,12 +143,12 @@ Color uiClusterColor(String clusterId) {
   return Get.find<DatasetController>().clusterColors[clusterId]!;
 }
 
-bool uiIsIaqiAvailable(String pollName) {
-  if (Get.find<DatasetController>().granularity == Granularity.annual) {
-    return false;
-  }
-  return ['pm25', 'pm10', 'o3', 'no2', 'co'].contains(pollName.toLowerCase());
-}
+// bool uiIsIaqiAvailable(String pollName) {
+//   if (Get.find<DatasetController>().granularity == Granularity.annual) {
+//     return false;
+//   }
+//   return ['pm25', 'pm10', 'o3', 'no2', 'co'].contains(pollName.toLowerCase());
+// }
 
 List<Color> colorList = [
   const Color.fromRGBO(2, 62, 138, 1),
@@ -405,8 +405,6 @@ Future<int> uiPickNumberInt(int minValue, int maxValue,
     ),
   );
 }
-
-
 
 Future<String> uiPickString({String? defaultValue}) async {
   late String currentValue;

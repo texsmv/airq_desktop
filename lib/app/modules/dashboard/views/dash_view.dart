@@ -41,6 +41,7 @@ class DashView extends GetView<DashboardController> {
         child: Text('Select windows'),
       );
     }
+    // return Container();
 
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -57,6 +58,7 @@ class DashView extends GetView<DashboardController> {
                     child: Column(
                       children: [
                         Expanded(
+                          flex: 7,
                           // ** First Row of visualizations
                           child: Row(
                             children: [
@@ -126,155 +128,152 @@ class DashView extends GetView<DashboardController> {
                               ),
                               const SizedBox(width: pCardSpace),
                               // ** Series view
-                              Expanded(
-                                child: PCard(
-                                  child: GetBuilder<DashboardController>(
-                                    builder: (_) => Column(
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 35.0),
-                                          child: Row(
-                                            children: [
-                                              Visibility(
-                                                visible: controller
-                                                    .clusterIds.isNotEmpty,
-                                                child: Row(
-                                                  children: [
-                                                    const Text(
-                                                      'Clusters',
-                                                      style: TextStyle(
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.w700,
-                                                        color: pColorPrimary,
-                                                      ),
+
+                              PCard(
+                                expand: true,
+                                flex: 2,
+                                child: GetBuilder<DashboardController>(
+                                  builder: (_) => Column(
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 35.0),
+                                        child: Row(
+                                          children: [
+                                            Visibility(
+                                              visible: controller
+                                                  .clusterIds.isNotEmpty,
+                                              child: Row(
+                                                children: [
+                                                  const Text(
+                                                    'Clusters',
+                                                    style: TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                      color: pColorPrimary,
                                                     ),
-                                                    GetBuilder<
-                                                        DashboardController>(
-                                                      builder: (_) => Switch(
-                                                          activeColor:
-                                                              pColorPrimary,
-                                                          value: controller
-                                                                  .ts_visualization !=
-                                                              0,
-                                                          onChanged:
-                                                              (newValue) {
-                                                            if (newValue) {
-                                                              controller
-                                                                  .ts_visualization = 1;
-                                                            } else {
-                                                              controller
-                                                                  .ts_visualization = 0;
-                                                            }
-                                                            controller.update();
-                                                          }),
-                                                    ),
-                                                  ],
-                                                ),
+                                                  ),
+                                                  GetBuilder<
+                                                      DashboardController>(
+                                                    builder: (_) => Switch(
+                                                        activeColor:
+                                                            pColorPrimary,
+                                                        value: controller
+                                                                .ts_visualization !=
+                                                            0,
+                                                        onChanged: (newValue) {
+                                                          if (newValue) {
+                                                            controller
+                                                                .ts_visualization = 1;
+                                                          } else {
+                                                            controller
+                                                                .ts_visualization = 0;
+                                                          }
+                                                          controller.update();
+                                                        }),
+                                                  ),
+                                                ],
                                               ),
-                                              const Spacer(),
-                                              Text(
-                                                datasetController
-                                                    .projectedPollutant.name,
-                                                style: const TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.w700,
-                                                  color: pColorPrimary,
-                                                ),
-                                              ),
-                                              const Spacer(),
-                                            ],
-                                          ),
-                                        ),
-                                        Expanded(
-                                          child: RepaintBoundary(
-                                            child: LeftAxis(
-                                              xMaxValue:
-                                                  controller.xMaxValueSeries,
-                                              xMinValue:
-                                                  controller.xMinValueSeries,
-                                              yMaxValue: controller.yMaxValue,
-                                              yMinValue: controller.yMinValue,
-                                              yAxisLabel: datasetController
-                                                  .projectedPollutant.name,
-                                              xAxisLabel:
-                                                  controller.granularity !=
-                                                          Granularity.daily
-                                                      ? 'days'
-                                                      : 'hours',
-                                              yDivisions: 5,
-                                              xDivisions: controller
-                                                          .granularity ==
-                                                      Granularity.daily
-                                                  ? 24
-                                                  : controller.granularity ==
-                                                          Granularity.monthly
-                                                      ? 5
-                                                      : 12,
-                                              xLabels: controller.granularity ==
-                                                      Granularity.daily
-                                                  ? null
-                                                  : controller.granularity ==
-                                                          Granularity.monthly
-                                                      ? [
-                                                          "0",
-                                                          "7",
-                                                          "14",
-                                                          '21',
-                                                          "29"
-                                                        ]
-                                                      : [
-                                                          "Jan",
-                                                          "Feb",
-                                                          "Mar",
-                                                          "Apr",
-                                                          "May",
-                                                          "Jun",
-                                                          "Jul",
-                                                          "Aug",
-                                                          "Sep",
-                                                          "Oct",
-                                                          "Nov",
-                                                          "Dec"
-                                                        ],
-                                              child: controller
-                                                          .ts_visualization ==
-                                                      0
-                                                  ? MultiChart(
-                                                      minValue:
-                                                          controller.showShape
-                                                              ? std_min
-                                                              : controller
-                                                                  .yMinValue,
-                                                      maxValue:
-                                                          // controller.showShape
-                                                          //     ? std_max
-                                                          //     : controller
-                                                          //         .yMaxValue,
-                                                          controller.showShape
-                                                              ? std_max
-                                                              : controller
-                                                                  .yMaxValue,
-                                                      models:
-                                                          controller.ipoints,
-                                                    )
-                                                  : ClusterMeans(),
                                             ),
+                                            const Spacer(),
+                                            Text(
+                                              datasetController
+                                                  .projectedPollutant.name,
+                                              style: const TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w700,
+                                                color: pColorPrimary,
+                                              ),
+                                            ),
+                                            const Spacer(),
+                                          ],
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: RepaintBoundary(
+                                          child: LeftAxis(
+                                            xMaxValue:
+                                                controller.xMaxValueSeries,
+                                            xMinValue:
+                                                controller.xMinValueSeries,
+                                            yMaxValue: controller.yMaxValue,
+                                            yMinValue: controller.yMinValue,
+                                            yAxisLabel: datasetController
+                                                .projectedPollutant.name,
+                                            xAxisLabel:
+                                                controller.granularity !=
+                                                        Granularity.daily
+                                                    ? 'days'
+                                                    : 'hours',
+                                            yDivisions: 5,
+                                            xDivisions:
+                                                controller.granularity ==
+                                                        Granularity.daily
+                                                    ? 25
+                                                    : controller.granularity ==
+                                                            Granularity.monthly
+                                                        ? 5
+                                                        : 12,
+                                            xLabels: controller.granularity ==
+                                                    Granularity.daily
+                                                ? null
+                                                : controller.granularity ==
+                                                        Granularity.monthly
+                                                    ? [
+                                                        "0",
+                                                        "7",
+                                                        "14",
+                                                        '21',
+                                                        "29"
+                                                      ]
+                                                    : [
+                                                        "Jan",
+                                                        "Feb",
+                                                        "Mar",
+                                                        "Apr",
+                                                        "May",
+                                                        "Jun",
+                                                        "Jul",
+                                                        "Aug",
+                                                        "Sep",
+                                                        "Oct",
+                                                        "Nov",
+                                                        "Dec"
+                                                      ],
+                                            child: controller
+                                                        .ts_visualization ==
+                                                    0
+                                                ? MultiChart(
+                                                    minValue: controller
+                                                            .showShape
+                                                        ? std_min
+                                                        : controller.yMinValue,
+                                                    maxValue:
+                                                        // controller.showShape
+                                                        //     ? std_max
+                                                        //     : controller
+                                                        //         .yMaxValue,
+                                                        controller.showShape
+                                                            ? std_max
+                                                            : controller
+                                                                .yMaxValue,
+                                                    models: controller.ipoints,
+                                                  )
+                                                : ClusterMeans(),
                                           ),
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
                               const SizedBox(width: pCardSpace),
-                              // PCard(
-                              //   child: AspectRatio(
-                              //     aspectRatio: 1,
-                              //     child: AqiChart(),
-                              //   ),
-                              // ),
+
+                              PCard(
+                                child: AqiChart(),
+                                expand: true,
+                              ),
 
                               const SizedBox(width: pCardSpace),
 
@@ -295,13 +294,21 @@ class DashView extends GetView<DashboardController> {
                                         aspectRatio: 1,
                                         child: GetBuilder<DashboardController>(
                                           builder: (_) => LeftAxis(
-                                            xMaxValue: controller.xMaxValue,
-                                            xMinValue: controller.xMinValue,
-                                            yMaxValue: controller.yMaxValue,
-                                            yMinValue: controller.yMinValue,
+                                            // xMinValue:
+                                            //     datasetController.minMagOutlier,
+                                            // xMaxValue:
+                                            //     datasetController.maxMagOutlier,
+                                            // yMinValue: datasetController
+                                            //     .minShapeOutlier,
+                                            // yMaxValue: datasetController
+                                            //     .maxShapeOutlier,
+                                            xMinValue: 0,
+                                            xMaxValue: 1,
+                                            yMinValue: 0,
+                                            yMaxValue: 1,
                                             xAxisLabel: 'Magnitude',
                                             yAxisLabel: 'Shape',
-                                            yDivisions: 5,
+                                            yDivisions: 2,
                                             xDivisions: 2,
                                             child: Obx(
                                               () => Stack(
@@ -380,6 +387,7 @@ class DashView extends GetView<DashboardController> {
                         const SizedBox(height: pCardSpace),
                         // ** Selection views
                         Expanded(
+                          flex: 8,
                           child: GetBuilder<DashboardController>(
                             builder: (_) => Row(
                               children: [
@@ -584,6 +592,7 @@ class DashView extends GetView<DashboardController> {
                             ),
                           ),
                         ),
+                        // ----
                       ],
                     ),
                   ),
@@ -637,9 +646,9 @@ class _PollutantSelector extends GetView<DashboardController> {
         onChanged: (value) {
           controller.selectPollutant(value as String);
         },
-        buttonHeight: 40,
-        buttonWidth: 140,
-        itemHeight: 40,
+        // buttonHeight: 40,
+        // buttonWidth: 140,
+        // itemHeight: 40,
       ),
     );
   }
