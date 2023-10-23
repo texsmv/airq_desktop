@@ -320,80 +320,9 @@ class DashboardView extends GetView<DashboardController> {
         width: double.infinity,
         child: GetBuilder<DashboardController>(builder: (_) => OutliersChart()),
       ),
-      // OutlinedButton(
-      //   onPressed: controller.clusterByWeekDay,
-      //   child: const Text('WeekDay'),
-      // ),
+      
     ];
   }
 
-  // List<Widget> summaryOptions() {
-  //   SummaryController summaryController = Get.find<SummaryController>();
-  //   DatasetController datasetController = Get.find<DatasetController>();
-  //   return [
-  //     GetBuilder<DatasetController>(
-  //       builder: (_) => Row(
-  //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //         children: [
-  //           const Text(
-  //             'Granularity',
-  //             style: TextStyle(
-  //               fontSize: 16,
-  //               fontWeight: FontWeight.w600,
-  //               color: pColorPrimary,
-  //             ),
-  //           ),
-  //           Text(
-  //             datasetController.granularity == Granularity.annual
-  //                 ? 'Annual'
-  //                 : 'Monthly',
-  //           ),
-  //         ],
-  //       ),
-  //     ),
-  //     GetBuilder<DatasetController>(
-  //       builder: (_) => Switch(
-  //         value: datasetController.granularity == Granularity.annual,
-  //         onChanged: (value) {
-  //           if (value) {
-  //             summaryController.updateGranularity(Granularity.annual);
-  //             summaryController.computeIntersection();
-  //           } else {
-  //             summaryController.updateGranularity(Granularity.monthly);
-  //             summaryController.computeIntersection();
-  //           }
-  //         },
-  //       ),
-  //     ),
-  //     // ...List.generate(
-  //     //   summaryController.pollutants.length,
-  //     //   (index) => GetBuilder<SummaryController>(
-  //     //     builder: (_) => RawMaterialButton(
-  //     //       fillColor: summaryController
-  //     //               .isPollutantSelected(summaryController.pollutants[index].id)
-  //     //           ? pColorAccent
-  //     //           : const Color.fromRGBO(240, 240, 240, 1),
-  //     //       onPressed: () => summaryController
-  //     //           .togglePollutant(summaryController.pollutants[index].id),
-  //     //       child: Text(
-  //     //         summaryController.pollutants[index].name,
-  //     //         style: const TextStyle(
-  //     //           color: Colors.white,
-  //     //         ),
-  //     //       ),
-  //     //     ),
-  //     //   ),
-  //     // ),
-  //     PButton(
-  //       onTap: () => summaryController.getWindows(),
-  //       text: 'Get windows',
-  //       light: false,
-  //     ),
-  //     PButton(
-  //       onTap: () => summaryController.toggleAllStations(),
-  //       text: 'Toogle All',
-  //       light: false,
-  //     ),
-  //   ];
-  // }
+
 }

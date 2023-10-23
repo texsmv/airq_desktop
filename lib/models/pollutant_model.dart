@@ -5,6 +5,8 @@ class PollutantModel {
   // late int datasetId;
   late String name;
   late Color color;
+  double selectionRank = 0;
+
   PollutantModel({
     required this.id,
     // required this.datasetId,

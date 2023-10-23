@@ -239,3 +239,18 @@ Future<Map<String, List<dynamic>>> repositoryGetFdaOutliers(int pos) async {
 
   return {'coords': coords, 'outliers': outliers};
 }
+
+Future<Map<String, double>> repositoryPollutantRanking(
+    List<int> selection) async {
+  final response = await post(
+    Uri.parse("${hostUrl}pollutantRanking"),
+    body: {
+      'selectionIds': jsonEncode(selection),
+    },
+  );
+
+  dynamic data = jsonDecode(response.body);
+
+  return Map<String, double>.from(data['ranks']);
+  //  data['ranks'];
+}

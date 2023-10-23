@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:airq_ui/api/app_repository.dart';
 import 'package:airq_ui/app/ui_utils.dart';
 import 'package:airq_ui/app/visualizations/correlation_matrix.dart';
 import 'package:airq_ui/app/widgets/common/pdialog.dart';
@@ -170,9 +171,10 @@ class DashboardController extends GetxController {
   }
 
   Future<void> selectPollutant(String name) async {
+    // print(name);
     uiShowLoader();
     PollutantModel pollutant =
-        selectedPollutants.firstWhere((element) => element.name == name);
+        pollutants.firstWhere((element) => element.name == name);
     await datasetController.selectPollutant(pollutant);
     uiHideLoader();
     update();
@@ -242,7 +244,7 @@ class DashboardController extends GetxController {
     onPointsSelected(selection);
   }
 
-  void onPointsSelected(List<IPoint> newSelectedPoints) {
+  Future<void> onPointsSelected(List<IPoint> newSelectedPoints) async {
     selectedPoints = newSelectedPoints;
     if (granularity == Granularity.daily) {
       fillDays(selectedPoints);
@@ -262,6 +264,16 @@ class DashboardController extends GetxController {
     if (selectedPoints.isNotEmpty) {
       datasetController.gatherDataFromWindow(selectedPoints.first.data);
     }
+    List<int> selectedIndex = List.generate(
+        newSelectedPoints.length, (index) => newSelectedPoints[index].data.id);
+
+    Map<String, double> ranks = await repositoryPollutantRanking(selectedIndex);
+
+    for (var poll in datasetController.pollutants) {
+      poll.selectionRank = ranks[poll.id.toString()]!;
+      // print
+    }
+
     update();
   }
 

@@ -472,8 +472,6 @@ class DatasetController extends GetxController {
       }
     }
 
-    _selectedPollutants = _pollutants;
-
     List<String> stationKeys = List<String>.from(data['stations'].keys);
     stationsMap = {};
     for (var i = 0; i < stationKeys.length; i++) {

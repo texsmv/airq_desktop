@@ -1,4 +1,5 @@
 import 'package:airq_ui/app/modules/dashboard/components/outliers_painter.dart';
+import 'package:airq_ui/app/modules/dashboard/controllers/dashboard_controller.dart';
 import 'package:airq_ui/app/modules/subset/controllers/subset_controller.dart';
 import 'package:airq_ui/app/visualizations/multiChart/multi_chart.dart';
 import 'package:airq_ui/app/widgets/axis.dart';
@@ -19,6 +20,7 @@ class SubsectProjection extends StatefulWidget {
 class _SubsectProjectionState extends State<SubsectProjection> {
   SubsetProjectionController controller = Get.put(SubsetProjectionController());
   DatasetController datasetController = Get.find();
+  DashboardController dashController = Get.find();
   @override
   void initState() {
     controller.onPointsSelected = (List<IPoint> points) {
@@ -124,6 +126,7 @@ class _SubsectProjectionState extends State<SubsectProjection> {
                       "Dec"
                     ],
               child: MultiChart(
+                pollutant: dashController.projectedPollutant,
                 models: controller.points,
                 minValue: datasetController.minValue,
                 maxValue: datasetController.maxValue,

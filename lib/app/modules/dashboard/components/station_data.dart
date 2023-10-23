@@ -99,6 +99,19 @@ class _StationDataState extends State<StationData> {
             minFontSize: 11,
           ),
         ),
+        Container(
+            height: double.infinity,
+            width: 20,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: List.generate(
+                controller.pollutants.length,
+                (index3) => RotatedBox(
+                  quarterTurns: 3,
+                  child: Text(controller.pollutants[index3].name),
+                ),
+              ),
+            )),
         Expanded(
           child: LayoutBuilder(
             builder: (context, constraints) => SizedBox(
@@ -121,42 +134,48 @@ class _StationDataState extends State<StationData> {
                       width: 80,
                       child: Column(
                         children: [
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () {
-                                controller.selectedWindow =
-                                    widget.windows![index];
-                                dashboardController.update();
-                              },
-                              child: Container(
-                                width: 80,
-                                height: double.infinity,
-                                color: widget.selectedWindow!.id ==
-                                        widget.windows![index].id
-                                    ? pColorPrimary.withOpacity(0.4)
-                                    : Colors.white,
-                                // color: widget.windows![index].cluster != null
-                                //     ? dashboardController.clusterColors[
-                                //             widget.windows![index].cluster]!
-                                //         .withOpacity(0.15)
-                                //     : Colors.white,
-                                // color: widget.windows![index].cluster
-                                child: CustomPaint(
-                                  painter: BarChartPainter(
-                                    color: widget.windows![index].cluster !=
-                                            null
-                                        ? dashboardController.clusterColors[
-                                                widget.windows![index].cluster]!
-                                            .withOpacity(0.85)
-                                        : Color.fromRGBO(123, 123, 123, 1),
-                                    // color: widget.selectedWindow!.id ==
-                                    //         widget.windows![index].id
-                                    //     ? pColorPrimary
-                                    //     : Color.fromRGBO(123, 123, 123, 1),
-                                    minValue: minValue,
-                                    maxValue: maxValue,
-                                    values: widget.windows![index].values[
-                                        controller.projectedPollutant.id]!,
+                          ...List.generate(
+                            controller.pollutants.length,
+                            (index2) => Expanded(
+                              child: GestureDetector(
+                                onTap: () {
+                                  controller.selectedWindow =
+                                      widget.windows![index];
+                                  dashboardController.update();
+                                },
+                                child: Container(
+                                  width: 80,
+                                  height: double.infinity,
+                                  color: widget.selectedWindow!.id ==
+                                          widget.windows![index].id
+                                      ? pColorPrimary.withOpacity(0.4)
+                                      : Colors.white,
+                                  // color: widget.windows![index].cluster != null
+                                  //     ? dashboardController.clusterColors[
+                                  //             widget.windows![index].cluster]!
+                                  //         .withOpacity(0.15)
+                                  //     : Colors.white,
+                                  // color: widget.windows![index].cluster
+                                  child: CustomPaint(
+                                    painter: BarChartPainter(
+                                      color: widget.windows![index].cluster !=
+                                              null
+                                          ? dashboardController.clusterColors[
+                                                  widget
+                                                      .windows![index].cluster]!
+                                              .withOpacity(0.85)
+                                          : Color.fromRGBO(123, 123, 123, 1),
+                                      // color: widget.selectedWindow!.id ==
+                                      //         widget.windows![index].id
+                                      //     ? pColorPrimary
+                                      //     : Color.fromRGBO(123, 123, 123, 1),
+                                      minValue: controller.minSmoothedValues[
+                                          controller.pollutants[index2].id]!,
+                                      maxValue: controller.maxSmoothedValues[
+                                          controller.pollutants[index2].id]!,
+                                      values: widget.windows![index].values[
+                                          controller.pollutants[index2].id]!,
+                                    ),
                                   ),
                                 ),
                               ),

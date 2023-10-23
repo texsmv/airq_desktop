@@ -16,6 +16,7 @@ import 'package:airq_ui/app/widgets/iprojection/iprojection.dart';
 import 'package:airq_ui/app/widgets/pcard.dart';
 import 'package:airq_ui/app/widgets/stations_map.dart';
 import 'package:airq_ui/controllers/dataset_controller.dart';
+import 'package:airq_ui/models/pollutant_model.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -27,6 +28,463 @@ import '../components/aqi_sections.dart';
 import '../components/stations_counts.dart';
 
 const double space = 30;
+
+class LeftPannel extends GetView<DashboardController> {
+  const LeftPannel({super.key});
+  DatasetController get datasetController => Get.find<DatasetController>();
+
+  @override
+  Widget build(BuildContext context) {
+    return GetBuilder<DashboardController>(
+      builder: (_) => Column(
+        children: [
+          // * MAP
+          Expanded(
+            child: PCard(
+              // width: constraints.maxWidth * 0.2,
+              height: double.infinity,
+              child: RepaintBoundary(
+                child: Column(
+                  children: [
+                    Visibility(
+                      visible:
+                          // controller.clusterIds.isNotEmpty,
+                          true,
+                      child: Row(
+                        children: [
+                          Text('Cluster mode'),
+                          Switch(
+                            value: controller.map_cluster_mode,
+                            onChanged: (value) {
+                              controller.map_cluster_mode = value;
+                              controller.update();
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: StationsMap(
+                        selectedBased: controller.map_selection_mode,
+                        clusterView: controller.map_cluster_mode,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: pCardSpace),
+          Expanded(
+            child: PCard(
+              child: RepaintBoundary(
+                child: SelectionSummary(
+                  height: double.infinity,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: pCardSpace),
+          Expanded(
+            child: Obx(
+              () => PCard(
+                // width: constraints.minWidth * 0.28,
+                height: double.infinity,
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Text('Scale'),
+                        Switch(
+                            value: controller.binsPercentage.value,
+                            onChanged: (val) {
+                              controller.binsPercentage.value = val;
+                            }),
+                        Text('Cluster mode'),
+                        Switch(
+                            value: controller.binsClusterMode.value,
+                            onChanged: (val) {
+                              controller.binsClusterMode.value = val;
+                            }),
+                      ],
+                    ),
+                    controller.granularity == Granularity.daily
+                        ? Expanded(
+                            child: RepaintBoundary(
+                              child: Visibility(
+                                visible:
+                                    controller.granularity == Granularity.daily,
+                                child: InteractiveHistogram(
+                                  percentageMode:
+                                      controller.binsPercentage.value,
+                                  isReseted: controller.isReseted,
+                                  values: controller.dayCounts,
+                                  allValues: controller.allDaysCounts,
+                                  clusterCounts: controller.clustersDayCounts,
+                                  clusterColors: controller.clusterColors,
+                                  clusterMode: controller.binsClusterMode.value,
+                                  filterBegin: 0,
+                                  filterEnd: 1,
+                                  labels: const [
+                                    'Mon',
+                                    'Tue',
+                                    'Wed',
+                                    'Thu',
+                                    'Fri',
+                                    'Sat',
+                                    'Sun',
+                                  ],
+                                  onRangeChanged: controller.dayRangeSelection,
+                                ),
+                              ),
+                            ),
+                          )
+                        : const SizedBox(),
+                    Expanded(
+                      child: RepaintBoundary(
+                        child: Visibility(
+                          visible: controller.granularity != Granularity.annual,
+                          child: InteractiveHistogram(
+                            percentageMode: controller.binsPercentage.value,
+                            isReseted: controller.isReseted,
+                            values: controller.monthCounts,
+                            allValues: controller.allMonthsCounts,
+                            clusterCounts: controller.clustersMonthCounts,
+                            clusterColors: controller.clusterColors,
+                            clusterMode: controller.binsClusterMode.value,
+                            filterBegin: 0,
+                            filterEnd: 1,
+                            labels: const [
+                              'Jan',
+                              'Feb',
+                              'Mar',
+                              'Apr',
+                              'May',
+                              'Jun',
+                              'Jul',
+                              'Aug',
+                              'Sep',
+                              'Oct',
+                              'Nov',
+                              'Dec'
+                            ],
+                            onRangeChanged: controller.monthRangeSelection,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: RepaintBoundary(
+                        child: InteractiveHistogram(
+                          percentageMode: controller.binsPercentage.value,
+                          isReseted: controller.isReseted,
+                          values: controller.yearCounts,
+                          allValues: controller.allYearsCounts,
+                          clusterCounts: controller.clustersYearsCounts,
+                          clusterColors: controller.clusterColors,
+                          clusterMode: controller.binsClusterMode.value,
+                          filterBegin: 0,
+                          filterEnd: 1,
+                          labels: List.generate(controller.years.length,
+                              (index) => (controller.years[index]).toString()),
+                          onRangeChanged: controller.yearRangeSelection,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class RigthPannel extends GetView<DashboardController> {
+  DatasetController get datasetController => Get.find<DatasetController>();
+  const RigthPannel({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        PCard(
+          child: AqiChart(),
+          expand: true,
+        ),
+        const SizedBox(height: pCardSpace),
+        Expanded(
+          child: Row(
+            children: [
+              Expanded(
+                child: PCard(
+                  child: AspectRatio(
+                    aspectRatio: 1,
+                    child: GetBuilder<DashboardController>(
+                      builder: (_) => Column(
+                        children: [
+                          Text(
+                            datasetController.projectedPollutant.name,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: pColorPrimary,
+                            ),
+                          ),
+                          Expanded(
+                            child: LeftAxis(
+                              xMinValue: 0,
+                              xMaxValue: 1,
+                              yMinValue: 0,
+                              yMaxValue: 1,
+                              xAxisLabel: 'Magnitude',
+                              yAxisLabel: 'Shape',
+                              yDivisions: 2,
+                              xDivisions: 2,
+                              child: Obx(
+                                () => Stack(
+                                  children: [
+                                    Positioned.fill(
+                                      child: Visibility(
+                                        visible:
+                                            !datasetController.show_filtered,
+                                        child: IProjection(
+                                          controller: controller
+                                              .localProjectionController,
+                                          points: controller.globalPoints!,
+                                          onPointsSelected:
+                                              controller.onPointsSelected,
+                                          onPointPicked:
+                                              controller.onPointPicked,
+                                          mode: 1,
+                                          pickMode: controller.pickMode.value,
+                                        ),
+                                      ),
+                                    ),
+                                    Positioned.fill(
+                                      child: Visibility(
+                                        visible:
+                                            datasetController.show_filtered,
+                                        child: IProjection(
+                                          controller: controller
+                                              .outliersProjectionController,
+                                          points: controller.globalPoints!,
+                                          onPointsSelected:
+                                              controller.onPointsSelected,
+                                          onPointPicked:
+                                              controller.onPointPicked,
+                                          mode: 3,
+                                          pickMode: controller.pickMode.value,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: PCard(
+                  // width: constraints.maxWidth * 0.18,
+                  height: double.infinity,
+                  child: GetBuilder<DashboardController>(
+                    builder: (_) => RepaintBoundary(
+                      child: OutliersChart(),
+                    ),
+                  ),
+                ),
+              )
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class MidPannel extends GetView<DashboardController> {
+  const MidPannel({super.key});
+  DatasetController get datasetController => Get.find<DatasetController>();
+
+  @override
+  Widget build(BuildContext context) {
+    return GetBuilder<DashboardController>(builder: (_) {
+      return Column(
+        children: [
+          Expanded(
+            child: Row(
+              children: [
+                PCard(
+                  child: SizedBox(
+                    width: 100,
+                    child: GetBuilder<DashboardController>(
+                      builder: (_) => ClusterItems(),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: pCardSpace),
+                Expanded(
+                  child: PCard(
+                    child: GetBuilder<DatasetController>(
+                      builder: (_) => GetBuilder<DashboardController>(
+                        builder: (_) => Obx(
+                          () => Stack(
+                            children: [
+                              Positioned.fill(
+                                child: Visibility(
+                                  visible: !datasetController.show_filtered,
+                                  child: IProjection(
+                                    controller: controller.projectionController,
+                                    points: controller.globalPoints!,
+                                    onPointsSelected:
+                                        controller.onPointsSelected,
+                                    onPointPicked: controller.onPointPicked,
+                                    mode: 0,
+                                    pickMode: controller.pickMode.value,
+                                  ),
+                                ),
+                              ),
+                              Positioned.fill(
+                                child: Visibility(
+                                  visible: datasetController.show_filtered,
+                                  child: IProjection(
+                                    controller:
+                                        controller.filterProjectionController,
+                                    points: controller.globalPoints!,
+                                    onPointsSelected:
+                                        controller.onPointsSelected,
+                                    onPointPicked: controller.onPointPicked,
+                                    mode: 2,
+                                    pickMode: controller.pickMode.value,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+              ],
+            ),
+          ),
+          SizedBox(height: pCardSpace),
+          !controller.pickMode.value
+              ? Expanded(
+                  flex: 3,
+                  child: ListView.separated(
+                      separatorBuilder: (_, i) => SizedBox(height: 25),
+                      itemCount: controller.pollutants.length,
+                      itemBuilder: (_, index) {
+                        List<PollutantModel> pollutants =
+                            List<PollutantModel>.from(controller.pollutants);
+                        pollutants.sort((a, b) =>
+                            b.selectionRank.compareTo(a.selectionRank));
+
+                        PollutantModel pollutant = pollutants[index];
+
+                        return PCard(
+                          height: 150,
+                          width: double.infinity,
+                          child: Column(
+                            children: [
+                              Text(pollutant.name),
+                              Expanded(
+                                child: Container(
+                                  child: RepaintBoundary(
+                                    child: LeftAxis(
+                                      xMaxValue: controller.xMaxValueSeries,
+                                      xMinValue: controller.xMinValueSeries,
+                                      yMaxValue: datasetController
+                                          .maxSmoothedValues[pollutant.id]!,
+                                      yMinValue: datasetController
+                                          .minSmoothedValues[pollutant.id]!,
+                                      yAxisLabel: pollutant.name,
+                                      xAxisLabel: controller.granularity !=
+                                              Granularity.daily
+                                          ? 'days'
+                                          : 'hours',
+                                      yDivisions: 5,
+                                      xDivisions: controller.granularity ==
+                                              Granularity.daily
+                                          ? 25
+                                          : controller.granularity ==
+                                                  Granularity.monthly
+                                              ? 5
+                                              : 12,
+                                      xLabels: controller.granularity ==
+                                              Granularity.daily
+                                          ? null
+                                          : controller.granularity ==
+                                                  Granularity.monthly
+                                              ? ["0", "7", "14", '21', "29"]
+                                              : [
+                                                  "Jan",
+                                                  "Feb",
+                                                  "Mar",
+                                                  "Apr",
+                                                  "May",
+                                                  "Jun",
+                                                  "Jul",
+                                                  "Aug",
+                                                  "Sep",
+                                                  "Oct",
+                                                  "Nov",
+                                                  "Dec"
+                                                ],
+                                      child: controller.ts_visualization == 0
+                                          ? MultiChart(
+                                              key: Key(pollutant.name),
+                                              pollutant: pollutant,
+                                              minValue: controller.showShape
+                                                  ? std_min
+                                                  : datasetController
+                                                          .minSmoothedValues[
+                                                      pollutant.id]!,
+                                              maxValue:
+                                                  // controller.showShape
+                                                  //     ? std_max
+                                                  //     : controller
+                                                  //         .yMaxValue,
+                                                  controller.showShape
+                                                      ? std_max
+                                                      : datasetController
+                                                              .maxSmoothedValues[
+                                                          pollutant.id]!,
+                                              models: controller.ipoints,
+                                            )
+                                          : ClusterMeans(),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                )
+              : Expanded(
+                  child: PCard(
+                    child: StationData(
+                      windows: datasetController.selectedStationWindows,
+                      selectedWindow: datasetController.selectedWindow,
+                    ),
+                  ),
+                ),
+        ],
+      );
+    });
+  }
+}
 
 class DashView extends GetView<DashboardController> {
   const DashView({Key? key}) : super(key: key);
@@ -42,6 +500,24 @@ class DashView extends GetView<DashboardController> {
       );
     }
     // return Container();
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: pCardSpace,
+        vertical: pCardSpace,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 3,
+            child: LeftPannel(),
+          ),
+          SizedBox(width: pCardSpace),
+          Expanded(flex: 2, child: MidPannel()),
+          SizedBox(width: pCardSpace),
+          Expanded(flex: 3, child: RigthPannel()),
+        ],
+      ),
+    );
 
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -245,6 +721,8 @@ class DashView extends GetView<DashboardController> {
                                                         .ts_visualization ==
                                                     0
                                                 ? MultiChart(
+                                                    pollutant: controller
+                                                        .projectedPollutant,
                                                     minValue: controller
                                                             .showShape
                                                         ? std_min
@@ -281,14 +759,18 @@ class DashView extends GetView<DashboardController> {
                               PCard(
                                 child: Column(
                                   children: [
-                                    Text(
-                                      datasetController.projectedPollutant.name,
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w700,
-                                        color: pColorPrimary,
-                                      ),
-                                    ),
+                                    GetBuilder<DashboardController>(
+                                        builder: (_) {
+                                      return Text(
+                                        datasetController
+                                            .projectedPollutant.name,
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w700,
+                                          color: pColorPrimary,
+                                        ),
+                                      );
+                                    }),
                                     Expanded(
                                       child: AspectRatio(
                                         aspectRatio: 1,

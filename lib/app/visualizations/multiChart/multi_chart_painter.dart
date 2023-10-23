@@ -13,10 +13,12 @@ class MultiChartPainter extends CustomPainter {
   final double minValue;
   final double maxValue;
   final List<IPoint> models;
+  final PollutantModel pollutant;
   MultiChartPainter({
     required this.models,
     required this.minValue,
     required this.maxValue,
+    required this.pollutant,
   });
 
   late double _width;
@@ -27,7 +29,7 @@ class MultiChartPainter extends CustomPainter {
   int get timeLen => models.first.data.values.values.toList().first.length;
   DatasetController datasetController = Get.find();
   DashboardController dashboardController = Get.find();
-  PollutantModel get pollutant => datasetController.projectedPollutant;
+  // PollutantModel get pollutant => datasetController.projectedPollutant;
 
   @override
   void paint(Canvas canvas, Size size) {
