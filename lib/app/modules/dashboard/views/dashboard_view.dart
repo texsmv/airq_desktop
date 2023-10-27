@@ -183,6 +183,13 @@ class DashboardView extends GetView<DashboardController> {
                           onTap: () {
                             controller.pickMode.value =
                                 !controller.pickMode.value;
+                            controller.projectionController.clearSelection();
+                            controller.localProjectionController
+                                .clearSelection();
+                            controller.filterProjectionController
+                                .clearSelection();
+                            controller.outliersProjectionController
+                                .clearSelection();
                           },
                         ),
                         ActionButton(
@@ -281,7 +288,6 @@ class DashboardView extends GetView<DashboardController> {
           ),
         ],
       ),
-
       GetBuilder<DashboardController>(
         id: 'infoPoint',
         builder: (_) {
@@ -320,9 +326,6 @@ class DashboardView extends GetView<DashboardController> {
         width: double.infinity,
         child: GetBuilder<DashboardController>(builder: (_) => OutliersChart()),
       ),
-      
     ];
   }
-
-
 }

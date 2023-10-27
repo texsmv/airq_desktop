@@ -59,6 +59,7 @@ dependencies:
   path_provider: ^2.0.11
   get_cli: ^1.8.1
   widgets_to_image: ^0.0.2
+  touchable: ^1.0.2
 
 dev_dependencies:
   flutter_test:

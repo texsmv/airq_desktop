@@ -406,6 +406,20 @@ Future<int> uiPickNumberInt(int minValue, int maxValue,
   );
 }
 
+double calculateMean(List<double> numbers) {
+  double sum = numbers.reduce((value, element) => value + element);
+  return sum / numbers.length;
+}
+
+double calculateStandardDeviation(List<double> numbers) {
+  double mean = calculateMean(numbers);
+  double variance = numbers
+          .map((x) => pow(x - mean, 2))
+          .reduce((value, element) => value + element) /
+      numbers.length;
+  return sqrt(variance);
+}
+
 Future<String> uiPickString({String? defaultValue}) async {
   late String currentValue;
   if (defaultValue != null) {

@@ -408,7 +408,7 @@ class MidPannel extends GetView<DashboardController> {
                                           .maxSmoothedValues[pollutant.id]!,
                                       yMinValue: datasetController
                                           .minSmoothedValues[pollutant.id]!,
-                                      yAxisLabel: pollutant.name,
+                                      yAxisLabel: '',
                                       xAxisLabel: controller.granularity !=
                                               Granularity.daily
                                           ? 'days'
@@ -473,6 +473,7 @@ class MidPannel extends GetView<DashboardController> {
                       }),
                 )
               : Expanded(
+                  flex: 3,
                   child: PCard(
                     child: StationData(
                       windows: datasetController.selectedStationWindows,

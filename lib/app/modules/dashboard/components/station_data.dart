@@ -14,6 +14,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:get/get.dart';
+import 'package:touchable/touchable.dart';
 
 class StationData extends StatefulWidget {
   final List<WindowModel>? windows;
@@ -33,10 +34,42 @@ class _StationDataState extends State<StationData> {
   DashboardController dashboardController = Get.find();
   late double minValue;
   late double maxValue;
+
+  double winPosX = 0;
+  double winPosY = 0;
+
+  WindowModel? hoveWindow;
+  int windowTPos = 0;
+  int hoveredPol = 0;
+
+  bool showInfoHover = false;
   // List<WindowModel>? orderedWindows;
   late ScrollController scrollController;
   StationModel get station => controller.stations
       .firstWhere((element) => element.id == widget.selectedWindow!.stationId);
+
+  int get nTimeBins {
+    switch (controller.granularity) {
+      case Granularity.annual:
+        return 356;
+      case Granularity.monthly:
+        return 28;
+      case Granularity.daily:
+        return 24;
+    }
+  }
+
+  double get windowSize {
+    switch (controller.granularity) {
+      case Granularity.annual:
+        return 130;
+      case Granularity.monthly:
+        return 90;
+      case Granularity.daily:
+        return 70;
+    }
+  }
+
   @override
   void initState() {
     scrollController = ScrollController();
@@ -81,7 +114,7 @@ class _StationDataState extends State<StationData> {
     if (position < 0) {
       return;
     }
-    scrollController.position.moveTo(80.0 * (position - 4));
+    scrollController.position.moveTo(windowSize * (position - 4));
   }
 
   @override
@@ -113,94 +146,157 @@ class _StationDataState extends State<StationData> {
               ),
             )),
         Expanded(
-          child: LayoutBuilder(
-            builder: (context, constraints) => SizedBox(
+          child: Stack(children: [
+            SizedBox(
               width: double.infinity,
               height: double.infinity,
-              child: ScrollConfiguration(
-                behavior: MyCustomScrollBehavior(),
-                child: ListView.builder(
-                  controller: scrollController,
-                  physics: const ClampingScrollPhysics(),
-                  scrollDirection: Axis.horizontal,
-                  itemCount: widget.windows!.length,
-                  itemBuilder: (context, index) {
-                    DateTime date = widget.windows![index].beginDate;
-                    bool isSameMonth = widget.selectedWindow!.beginDate.month ==
-                        widget.windows![index].beginDate.month;
-                    bool isSelected =
-                        widget.selectedWindow!.id == widget.windows![index].id;
-                    return SizedBox(
-                      width: 80,
-                      child: Column(
-                        children: [
-                          ...List.generate(
-                            controller.pollutants.length,
-                            (index2) => Expanded(
-                              child: GestureDetector(
-                                onTap: () {
-                                  controller.selectedWindow =
-                                      widget.windows![index];
-                                  dashboardController.update();
-                                },
-                                child: Container(
-                                  width: 80,
-                                  height: double.infinity,
-                                  color: widget.selectedWindow!.id ==
-                                          widget.windows![index].id
-                                      ? pColorPrimary.withOpacity(0.4)
-                                      : Colors.white,
-                                  // color: widget.windows![index].cluster != null
-                                  //     ? dashboardController.clusterColors[
-                                  //             widget.windows![index].cluster]!
-                                  //         .withOpacity(0.15)
-                                  //     : Colors.white,
-                                  // color: widget.windows![index].cluster
-                                  child: CustomPaint(
-                                    painter: BarChartPainter(
-                                      color: widget.windows![index].cluster !=
-                                              null
-                                          ? dashboardController.clusterColors[
-                                                  widget
-                                                      .windows![index].cluster]!
-                                              .withOpacity(0.85)
-                                          : Color.fromRGBO(123, 123, 123, 1),
-                                      // color: widget.selectedWindow!.id ==
-                                      //         widget.windows![index].id
-                                      //     ? pColorPrimary
-                                      //     : Color.fromRGBO(123, 123, 123, 1),
-                                      minValue: controller.minSmoothedValues[
-                                          controller.pollutants[index2].id]!,
-                                      maxValue: controller.maxSmoothedValues[
-                                          controller.pollutants[index2].id]!,
-                                      values: widget.windows![index].values[
-                                          controller.pollutants[index2].id]!,
+              child: MouseRegion(
+                onHover: (event) {
+                  winPosX = event.localPosition.dx;
+                  winPosY = event.localPosition.dy;
+                  setState(() {});
+                  showInfoHover = true;
+                },
+                onEnter: (_) {
+                  setState(() {
+                    showInfoHover = true;
+                  });
+                },
+                onExit: (_) {
+                  setState(() {
+                    showInfoHover = false;
+                  });
+                },
+                child: ScrollConfiguration(
+                  behavior: MyCustomScrollBehavior(),
+                  child: ListView.builder(
+                    controller: scrollController,
+                    physics: const ClampingScrollPhysics(),
+                    scrollDirection: Axis.horizontal,
+                    itemCount: widget.windows!.length,
+                    itemBuilder: (context, index) {
+                      DateTime date = widget.windows![index].beginDate;
+                      bool isSameMonth =
+                          widget.selectedWindow!.beginDate.month ==
+                              widget.windows![index].beginDate.month;
+                      bool isSelected = widget.selectedWindow!.id ==
+                          widget.windows![index].id;
+                      return SizedBox(
+                        width: windowSize,
+                        child: Column(
+                          children: [
+                            ...List.generate(
+                              controller.pollutants.length,
+                              (index2) => Expanded(
+                                child: MouseRegion(
+                                  onHover: (PointerHoverEvent event) {
+                                    double binSize = windowSize / nTimeBins;
+                                    int tPos =
+                                        (event.localPosition.dx / binSize)
+                                            .floor();
+                                    windowTPos = tPos;
+                                    hoveWindow = widget.windows![index];
+                                    hoveredPol =
+                                        controller.pollutants[index2].id;
+                                    // print((event.localPosition.dx / binSize)
+                                    //     .floor());
+
+                                    // print(event.position);
+                                    // event.localPosition;
+                                    // event.size;
+                                    // print(event.localPosition);
+                                    // print('Hover');
+                                  },
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      controller.selectedWindow =
+                                          widget.windows![index];
+                                      dashboardController.update();
+                                    },
+                                    child: Container(
+                                      width: windowSize,
+                                      height: double.infinity,
+                                      color: widget.selectedWindow!.id ==
+                                              widget.windows![index].id
+                                          ? pColorPrimary.withOpacity(0.4)
+                                          : Colors.white,
+                                      // color: widget.windows![index].cluster != null
+                                      //     ? dashboardController.clusterColors[
+                                      //             widget.windows![index].cluster]!
+                                      //         .withOpacity(0.15)
+                                      //     : Colors.white,
+                                      // color: widget.windows![index].cluster
+                                      child: CustomPaint(
+                                        painter: BarChartPainter(
+                                          context: context,
+                                          color:
+                                              widget.windows![index].cluster !=
+                                                      null
+                                                  ? dashboardController
+                                                      .clusterColors[widget
+                                                          .windows![index]
+                                                          .cluster]!
+                                                      .withOpacity(0.85)
+                                                  : Color.fromRGBO(
+                                                      123, 123, 123, 1),
+                                          // color: widget.selectedWindow!.id ==
+                                          //         widget.windows![index].id
+                                          //     ? pColorPrimary
+                                          //     : Color.fromRGBO(123, 123, 123, 1),
+                                          minValue:
+                                              controller.minSmoothedValues[
+                                                  controller
+                                                      .pollutants[index2].id]!,
+                                          maxValue:
+                                              controller.maxSmoothedValues[
+                                                  controller
+                                                      .pollutants[index2].id]!,
+                                          values: widget.windows![index].values[
+                                              controller
+                                                  .pollutants[index2].id]!,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                          Container(
-                            height: 12,
-                            child: Text(
-                              windowName(date, isSelected),
-                              style: const TextStyle(
-                                  fontSize: 11,
-                                  // color: isSameMonth
-                                  //     ? pTextColorSecondary
-                                  //     : Colors.transparent,
-                                  color: pTextColorSecondary),
+                            Container(
+                              height: 12,
+                              child: Text(
+                                windowName(date, isSelected),
+                                style: const TextStyle(
+                                    fontSize: 11,
+                                    // color: isSameMonth
+                                    //     ? pTextColorSecondary
+                                    //     : Colors.transparent,
+                                    color: pTextColorSecondary),
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
-          ),
+            Positioned(
+              left: winPosX + 10,
+              top: winPosY,
+              child: showInfoHover
+                  ? Container(
+                      width: 30,
+                      height: 18,
+                      color: Colors.amber,
+                      child: Text(hoveWindow == null
+                          ? 'null'
+                          : hoveWindow!.values[hoveredPol]![windowTPos]
+                              .toString()),
+                    )
+                  : SizedBox(),
+            ),
+          ]),
         ),
       ],
     );
@@ -243,8 +339,10 @@ class BarChartPainter extends CustomPainter {
     required this.minValue,
     required this.maxValue,
     required this.color,
+    required this.context,
   });
 
+  final BuildContext context;
   late double _width;
   late double _height;
   late Canvas _canvas;
@@ -262,6 +360,8 @@ class BarChartPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     _canvas = canvas;
+    // TouchyCanvas _canvas = TouchyCanvas(context, canvas);
+
     _width = size.width;
     _height = size.height;
 

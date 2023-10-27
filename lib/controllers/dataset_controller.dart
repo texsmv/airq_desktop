@@ -1048,6 +1048,8 @@ class DatasetController extends GetxController {
   Map<String, ClusterData> clustersData = {};
 
   bool show_filtered = false;
+
+  
 }
 
 enum Granularity {

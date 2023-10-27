@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:airq_ui/app/modules/dashboard/controllers/dashboard_controller.dart';
+import 'package:airq_ui/app/ui_utils.dart';
 import 'package:airq_ui/app/widgets/iprojection/ipoint.dart';
 import 'package:airq_ui/controllers/dataset_controller.dart';
 import 'package:easy_debounce/easy_debounce.dart';
@@ -170,11 +171,11 @@ class IProjectionController extends GetxController {
     late IPoint selected;
     double minDist = 10000000; // infinite
     late List<IPoint> spoints;
-    if (dashboardController.selectedPoints.isEmpty) {
-      spoints = points;
-    } else {
-      spoints = dashboardController.selectedPoints;
-    }
+    // if (dashboardController.selectedPoints.isEmpty) {
+    spoints = points;
+    // } else {
+    //   spoints = dashboardController.selectedPoints;
+    // }
     for (var i = 0; i < spoints.length; i++) {
       double x = points[i].getCanvasCoords(mode).dx;
       double y = points[i].getCanvasCoords(mode).dy;
@@ -197,11 +198,61 @@ class IProjectionController extends GetxController {
         clearSelection();
         final List<IPoint> selectedPoints = selectPoints();
         onPointsSelected(selectedPoints);
+        currSelectedPoints = selectedPoints;
         selectionBeginPosition = const Offset(0, 0);
         selectionEndPosition = const Offset(0, 0);
         allowSelection = true;
+
+        List<Offset> limits = detectBoundaries(selectedPoints);
+        if (limits.isNotEmpty) {
+          selectedBoxMinOffset = limits[0];
+          selectedBoxMaxOffset = limits[1];
+          getSelectionStats(selectedPoints);
+        }
       }
     }
+  }
+
+  void getSelectionStats(List<IPoint> points) {
+    for (var poll in datasetController.pollutants) {
+      // List<double> means = List.generate(
+      //     points.length, (index) => points[index].data.values[poll.id]);
+      List<double> polValues = [];
+      for (var point in points) {
+        polValues.addAll(point.data.values[poll.id]!);
+      }
+      double pmean = calculateMean(polValues);
+      double pstd = calculateStandardDeviation(polValues);
+
+      selectionStats[poll.id] = Offset(pmean, pstd);
+    }
+  }
+
+  List<Offset> detectBoundaries(List<IPoint> points) {
+    if (points.isEmpty) {
+      return [];
+    }
+    double min_x, min_y, max_x, max_y;
+    min_x = max_x = points[0].getCanvasCoords(mode).dx;
+    min_y = max_y = points[0].getCanvasCoords(mode).dy;
+
+    for (var point in points) {
+      double x = point.getCanvasCoords(mode).dx;
+      double y = point.getCanvasCoords(mode).dy;
+
+      if (x < min_x) {
+        min_x = x;
+      } else if (x > max_x) {
+        max_x = x;
+      }
+
+      if (y < min_y) {
+        min_y = y;
+      } else if (y > max_y) {
+        max_y = y;
+      }
+    }
+    return [Offset(min_x, min_y), Offset(max_x, max_y)];
   }
 
   void onPointerMove(PointerMoveEvent event) {
@@ -313,4 +364,9 @@ class IProjectionController extends GetxController {
 
   DatasetController get datasetController => Get.find();
   DashboardController get dashboardController => Get.find();
+
+  Offset selectedBoxMinOffset = Offset.zero;
+  Offset selectedBoxMaxOffset = Offset.zero;
+  Map<int, Offset> selectionStats = {};
+  List<IPoint> currSelectedPoints = [];
 }

@@ -1,8 +1,13 @@
 import 'package:airq_ui/app/widgets/iprojection/ipoint.dart';
 import 'package:airq_ui/app/widgets/iprojection/iprojection_controller.dart';
 import 'package:airq_ui/app/widgets/iprojection/iprojection_painter.dart';
+import 'package:airq_ui/controllers/dataset_controller.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
+double INFO_BOX_HEIGHT = 20;
+double INFO_BOX_WIDTH = 70;
 
 class IProjection extends StatefulWidget {
   final List<IPoint> points;
@@ -10,6 +15,7 @@ class IProjection extends StatefulWidget {
   final void Function(List<IPoint> points) onPointsSelected;
   final void Function(IPoint point) onPointPicked;
   final IProjectionController controller;
+
   final int mode;
   final bool pickMode;
   const IProjection({
@@ -29,6 +35,7 @@ class IProjection extends StatefulWidget {
 class _IProjectionState extends State<IProjection>
     with SingleTickerProviderStateMixin {
   IProjectionController get controller => widget.controller;
+  DatasetController datasetController = Get.find();
 
   @override
   void initState() {
@@ -107,6 +114,42 @@ class _IProjectionState extends State<IProjection>
                       ),
                     ),
                   ),
+                  Positioned(
+                    left: constraints.maxWidth -
+                                controller.selectedBoxMaxOffset.dx <
+                            INFO_BOX_WIDTH
+                        ? constraints.maxWidth - INFO_BOX_WIDTH
+                        : controller.selectedBoxMaxOffset.dx,
+                    // top: controller.selectedBoxMinOffset.dy - 50,
+                    top: controller.selectedBoxMaxOffset.dy <
+                            INFO_BOX_HEIGHT *
+                                datasetController.pollutants.length
+                        ? 0
+                        : controller.selectedBoxMaxOffset.dy - 50,
+                    child: Visibility(
+                      visible: controller.currSelectedPoints.isNotEmpty,
+                      child: Container(
+                        width: INFO_BOX_WIDTH,
+                        child: Column(
+                          children: List.generate(
+                            datasetController.pollutants.length,
+                            (pindex) => Container(
+                              color: Colors.amber.withOpacity(0.6),
+                              height: INFO_BOX_HEIGHT,
+                              width: INFO_BOX_WIDTH,
+                              child: AutoSizeText(
+                                '${datasetController.pollutants[pindex].name}: ${controller.selectionStats[datasetController.pollutants[pindex].id]?.dx.toPrecision(1)}',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                ),
+                                minFontSize: 9,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
                 ],
               ),
             );
