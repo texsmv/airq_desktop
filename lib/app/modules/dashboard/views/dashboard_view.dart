@@ -28,8 +28,8 @@ class DashboardView extends GetView<DashboardController> {
           height: double.infinity,
           decoration: const BoxDecoration(
             image: DecorationImage(
-              image: NetworkImage(
-                'https://images.wallpapersden.com/image/download/cool-landscape-night-minimal-art_bGxna2aUmZqaraWkpJRobWllrWdma2U.jpg',
+              image: AssetImage(
+                'assets/wallpaper.jpg',
               ),
               fit: BoxFit.cover,
             ),
