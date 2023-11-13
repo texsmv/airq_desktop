@@ -114,7 +114,7 @@ class _StationDataState extends State<StationData> {
     if (position < 0) {
       return;
     }
-    scrollController.position.moveTo(windowSize * (position - 4));
+    scrollController.position.moveTo(windowSize * (position));
   }
 
   @override

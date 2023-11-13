@@ -426,7 +426,7 @@ class MidPannel extends GetView<DashboardController> {
                                           ? null
                                           : controller.granularity ==
                                                   Granularity.monthly
-                                              ? ["0", "7", "14", '21', "29"]
+                                              ? ["1", "7", "14", '21', "28"]
                                               : [
                                                   "Jan",
                                                   "Feb",

@@ -79,6 +79,7 @@ class _IProjectionState extends State<IProjection>
               onPointerMove: controller.onPointerMove,
               onPointerHover: controller.onPointerHover,
               child: Stack(
+                clipBehavior: Clip.none,
                 children: [
                   Positioned.fill(
                     child: RepaintBoundary(
@@ -121,11 +122,7 @@ class _IProjectionState extends State<IProjection>
                         ? constraints.maxWidth - INFO_BOX_WIDTH
                         : controller.selectedBoxMaxOffset.dx,
                     // top: controller.selectedBoxMinOffset.dy - 50,
-                    top: controller.selectedBoxMaxOffset.dy <
-                            INFO_BOX_HEIGHT *
-                                datasetController.pollutants.length
-                        ? 0
-                        : controller.selectedBoxMaxOffset.dy - 50,
+                    top: getTopDistance(),
                     child: Visibility(
                       visible: controller.currSelectedPoints.isNotEmpty,
                       child: Container(
@@ -138,7 +135,7 @@ class _IProjectionState extends State<IProjection>
                               height: INFO_BOX_HEIGHT,
                               width: INFO_BOX_WIDTH,
                               child: AutoSizeText(
-                                '${datasetController.pollutants[pindex].name}: ${controller.selectionStats[datasetController.pollutants[pindex].id]?.dx.toPrecision(1)}',
+                                '${datasetController.pollutants[pindex].name}: ${controller.selectionStats[datasetController.pollutants[pindex].id]?.dx.toPrecision(2)}',
                                 style: TextStyle(
                                   fontSize: 13,
                                 ),
@@ -157,5 +154,15 @@ class _IProjectionState extends State<IProjection>
         ),
       ),
     );
+  }
+
+  double getTopDistance() {
+    if (controller.selectedBoxMaxOffset.dy >
+        INFO_BOX_HEIGHT * datasetController.pollutants.length) {
+      return controller.selectedBoxMaxOffset.dy -
+          INFO_BOX_HEIGHT * datasetController.pollutants.length;
+    } else {
+      return controller.selectedBoxMaxOffset.dy - 50;
+    }
   }
 }

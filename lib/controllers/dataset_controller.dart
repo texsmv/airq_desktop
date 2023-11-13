@@ -374,7 +374,7 @@ class DatasetController extends GetxController {
   //   Get.find<DashboardController>().update();
   // }
 
-  Future<void> loadDataset(
+  Future<bool> loadDataset(
       DatasetModel dataset,
       Granularity granularityCl,
       String granularity,
@@ -389,6 +389,11 @@ class DatasetController extends GetxController {
 
     dynamic data = await repositoryLoadDataset(dataset.name, granularity,
         pollutants, stations, smoothWindow, shapeNorm);
+
+    if (data['STATUS'] == 'ERROR') {
+      Get.snackbar('Error', data['message']);
+      return false;
+    }
 
     List<int> stationLabels =
         List<int>.from(data['windows_labels']['stations']);
@@ -534,6 +539,7 @@ class DatasetController extends GetxController {
     _projectedPollutant = _pollutants.first;
 
     await loadIaqis();
+    return true;
   }
 
   Future<void> loadIaqis() async {
@@ -1048,8 +1054,6 @@ class DatasetController extends GetxController {
   Map<String, ClusterData> clustersData = {};
 
   bool show_filtered = false;
-
-  
 }
 
 enum Granularity {

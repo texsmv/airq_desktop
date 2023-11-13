@@ -100,7 +100,7 @@ class MyMenuController extends GetxController {
       sStations = dataset.allStations;
     }
     // await Duration(seconds: 5);
-    await datasetController.loadDataset(
+    bool done = await datasetController.loadDataset(
         dataset,
         chosenGranularity,
         granularityStr,
@@ -110,9 +110,11 @@ class MyMenuController extends GetxController {
         smoothWindow);
     EasyLoading.dismiss();
 
-    print('Routing now!!!');
-    Get.toNamed(Routes.DASHBOARD);
-    print('Routing done!!!');
+    if (done) {
+      print('Routing now!!!');
+      Get.toNamed(Routes.DASHBOARD);
+      print('Routing done!!!');
+    }
   }
 
   Future<Granularity> chooseGranularity() async {
