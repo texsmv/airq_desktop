@@ -1,5 +1,3 @@
-import 'dart:collection';
-import 'dart:convert';
 import 'dart:math';
 
 import 'package:airq_ui/api/app_repository.dart';
@@ -28,18 +26,16 @@ import '../app/constants/constants.dart';
 
 class DatasetController extends GetxController {
   Map<String, List<IPoint>> get clusters => _clusters;
+
+  // * USEFUL?
   Map<int, double> get minValues => _minValue;
   Map<int, double> get maxValues => _maxValue;
-
   Map<int, double> get minSmoothedValues => _minValue;
   Map<int, double> get maxSmoothedValues => _maxValue;
-
   double get minValue => _minValue[_projectedPollutant.id]!;
   double get maxValue => _maxValue[_projectedPollutant.id]!;
-
   double get minSmoothedValue => _minSmoothedValue[_projectedPollutant.id]!;
   double get maxSmoothedValue => _maxSmoothedValue[_projectedPollutant.id]!;
-
   double get minMagOutlier {
     List<dynamic> cmean = fdaOutliers[projectedPollutant.id]![0];
     double minv = List<double>.from(cmean).reduce(min);
@@ -64,17 +60,18 @@ class DatasetController extends GetxController {
     return maxv;
   }
 
+  // *  Of all days
   DateTimeRange get dateRange =>
       DateTimeRange(start: _beginDate, end: _endDate);
 
-  // double get minMeansValue => _minValue[_projectedPollutant.id]!;  // double get maxMeansValue => _maxValue[_projectedPollutant.id]!;
-  double? minMeansValue;
-  double? maxMeansValue;
-  List<StationModel> get selectedStations => stations;
+  // double? minMeansValue;
+  // double? maxMeansValue;
+
+  // * Stations with data
   List<StationModel> get nonEmptyStations {
     List<StationModel> stationsE = [];
-    for (var i = 0; i < _points!.length; i++) {
-      stationsE.add(windowsStations[_points![i].data.id]!);
+    for (var i = 0; i < _allPoints.length; i++) {
+      stationsE.add(windowsStations[_allPoints[i].data.id]!);
     }
     var seen = Set<String>();
     List<StationModel> uniquelist =
@@ -83,8 +80,16 @@ class DatasetController extends GetxController {
     return uniquelist;
   }
 
+  // * List of available datasets
   List<DatasetModel> get datasets => _datasets;
-  List<IPoint>? get globalPoints => _points;
+
+  // * All loaded points
+  List<IPoint>? get allPoints => _allPoints;
+
+  // * All filtered points
+  List<IPoint> _filteredPoints = [];
+  List<IPoint> get filteredPoints => _filteredPoints;
+
   List<StationModel> get stations => _stations;
   List<PollutantModel> get pollutants => _pollutants;
   List<DateTime> get yearRange => [_minYear!, _maxYear!];
@@ -108,26 +113,18 @@ class DatasetController extends GetxController {
   Map<String, Color> get clusterColors => _clusterColors;
   DatasetModel get dataset => _dataset!;
 
-  @override
-  void onInit() {
-    super.onInit();
-  }
-
   void getMeanAqiPerStation() {
     Map<int, double> values = {};
-    for (var i = 0; i < selectedStations.length; i++) {
-      values[selectedStations[i].id] = 0;
+    for (var i = 0; i < _stations.length; i++) {
+      values[_stations[i].id] = 0;
     }
-    for (var i = 0; i < globalPoints!.length; i++) {
-      values[globalPoints![i].data.stationId] = 0;
+    for (var i = 0; i < _allPoints.length; i++) {
+      values[_allPoints[i].data.stationId] = 0;
     }
   }
 
   Future<void> loadDatasets() async {
     _datasets = await repositoryDatasets();
-    // List<dynamic> items = jsonDecode(data['data']);
-    // _datasets = List.generate(
-    //     items.length, (index) => DatasetModel.fromJson(items[index]));
   }
 
   Future<Map<String, List<dynamic>>> getCorrelationMatrix(
@@ -139,14 +136,34 @@ class DatasetController extends GetxController {
     return map;
   }
 
+  Future<void> resetFilter() async {
+    clearClusters();
+
+    uiShowLoader();
+
+    List<bool> filtered = List.generate(_allPoints.length, (index) => true);
+    _filteredPoints = _allPoints;
+
+    Map<String, List<dynamic>> map = await repositoryGetCustomProjection(
+      neighbors: 15,
+      filteredWindows: filtered,
+      beta: 0,
+    );
+    uiHideLoader();
+
+    gerateSubset(map);
+
+    Get.find<DashboardController>().update();
+    show_filtered = false;
+    update();
+  }
+
   Future<void> projectSeries() async {
-    TextEditingController deltaController =
-        TextEditingController(text: pDelta.toString());
     TextEditingController betaController =
         TextEditingController(text: pBeta.toString());
-    List<bool> selected = List.generate(pollutants.length, (index) => false);
+
     int neighbors = 10;
-    List<int> selectedPollutants = await Get.dialog(
+    await Get.dialog(
       PDialog(
         height: 850,
         width: 800,
@@ -182,39 +199,12 @@ class DatasetController extends GetxController {
                   color: pColorPrimary,
                 ),
               ),
-              const SizedBox(height: 10),
-              ListView.builder(
-                shrinkWrap: true,
-                itemCount: pollutants.length,
-                itemBuilder: (context, index) {
-                  return PButton(
-                    fillColor: selected[index] ? pColorPrimary : pColorLight,
-                    text: pollutants[index].name,
-                    onTap: () {
-                      selected[index] = !selected[index];
-                      update(['dialog']);
-                    },
-                  );
-                },
-              ),
-              SizedBox(
-                height: 80,
-                width: 200,
-                child: Row(children: [
-                  Text('Delta:'),
-                  Expanded(
-                    child: TextField(
-                      controller: deltaController,
-                    ),
-                  ),
-                ]),
-              ),
               const SizedBox(height: 30),
               SizedBox(
                 height: 80,
                 width: 200,
                 child: Row(children: [
-                  Text('Beta:'),
+                  const Text('Beta:'),
                   Expanded(
                     child: TextField(
                       controller: betaController,
@@ -227,25 +217,7 @@ class DatasetController extends GetxController {
               PButton(
                 text: 'Get projection',
                 onTap: () {
-                  bool canProject = false;
-                  for (var i = 0; i < pollutants.length; i++) {
-                    if (selected[i]) {
-                      canProject = true;
-                    }
-                  }
-                  if (!canProject) {
-                    Get.snackbar(
-                        'Projection', 'You must select at least one option');
-                  } else {
-                    List<int> positions = [];
-
-                    for (var i = 0; i < pollutants.length; i++) {
-                      if (selected[i]) {
-                        positions.add(i);
-                      }
-                    }
-                    return Get.back(result: positions);
-                  }
+                  Get.back();
                 },
               ),
             ],
@@ -253,15 +225,22 @@ class DatasetController extends GetxController {
         ),
       ),
     );
+
     uiShowLoader();
-    List<bool> filtered =
-        List.generate(_points!.length, (index) => _points![index].withinFilter);
+
+    List<bool> filtered = List.generate(
+        _allPoints.length, (index) => _allPoints[index].withinFilter);
+    _filteredPoints = [];
+    for (var i = 0; i < _allPoints.length; i++) {
+      if (_allPoints[i].selected) {
+        _filteredPoints.add(_allPoints[i]);
+      }
+    }
+
     Map<String, List<dynamic>> map = await repositoryGetCustomProjection(
-      pollutantPosition: _projectedPollutant.id,
       neighbors: neighbors,
       filteredWindows: filtered,
       beta: double.parse(betaController.text),
-      delta: double.parse(deltaController.text),
     );
 
     gerateSubset(map);
@@ -270,109 +249,12 @@ class DatasetController extends GetxController {
     Get.find<DashboardController>().update();
     show_filtered = true;
     update();
+    Future.delayed(Duration(seconds: 2)).then((value) {
+      Get.find<DashboardController>().update();
+      update();
+    });
     // showSubset();
   }
-
-  // Future<void> changeSpatioTemporalSettings() async {
-  //   TextEditingController deltaController =
-  //       TextEditingController(text: pDelta.toString());
-  //   TextEditingController betaController =
-  //       TextEditingController(text: pBeta.toString());
-  //   List<bool> selected = List.generate(pollutants.length, (index) => false);
-  //   int neighbors = 10;
-  //   await Get.dialog(
-  //     PDialog(
-  //       height: 550,
-  //       width: 400,
-  //       // child: Container(),
-  //       child: GetBuilder<DatasetController>(
-  //         id: 'dialog',
-  //         builder: (_) => Column(
-  //           children: [
-  //             Row(
-  //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //               children: [
-  //                 const Text(
-  //                   'Umap neighbors',
-  //                   style: TextStyle(
-  //                     fontSize: 18,
-  //                     fontWeight: FontWeight.w500,
-  //                     color: pColorPrimary,
-  //                   ),
-  //                 ),
-  //                 PButton(
-  //                     text: neighbors.toString(),
-  //                     onTap: () async {
-  //                       neighbors = await uiPickNumberInt(5, 100);
-  //                       update(['dialog']);
-  //                     })
-  //               ],
-  //             ),
-  //             const SizedBox(height: 30),
-
-  //             SizedBox(
-  //               height: 80,
-  //               width: double.infinity,
-  //               child: Row(children: [
-  //                 Text('Delta:'),
-  //                 SizedBox(width: 70),
-  //                 Expanded(
-  //                   child: TextField(
-  //                     controller: deltaController,
-  //                   ),
-  //                 ),
-  //               ]),
-  //             ),
-
-  //             SizedBox(
-  //               height: 80,
-  //               width: double.infinity,
-  //               child: Row(children: [
-  //                 Text('Beta:'),
-  //                 SizedBox(width: 70),
-  //                 Expanded(
-  //                   child: TextField(
-  //                     controller: betaController,
-  //                   ),
-  //                 ),
-  //               ]),
-  //             ),
-
-  //             //         SizedBox(
-  //             //           height: 80,
-  //             //           child: Row(children: [
-  //             //             Text('Beta:'),
-  //             //             TextField(
-  //             //               controller: betaController,
-  //             //             ),
-  //             //           ]),
-  //             //         ),
-  //             //         // const SizedBox(height: 30),
-  //             Spacer(),
-  //             PButton(
-  //               text: 'Get projection',
-  //               onTap: () {
-  //                 Get.back();
-  //               },
-  //             ),
-  //           ],
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  //   uiShowLoader();
-  //   List<dynamic> coords = await repositorySpatioTemporalSettings(
-  //     neighbors: neighbors,
-  //     beta: double.parse(betaController.text),
-  //     delta: double.parse(deltaController.text),
-  //   );
-
-  //   for (var i = 0; i < _points!.length; i++) {
-  //     _points![i].coordinates = Offset(coords[i][0], coords[i][1]);
-  //   }
-  //   uiHideLoader();
-  //   Get.find<DashboardController>().update();
-  // }
 
   Future<bool> loadDataset(
       DatasetModel dataset,
@@ -446,7 +328,6 @@ class DatasetController extends GetxController {
       _pollutants.add(pollutant);
 
       List<dynamic> windows = List<dynamic>.from(data['windows'][pollKeys[i]]);
-      List<double> windowsD = List<double>.from(windows);
 
       List<dynamic> windowsPrec =
           List<dynamic>.from(data['proc_windows'][pollKeys[i]]);
@@ -517,11 +398,11 @@ class DatasetController extends GetxController {
           _pollutants.indexWhere((element) => element.id == _pollutants[i].id);
       var map = await repositoryGetFdaOutliers(pollPos);
       fdaOutliers[_pollutants[i].id] = map['coords']!;
-      List<dynamic> outliers = map['outliers']!;
+      // List<dynamic> outliers = map['outliers']!;
       //  = await repositoryGetFdaOutliers(pollPos);
     }
 
-    _points = [];
+    _allPoints = [];
     for (var i = 0; i < n; i++) {
       windowModels[i].global_x = coords[i][0];
       windowModels[i].global_y = coords[i][1];
@@ -533,8 +414,10 @@ class DatasetController extends GetxController {
         outlierCoordinates: Offset(0, 0),
       );
       point.isOutlier = currOutliers[i];
-      _points!.add(point);
+      _allPoints.add(point);
     }
+
+    _filteredPoints = List.from(_allPoints);
 
     _projectedPollutant = _pollutants.first;
 
@@ -559,13 +442,13 @@ class DatasetController extends GetxController {
         }
       }
 
-      for (var i = 0; i < _points!.length; i++) {
-        _points![i].data.aqi = aqi![i];
+      for (var i = 0; i < _allPoints.length; i++) {
+        _allPoints[i].data.aqi = aqi![i];
         Map<int, int> iaqi = {};
         for (var key in pollIds) {
           iaqi[key] = iaqis![key]![i];
         }
-        _points![i].data.iaqis = iaqi;
+        _allPoints[i].data.iaqis = iaqi;
       }
     } else {
       print('No aqis found');
@@ -577,27 +460,25 @@ class DatasetController extends GetxController {
 
     if (show_filtered) {
       List<bool> filtered = List.generate(
-          _points!.length, (index) => _points![index].withinFilter);
+          _allPoints!.length, (index) => _allPoints![index].withinFilter);
       Map<String, List<dynamic>> map = await repositoryGetCustomProjection(
-        pollutantPosition: _projectedPollutant.id,
         neighbors: 10,
         filteredWindows: filtered,
-        beta: 5,
-        delta: 0,
+        beta: 0,
       );
       List<dynamic> shapeCoords = map['shapeCoords']!;
       List<dynamic> currOutliers = map['outliers']!;
       int coord_pos = 0;
-      for (var i = 0; i < _points!.length; i++) {
-        if (_points![i].withinFilter) {
-          _points![i].outlierCoordinates =
+      for (var i = 0; i < _allPoints!.length; i++) {
+        if (_allPoints[i].withinFilter) {
+          _allPoints[i].outlierCoordinates =
               Offset(shapeCoords[1][coord_pos], shapeCoords[0][coord_pos]);
-          _points![i].isOutlier = currOutliers[coord_pos];
+          _allPoints[i].isOutlier = currOutliers[coord_pos];
           coord_pos++;
         } else {
-          _points![i].outlierCoordinates =
+          _allPoints[i].outlierCoordinates =
               Offset(shapeCoords[1][0], shapeCoords[0][0]);
-          _points![i].isOutlier = 0;
+          _allPoints[i].isOutlier = 0;
         }
       }
     } else {
@@ -607,9 +488,10 @@ class DatasetController extends GetxController {
       List<dynamic> coordsOut = map['coords']!;
       List<int> outliers = List<int>.from(map['outliers']!);
 
-      for (var i = 0; i < _points!.length; i++) {
-        _points![i].localCoordinates = Offset(coordsOut[1][i], coordsOut[0][i]);
-        _points![i].isOutlier = outliers[i];
+      for (var i = 0; i < _allPoints!.length; i++) {
+        _allPoints[i].localCoordinates =
+            Offset(coordsOut[1][i], coordsOut[0][i]);
+        _allPoints[i].isOutlier = outliers[i];
       }
     }
   }
@@ -619,13 +501,12 @@ class DatasetController extends GetxController {
     selectedWindow = window;
     List<WindowModel> windows = [];
 
-    for (var i = 0; i < _points!.length; i++) {
-      IPoint point = _points![i];
+    for (var i = 0; i < _filteredPoints.length; i++) {
+      IPoint point = _filteredPoints[i];
       if (point.data.stationId == selectedStation) {
         windows.add(point.data);
       }
     }
-
     selectedStationWindows = windows;
   }
 
@@ -633,8 +514,8 @@ class DatasetController extends GetxController {
     int selectedStation = stationId;
     List<IPoint> points = [];
 
-    for (var i = 0; i < _points!.length; i++) {
-      IPoint point = _points![i];
+    for (var i = 0; i < _filteredPoints.length; i++) {
+      IPoint point = _filteredPoints[i];
       if (point.data.stationId == selectedStation) {
         points.add(point);
       }
@@ -646,7 +527,7 @@ class DatasetController extends GetxController {
     _resetClusters();
     _selectedStations = nonEmptyStations;
 
-    List<IPoint> points = _points!;
+    List<IPoint> points = _filteredPoints;
     for (var i = 0; i < _selectedStations.length; i++) {
       _clusters[_selectedStations[i].identifier] = [];
     }
@@ -665,7 +546,7 @@ class DatasetController extends GetxController {
 
   void clusterByMonth() {
     _resetClusters();
-    List<IPoint> points = _points!;
+    List<IPoint> points = _filteredPoints;
     Map<int, String> months = {
       1: 'January',
       2: 'February',
@@ -705,7 +586,7 @@ class DatasetController extends GetxController {
 
   Future<void> kmeansClustering() async {
     _resetClusters();
-    List<IPoint> points = _points!;
+    List<IPoint> points = _filteredPoints;
 
     int nClusters = await uiPickNumberInt(2, 20);
     List<int> classes = await repositoryKmeansClustering(nClusters);
@@ -729,7 +610,7 @@ class DatasetController extends GetxController {
 
   Future<void> dbscanClustering() async {
     _resetClusters();
-    List<IPoint> points = _points!;
+    List<IPoint> points = _filteredPoints;
 
     // int nClusters = await uiPickNumberInt(2, 20);
     double eps = 0.1;
@@ -767,8 +648,8 @@ class DatasetController extends GetxController {
       }
     }
 
-    for (var i = 0; i < _points!.length; i++) {
-      IPoint point = _points![i];
+    for (var i = 0; i < _filteredPoints.length; i++) {
+      IPoint point = _filteredPoints[i];
       if (point.cluster != null) {
         stationCounts[point.data.stationId]![point.cluster!] =
             stationCounts[point.data.stationId]![point.cluster!]! + 1;
@@ -782,16 +663,16 @@ class DatasetController extends GetxController {
 
     // This line should not be here [Restore default view]
     Get.find<DashboardController>().ts_visualization = 0;
-
-    for (var i = 0; i < _points!.length; i++) {
-      _points![i].cluster = null;
+    List<IPoint> points = _filteredPoints;
+    for (var i = 0; i < points.length; i++) {
+      points[i].cluster = null;
     }
   }
 
   void clusterByYear() {
     _resetClusters();
 
-    List<IPoint> points = _points!;
+    List<IPoint> points = _filteredPoints;
     List<int> years = List.generate(_endDate.year - _beginDate.year + 1,
         (index) => _beginDate.year + index);
 
@@ -820,7 +701,7 @@ class DatasetController extends GetxController {
 
   void clusterByDay() {
     _resetClusters();
-    List<IPoint> points = _points!;
+    List<IPoint> points = _filteredPoints;
     Map<int, String> days = {
       1: 'Monday',
       2: 'Tuesday',
@@ -848,7 +729,7 @@ class DatasetController extends GetxController {
 
   void clusterByOutlier() {
     _resetClusters();
-    List<IPoint> points = _points!;
+    List<IPoint> points = _filteredPoints;
     Map<int, String> modes = {
       0: 'Normal',
       1: 'Lower',
@@ -878,10 +759,10 @@ class DatasetController extends GetxController {
     String clusterId = clusterPos.toString();
 
     List<IPoint> selectedP = [];
-    for (var i = 0; i < _points!.length; i++) {
-      if (_points![i].selected) {
-        selectedP.add(_points![i]);
-        _points![i].cluster = clusterId;
+    for (var i = 0; i < _filteredPoints.length; i++) {
+      if (_filteredPoints[i].selected) {
+        selectedP.add(_filteredPoints[i]);
+        _filteredPoints[i].cluster = clusterId;
       }
     }
     _clusters[clusterId] = selectedP;
@@ -899,6 +780,7 @@ class DatasetController extends GetxController {
   }
 
   void _createClusterColors() {
+    print('CREATED CLUSTER COLORS');
     _clusterColors = {};
 
     for (var i = 0; i < clusterIds.length; i++) {
@@ -907,6 +789,9 @@ class DatasetController extends GetxController {
   }
 
   void _createClusterData() {
+    print('--');
+    print(clusterIds);
+    print('CREATED CLUSTER DATA');
     clustersData = {};
     for (var i = 0; i < clusterIds.length; i++) {
       List<IPoint> ipoints = _clusters[clusterIds[i]]!;
@@ -915,38 +800,13 @@ class DatasetController extends GetxController {
           ClusterData(id: clusterIds[i], color: color, ipoints: ipoints);
       clustersData[clusterIds[i]]!.computeStatistics();
     }
-  }
 
-  Future<void> getContrastiveFeatures() async {
-    if (clusterIds.length == 0 || clusterIds.length == 1) {
-      Get.snackbar('System', 'Make at least two clusters');
-      return;
-    }
-    if (!areAllClustered()) {
-      createNonClusterCluster();
-    }
-
-    List<int> labels = List.generate(_points!.length, (index) => 0);
-    Map<String, int> clustMap = {};
-    for (var i = 0; i < clusterIds.length; i++) {
-      clustMap[clusterIds[i]] = i;
-    }
-
-    for (var i = 0; i < _points!.length; i++) {
-      int? pclass = clustMap[_points![i].cluster];
-      labels[i] = pclass ?? -1;
-    }
-
-    contFeatMap = await repositoryContrastiveFeatures(labels);
-    contrastiveFeatures = [];
-    for (int i = 0; i < contFeatMap!.keys.length; i++) {
-      contrastiveFeatures!.add(contFeatMap![contFeatMap!.keys.toList()[i]]!);
-    }
+    print('DONEEEE');
   }
 
   bool areAllClustered() {
-    for (var i = 0; i < _points!.length; i++) {
-      if (_points![i].cluster == null) {
+    for (var i = 0; i < _filteredPoints.length; i++) {
+      if (_filteredPoints[i].cluster == null) {
         return false;
       }
     }
@@ -958,10 +818,11 @@ class DatasetController extends GetxController {
     String clusterId = clusterPos.toString();
 
     List<IPoint> selectedP = [];
-    for (var i = 0; i < _points!.length; i++) {
-      if (_points![i].cluster == null) {
-        selectedP.add(_points![i]);
-        _points![i].cluster = clusterId;
+    List<IPoint> points = _filteredPoints;
+    for (var i = 0; i < points.length; i++) {
+      if (points[i].cluster == null) {
+        selectedP.add(points[i]);
+        points[i].cluster = clusterId;
       }
     }
     _clusters[clusterId] = selectedP;
@@ -977,19 +838,20 @@ class DatasetController extends GetxController {
     List<dynamic> shapeCoords = dataMap['shapeCoords']!;
     List<IPoint> spoints = [];
     int coord_pos = 0;
-    for (var i = 0; i < _points!.length; i++) {
-      if (_points![i].withinFilter) {
-        _points![i].highlightedCoordinates =
+    List<IPoint> points = _filteredPoints;
+    for (var i = 0; i < points.length; i++) {
+      if (points[i].withinFilter) {
+        points[i].highlightedCoordinates =
             Offset(coords[coord_pos][0], coords[coord_pos][1]);
-        _points![i].outlierCoordinates =
+        points[i].outlierCoordinates =
             Offset(shapeCoords[1][coord_pos], shapeCoords[0][coord_pos]);
-        _points![i].isOutlier = currOutliers[coord_pos];
+        points[i].isOutlier = currOutliers[coord_pos];
         coord_pos++;
       } else {
-        _points![i].highlightedCoordinates = Offset(coords[0][0], coords[0][1]);
-        _points![i].outlierCoordinates =
+        points[i].highlightedCoordinates = Offset(coords[0][0], coords[0][1]);
+        points[i].outlierCoordinates =
             Offset(shapeCoords[1][0], shapeCoords[0][0]);
-        _points![i].isOutlier = 0;
+        points[i].isOutlier = 0;
       }
     }
     subset = spoints;
@@ -1006,9 +868,6 @@ class DatasetController extends GetxController {
     );
   }
 
-  List<List<double>>? contrastiveFeatures;
-  // List<List<double>>? contrastiveFeatures;
-
   DateTime? _minYear;
   DateTime? _maxYear;
   DateTime? _minMonth;
@@ -1017,7 +876,7 @@ class DatasetController extends GetxController {
   List<DatasetModel> _datasets = [];
   late List<PollutantModel> _pollutants;
   late List<StationModel> _stations;
-  List<IPoint>? _points;
+  late List<IPoint> _allPoints;
   late DateTime _beginDate;
   late DateTime _endDate;
   late Granularity _granularity;
@@ -1115,6 +974,12 @@ class ClusterData {
   });
 
   void computeStatistics() {
+    if (ipoints == null) {
+      return;
+    }
+    if (ipoints.isEmpty) {
+      return;
+    }
     List<int> pollutantIds = ipoints.first.data.smoothedValues.keys.toList();
 
     for (var pollId in pollutantIds) {

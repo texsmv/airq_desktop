@@ -172,19 +172,15 @@ Future<List<dynamic>> repositoryGetProjection({
 }
 
 Future<Map<String, List<dynamic>>> repositoryGetCustomProjection({
-  required double delta,
   required double beta,
-  required pollutantPosition,
   required List<bool> filteredWindows,
   int neighbors = 5,
 }) async {
   final response = await post(
     Uri.parse("${hostUrl}getCustomProjection"),
     body: {
-      'pollutantPosition': jsonEncode(pollutantPosition),
       'neighbors': jsonEncode(neighbors),
       'itemsPositions': jsonEncode(filteredWindows),
-      'delta': jsonEncode(delta),
       'beta': jsonEncode(beta),
     },
   );

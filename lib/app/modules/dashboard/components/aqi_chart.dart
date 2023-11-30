@@ -102,8 +102,10 @@ class AqiChartBars extends StatefulWidget {
 class _AqiChartBarsState extends State<AqiChartBars> {
   DatasetController datasetController = Get.find();
   DashboardController dashboardController = Get.find();
-  List<IPoint> get ipoints => datasetController.globalPoints!;
+  List<IPoint> get ipoints => datasetController.filteredPoints;
+
   int get n_iaqis => datasetController.iaqis!.length;
+
   List<int> get pollIds => datasetController.iaqis!.keys.toList();
 
   late double _height;
@@ -215,7 +217,7 @@ class _AqiChartBarsState extends State<AqiChartBars> {
     }
 
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: List.generate(
         n_iaqis,
@@ -230,7 +232,7 @@ class _AqiChartBarsState extends State<AqiChartBars> {
   Widget clusterPollBars() {
     int nClusters = datasetController.clusterIds.length;
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: List.generate(
         n_iaqis,
@@ -242,6 +244,7 @@ class _AqiChartBarsState extends State<AqiChartBars> {
               String clusterId = datasetController.clusterIds[k];
               ClusterData clusterData =
                   datasetController.clustersData[clusterId]!;
+              // return Container();
               List<IPoint> points = clusterData.ipoints;
               Offset meanStd = getPointsMeansStds(points, pollIds[index]);
               return _bar(meanStd, clusterData.color);
@@ -258,25 +261,11 @@ class _AqiChartBarsState extends State<AqiChartBars> {
       _height = constraints.maxHeight;
       _width = constraints.maxWidth;
       return Container(
-        width: double.infinity,
-        height: double.infinity,
-        child: !widget.clusterMode ? selectedPollBars() : clusterPollBars(),
-      );
+          width: double.infinity,
+          height: double.infinity,
+          child: !widget.clusterMode ? selectedPollBars() : clusterPollBars()
+          // child: selectedPollBars()
+          );
     });
   }
 }
-
-// class AqiBars extends StatefulWidget {
-//   List<String> pollutants;
-//   const AqiBars({super.key});
-
-//   @override
-//   State<AqiBars> createState() => _AqiBarsState();
-// }
-
-// class _AqiBarsState extends State<AqiBars> {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Container();
-//   }
-// }

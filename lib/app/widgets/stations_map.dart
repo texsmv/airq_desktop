@@ -58,12 +58,12 @@ class _StationsMapState extends State<StationsMap> {
     double lat = 0, lng = 0;
     int counter = 0;
     List<StationModel> stations = [];
-    for (var i = 0; i < datasetController.selectedStations.length; i++) {
-      if (datasetController.selectedStations[i].latitude != null) {
+    for (var i = 0; i < datasetController.stations.length; i++) {
+      if (datasetController.stations[i].latitude != null) {
         counter++;
-        lat += datasetController.selectedStations[i].latitude!;
-        lng += datasetController.selectedStations[i].longitude!;
-        stations.add(datasetController.selectedStations[i]);
+        lat += datasetController.stations[i].latitude!;
+        lng += datasetController.stations[i].longitude!;
+        stations.add(datasetController.stations[i]);
       }
     }
     lat = lat / counter;
@@ -76,16 +76,16 @@ class _StationsMapState extends State<StationsMap> {
   List<Marker> _markers() {
     List<StationModel> stations = [];
     List<LatLng?> coords = [];
-    for (var i = 0; i < datasetController.selectedStations.length; i++) {
-      if (datasetController.selectedStations[i].latitude != null) {
+    for (var i = 0; i < datasetController.stations.length; i++) {
+      if (datasetController.stations[i].latitude != null) {
         // stations.add(datasetController.selectedStations[i]);
-        coords.add(LatLng(datasetController.selectedStations[i].latitude!,
-            datasetController.selectedStations[i].longitude!));
+        coords.add(LatLng(datasetController.stations[i].latitude!,
+            datasetController.stations[i].longitude!));
       } else {
         coords.add(null);
         // visible.add(false);
       }
-      stations.add(datasetController.selectedStations[i]);
+      stations.add(datasetController.stations[i]);
     }
     return List.generate(stations.length, (index) {
       // print(index);
@@ -246,7 +246,7 @@ class _MarkerChartState extends State<MarkerChart> {
     return Column(
       children: [
         Text(
-          datasetController.selectedStations[index].name,
+          datasetController.stations[index].name,
           style: const TextStyle(
             color: Color.fromRGBO(240, 190, 50, 1),
             fontSize: 8,

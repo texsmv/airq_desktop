@@ -51,16 +51,16 @@ class MultiChartPainter extends CustomPainter {
   }
 
   void paintModelLine(IPoint model) {
-    if (datasetController.show_filtered && !model.withinFilter) {
-      return;
-    }
+    // if (datasetController.show_filtered && !model.withinFilter) {
+    //   return;
+    // }
     Path path = Path();
 
     List<double> values;
     if (dashboardController.showShape) {
-      values = model.data.smoothedValues[pollutant.id]!;
+      values = model.data.values[pollutant.id]!;
     } else {
-      values = model.data.smoothedValues[pollutant.id]!;
+      values = model.data.values[pollutant.id]!;
     }
 
     double value = min(values[0], maxValue);

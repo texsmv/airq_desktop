@@ -26,7 +26,7 @@ class ClusterMeansPainter extends CustomPainter {
   late double _horizontalSpace;
   late Canvas _canvas;
   int get timeLen =>
-      datasetController.globalPoints![0].data.values.values.first.length;
+      datasetController.filteredPoints[0].data.values.values.first.length;
   // double get minV {
   //   List<double> allMeans = [];
   //   for (var clusterId in datasetController.clusterIds) {

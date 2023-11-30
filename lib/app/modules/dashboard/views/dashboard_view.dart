@@ -203,9 +203,7 @@ class DashboardView extends GetView<DashboardController> {
                           icon: 'assets/icons/filter.png',
                           selected: controller.datasetController.show_filtered,
                           onTap: () {
-                            controller.datasetController.show_filtered =
-                                !controller.datasetController.show_filtered;
-                            controller.datasetController.update();
+                            controller.datasetController.resetFilter();
                           },
                         ),
                       ],
@@ -309,12 +307,12 @@ class DashboardView extends GetView<DashboardController> {
               : SizedBox();
         },
       ),
-      PButton(
-        onTap: () {
-          controller.contrastiveFeatures();
-        },
-        text: 'ContrastiveFeat',
-      ),
+      // PButton(
+      //   onTap: () {
+      //     controller.contrastiveFeatures();
+      //   },
+      //   text: 'ContrastiveFeat',
+      // ),
       PButton(
         onTap: () {
           controller.selectionCorrelationMatrix();

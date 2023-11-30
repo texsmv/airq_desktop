@@ -35,10 +35,9 @@ class DashboardController extends GetxController {
     }
   }
 
-  List<StationModel> get stations => datasetController.selectedStations;
-  List<IPoint>? get globalPoints => datasetController.globalPoints;
+  List<StationModel> get stations => datasetController.stations;
   List<WindowModel> get windows => datasetController.allWindows;
-  List<IPoint> get ipoints => datasetController.globalPoints!;
+  List<IPoint> get ipoints => datasetController.filteredPoints;
   PollutantModel get projectedPollutant => datasetController.projectedPollutant;
   Granularity get granularity => datasetController.granularity;
   List<PollutantModel> get selectedPollutants =>
@@ -266,12 +265,14 @@ class DashboardController extends GetxController {
     }
     List<int> selectedIndex = List.generate(
         newSelectedPoints.length, (index) => newSelectedPoints[index].data.id);
+    if (selectedPoints.isNotEmpty) {
+      Map<String, double> ranks =
+          await repositoryPollutantRanking(selectedIndex);
 
-    Map<String, double> ranks = await repositoryPollutantRanking(selectedIndex);
-
-    for (var poll in datasetController.pollutants) {
-      poll.selectionRank = ranks[poll.id.toString()]!;
-      // print
+      for (var poll in datasetController.pollutants) {
+        poll.selectionRank = ranks[poll.id.toString()]!;
+        // print
+      }
     }
 
     update();
@@ -323,11 +324,6 @@ class DashboardController extends GetxController {
     List<IPoint> selection = filterByCharts();
 
     onPointsSelected(selection);
-  }
-
-  Future<void> contrastiveFeatures() async {
-    await datasetController.getContrastiveFeatures();
-    update();
   }
 
   Future<void> kmeansClustering() async {

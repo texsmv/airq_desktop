@@ -42,8 +42,8 @@ class _OutliersChartState extends State<OutliersChart> {
 
       Color normalFillPaint = Color.fromRGBO(190, 190, 190, 1);
 
-      for (var i = 0; i < datasetController.globalPoints!.length; i++) {
-        IPoint point = datasetController.globalPoints![i];
+      for (var i = 0; i < datasetController.filteredPoints.length; i++) {
+        IPoint point = datasetController.filteredPoints[i];
         late Color fcolor;
         late Color bcolor;
         double pradius = 3;
@@ -130,7 +130,7 @@ class _OutliersChartState extends State<OutliersChart> {
                     child: CustomPaint(
                       painter: OutliersPainter(
                         saveCanvasCoords: false,
-                        ipoints: datasetController.globalPoints!,
+                        ipoints: datasetController.filteredPoints,
                         borderColors: borderColors[pollutant.id]!,
                         fillColors: fillColors[pollutant.id]!,
                         coords: coordinates[pollutant.id]!,

@@ -25,7 +25,7 @@ class _ClusterMeansState extends State<ClusterMeans> {
   DashboardController dashboardController = Get.find();
 
   int get timeLen =>
-      datasetController.globalPoints![0].data.values.values.first.length;
+      datasetController.filteredPoints[0].data.values.values.first.length;
   late Map<String, List<double>> means;
   late Map<String, List<double>> stds;
   Map<String, List<IPoint>> get clusters => datasetController.clusters;

@@ -144,9 +144,9 @@ class IProjectionPainter extends CustomPainter {
 
   void drawMark(Offset offset, double radius, Paint paint, int isOutlier,
       {double isize = 8, bool isFiltered = false}) {
-    if ((mode == 2 || mode == 3) && !isFiltered) {
-      return;
-    }
+    // if ((mode == 2 || mode == 3) && !isFiltered) {
+    //   return;
+    // }
     if (isOutlier == 2) {
       // double isize = 8;
       _canvas.drawRect(

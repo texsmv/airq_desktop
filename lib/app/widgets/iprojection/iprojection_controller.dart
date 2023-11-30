@@ -315,7 +315,7 @@ class IProjectionController extends GetxController {
   }
 
   void updateCoordinates() {
-    _maxX = null; 
+    _maxX = null;
     _minX = null;
     _maxY = null;
     _minY = null;

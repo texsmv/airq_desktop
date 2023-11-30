@@ -147,7 +147,8 @@ class AqiChartPainter extends CustomPainter {
 
   late double _linesSpace;
 
-  List<IPoint> get ipoints => datasetController.globalPoints!;
+  List<IPoint> get ipoints => datasetController.filteredPoints;
+
   int get n_iaqis => datasetController.iaqis!.length;
   List<int> get pollIds => datasetController.iaqis!.keys.toList();
   Color normalColor = Color.fromRGBO(190, 190, 190, 1);
