@@ -217,7 +217,7 @@ class _AqiChartBarsState extends State<AqiChartBars> {
     }
 
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: List.generate(
         n_iaqis,
@@ -232,7 +232,7 @@ class _AqiChartBarsState extends State<AqiChartBars> {
   Widget clusterPollBars() {
     int nClusters = datasetController.clusterIds.length;
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: List.generate(
         n_iaqis,

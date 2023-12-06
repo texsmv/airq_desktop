@@ -65,7 +65,6 @@ class LeftPannel extends GetView<DashboardController> {
                   ),
                   Expanded(
                     child: StationsMap(
-                      selectedBased: controller.map_selection_mode,
                       clusterView: controller.map_cluster_mode,
                     ),
                   ),
@@ -413,14 +412,14 @@ class MidPannel extends GetView<DashboardController> {
                                       yDivisions: 5,
                                       xDivisions: controller.granularity ==
                                               Granularity.daily
-                                          ? 25
+                                          ? 5
                                           : controller.granularity ==
                                                   Granularity.monthly
                                               ? 5
                                               : 12,
                                       xLabels: controller.granularity ==
                                               Granularity.daily
-                                          ? null
+                                          ? ['0', '6', '12', '18', '24']
                                           : controller.granularity ==
                                                   Granularity.monthly
                                               ? ["1", "7", "14", '21', "28"]

@@ -163,7 +163,7 @@ class DatasetController extends GetxController {
         TextEditingController(text: pBeta.toString());
 
     int neighbors = 10;
-    await Get.dialog(
+    bool project = await Get.dialog(
       PDialog(
         height: 850,
         width: 800,
@@ -217,7 +217,7 @@ class DatasetController extends GetxController {
               PButton(
                 text: 'Get projection',
                 onTap: () {
-                  Get.back();
+                  Get.back(result: true);
                 },
               ),
             ],
@@ -228,31 +228,34 @@ class DatasetController extends GetxController {
 
     uiShowLoader();
 
-    List<bool> filtered = List.generate(
-        _allPoints.length, (index) => _allPoints[index].withinFilter);
-    _filteredPoints = [];
-    for (var i = 0; i < _allPoints.length; i++) {
-      if (_allPoints[i].selected) {
-        _filteredPoints.add(_allPoints[i]);
+    if (project == true) {
+      List<bool> filtered = List.generate(
+          _allPoints.length, (index) => _allPoints[index].withinFilter);
+      _filteredPoints = [];
+      for (var i = 0; i < _allPoints.length; i++) {
+        if (_allPoints[i].selected) {
+          _filteredPoints.add(_allPoints[i]);
+        }
       }
+
+      Map<String, List<dynamic>> map = await repositoryGetCustomProjection(
+        neighbors: neighbors,
+        filteredWindows: filtered,
+        beta: double.parse(betaController.text),
+      );
+
+      gerateSubset(map);
+
+      uiHideLoader();
+      Get.find<DashboardController>().update();
+      show_filtered = true;
+      update();
+      Future.delayed(Duration(seconds: 2)).then((value) {
+        Get.find<DashboardController>().update();
+        update();
+      });
     }
 
-    Map<String, List<dynamic>> map = await repositoryGetCustomProjection(
-      neighbors: neighbors,
-      filteredWindows: filtered,
-      beta: double.parse(betaController.text),
-    );
-
-    gerateSubset(map);
-
-    uiHideLoader();
-    Get.find<DashboardController>().update();
-    show_filtered = true;
-    update();
-    Future.delayed(Duration(seconds: 2)).then((value) {
-      Get.find<DashboardController>().update();
-      update();
-    });
     // showSubset();
   }
 
@@ -589,7 +592,10 @@ class DatasetController extends GetxController {
     List<IPoint> points = _filteredPoints;
 
     int nClusters = await uiPickNumberInt(2, 20);
-    List<int> classes = await repositoryKmeansClustering(nClusters);
+    List<int> classes = await repositoryKmeansClustering(
+        nClusters,
+        List.generate(
+            filteredPoints.length, (index) => filteredPoints[index].data.id));
 
     for (var i = 0; i < nClusters; i++) {
       _clusters[i.toString()] = [];
@@ -618,7 +624,13 @@ class DatasetController extends GetxController {
     String epsStr = await uiPickString(defaultValue: '0.1');
     eps = double.parse(epsStr);
 
-    Map<String, dynamic> data = await repositoryDbscanClustering(eps);
+    Map<String, dynamic> data = await repositoryDbscanClustering(
+      eps,
+      List.generate(
+        filteredPoints.length,
+        (index) => filteredPoints[index].data.id,
+      ),
+    );
     List<int> classes = data['labels'];
     int nClusters = data['n_classes'];
 

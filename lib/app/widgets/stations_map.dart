@@ -13,10 +13,7 @@ import '../constants/colors.dart';
 
 class StationsMap extends StatefulWidget {
   final bool clusterView;
-  final bool selectedBased;
-  StationsMap(
-      {Key? key, required this.clusterView, required this.selectedBased})
-      : super(key: key);
+  StationsMap({Key? key, required this.clusterView}) : super(key: key);
 
   @override
   State<StationsMap> createState() => _StationsMapState();
@@ -113,7 +110,6 @@ class _StationsMapState extends State<StationsMap> {
                     maxCount: maxStationsCount,
                     clusterView: widget.clusterView,
                     index: index,
-                    selectionBased: widget.selectedBased,
                   )
                 ],
               ),
@@ -146,7 +142,6 @@ class MarkerChart extends StatefulWidget {
   final int maxCount;
   final int index;
   final bool clusterView;
-  final bool selectionBased;
   const MarkerChart({
     super.key,
     required this.clusterColors,
@@ -154,7 +149,6 @@ class MarkerChart extends StatefulWidget {
     required this.maxCount,
     required this.index,
     required this.clusterView,
-    required this.selectionBased,
   });
 
   @override
@@ -170,7 +164,7 @@ class _MarkerChartState extends State<MarkerChart> {
   int get index => widget.index;
 
   double stationSizeRatio() {
-    if (widget.selectionBased && !widget.clusterView) {
+    if (!widget.clusterView) {
       return dashboardController.stationCounts[index] /
           dashboardController.stationCounts.reduce(max);
       // dashboardController.stationCounts.reduce(max);
@@ -265,8 +259,16 @@ class _MarkerChartState extends State<MarkerChart> {
                 )
               : Container(
                   decoration: BoxDecoration(
-                    color: chipColor(index),
+                    color: markerSize() == minSize
+                        ? chipColor(index).withOpacity(0.3)
+                        : chipColor(index),
                     shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Text(
+                      dashboardController.stationCounts[index].toString(),
+                      style: TextStyle(fontSize: 9, color: Colors.white),
+                    ),
                   ),
                 ),
         ),

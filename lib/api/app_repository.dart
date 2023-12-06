@@ -102,9 +102,11 @@ Future<Map<String, List<dynamic>>> repositoryCorrelationMatrix(
   };
 }
 
-Future<List<int>> repositoryKmeansClustering(int n_clusters) async {
+Future<List<int>> repositoryKmeansClustering(
+    int n_clusters, List<int> itemPositions) async {
   final response = await post(Uri.parse("${hostUrl}kmeans"), body: {
     'n_clusters': jsonEncode(n_clusters),
+    'itemsPositions': jsonEncode(itemPositions),
   });
 
   dynamic data = jsonDecode(response.body);
@@ -112,9 +114,11 @@ Future<List<int>> repositoryKmeansClustering(int n_clusters) async {
   return classes;
 }
 
-Future<Map<String, dynamic>> repositoryDbscanClustering(double eps) async {
+Future<Map<String, dynamic>> repositoryDbscanClustering(
+    double eps, List<int> itemPositions) async {
   final response = await post(Uri.parse("${hostUrl}dbscan"), body: {
     'eps': jsonEncode(eps),
+    'itemsPositions': jsonEncode(itemPositions),
   });
 
   dynamic data = jsonDecode(response.body);

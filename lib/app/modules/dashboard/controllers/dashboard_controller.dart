@@ -555,7 +555,6 @@ class DashboardController extends GetxController {
   // StationModel? selectedStation;
 
   bool map_cluster_mode = false;
-  bool map_selection_mode = true;
   bool showShape = false;
   RxBool pickMode = false.obs;
   RxBool binsPercentage = false.obs;
