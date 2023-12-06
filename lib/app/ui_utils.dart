@@ -7,6 +7,7 @@ import 'package:airq_ui/controllers/dataset_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:numberpicker/numberpicker.dart';
+import 'package:rainbow_color/rainbow_color.dart';
 import 'package:random_color/random_color.dart';
 
 import 'widgets/common/light_button.dart';
@@ -173,8 +174,14 @@ Color uiGetColor(int index) {
 }
 
 List<Color> uiRangeColor(int length) {
-  return List.generate(length,
-      (index) => Color.fromRGBO(0, 0, ((255 / length) * index).toInt(), 1));
+  var rb = Rainbow(
+      spectrum: [Color(0xFFFF0000), Colors.blue],
+      rangeStart: 0,
+      rangeEnd: length);
+
+  return List.generate(length, (index) => rb[index]);
+  // return List.generate(length,
+  //     (index) => Color.fromRGBO(0, 0, ((255 / length) * index).toInt(), 1));
 }
 
 double uiPollutant2Aqi(double value, String pollutantName) {

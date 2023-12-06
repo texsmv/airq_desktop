@@ -13,7 +13,7 @@ import 'package:airq_ui/models/window_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-int MIN_CHART_CLUSTERS = 12;
+int MIN_CHART_CLUSTERS = 30;
 
 class AqiChart extends StatefulWidget {
   const AqiChart({super.key});
@@ -50,7 +50,7 @@ class _AqiChartState extends State<AqiChart> {
             child: LeftAxis(
               xMaxValue: 0,
               xMinValue: 2,
-              yMaxValue: 500,
+              yMaxValue: datasetController.maxIaqi.toDouble(),
               yMinValue: 0,
               yAxisLabel: 'IAQI',
               xAxisLabel: 'Pollutant',
@@ -65,7 +65,7 @@ class _AqiChartState extends State<AqiChart> {
               child: AqiSections(
                 showIaqi: true,
                 minValue: 0,
-                maxValue: 500,
+                maxValue: datasetController.maxIaqi.toDouble(),
                 child: Container(
                   height: double.infinity,
                   width: double.infinity,
@@ -112,7 +112,8 @@ class _AqiChartBarsState extends State<AqiChartBars> {
   late double _width;
 
   double value2Heigh(double value) {
-    return uiRangeConverter(value, 0, 500, 0, _height);
+    return uiRangeConverter(
+        value, 0, datasetController.maxIaqi.toDouble(), 0, _height);
   }
 
   double calculateMean(List<double> numbers) {
@@ -217,7 +218,9 @@ class _AqiChartBarsState extends State<AqiChartBars> {
     }
 
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisAlignment: datasetController.pollutants.length == 1
+          ? MainAxisAlignment.spaceAround
+          : MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: List.generate(
         n_iaqis,
@@ -232,7 +235,9 @@ class _AqiChartBarsState extends State<AqiChartBars> {
   Widget clusterPollBars() {
     int nClusters = datasetController.clusterIds.length;
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisAlignment: datasetController.pollutants.length == 1
+          ? MainAxisAlignment.spaceAround
+          : MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: List.generate(
         n_iaqis,
@@ -244,7 +249,6 @@ class _AqiChartBarsState extends State<AqiChartBars> {
               String clusterId = datasetController.clusterIds[k];
               ClusterData clusterData =
                   datasetController.clustersData[clusterId]!;
-              // return Container();
               List<IPoint> points = clusterData.ipoints;
               Offset meanStd = getPointsMeansStds(points, pollIds[index]);
               return _bar(meanStd, clusterData.color);
@@ -260,6 +264,7 @@ class _AqiChartBarsState extends State<AqiChartBars> {
     return LayoutBuilder(builder: (context, constraints) {
       _height = constraints.maxHeight;
       _width = constraints.maxWidth;
+      // return SizedBox();
       return Container(
           width: double.infinity,
           height: double.infinity,

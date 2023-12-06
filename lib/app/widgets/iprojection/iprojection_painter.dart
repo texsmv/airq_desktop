@@ -194,7 +194,7 @@ class IProjectionPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return true;
+    // return false;
     return controller.shouldRepaint;
   }
 }

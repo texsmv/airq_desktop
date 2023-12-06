@@ -531,13 +531,17 @@ class DatasetController extends GetxController {
     _selectedStations = nonEmptyStations;
 
     List<IPoint> points = _filteredPoints;
-    for (var i = 0; i < _selectedStations.length; i++) {
-      _clusters[_selectedStations[i].identifier] = [];
-    }
+    // for (var i = 0; i < _selectedStations.length; i++) {
+    //   _clusters[_selectedStations[i].identifier] = [];
+    // }
 
     for (var i = 0; i < points.length; i++) {
       IPoint point = points[i];
+
       String clusterId = stationsMap[point.data.stationId]!.identifier;
+      if (!_clusters.containsKey(clusterId)) {
+        _clusters[clusterId] = [];
+      }
       point.cluster = clusterId;
       _clusters[clusterId]!.add(point);
     }
@@ -551,18 +555,18 @@ class DatasetController extends GetxController {
     _resetClusters();
     List<IPoint> points = _filteredPoints;
     Map<int, String> months = {
-      1: 'January',
-      2: 'February',
-      3: 'March',
-      4: 'April',
-      5: 'May',
-      6: 'June',
-      7: 'July',
-      8: 'August',
-      9: 'September',
-      10: 'October',
-      11: 'November',
-      12: 'December',
+      1: '01-January',
+      2: '02-February',
+      3: '03-March',
+      4: '04-April',
+      5: '05-May',
+      6: '06-June',
+      7: '07-July',
+      8: '08-August',
+      9: '09-September',
+      10: '10-October',
+      11: '11-November',
+      12: '12-December',
     };
     for (var i = 1; i <= 12; i++) {
       _clusters[months[i]!] = [];
@@ -582,7 +586,7 @@ class DatasetController extends GetxController {
       _clusterColors[clusterIds[i]] = colors[i];
     }
 
-    _createClusterColors();
+    // _createClusterColors();
     _createClusterData();
     _createStaionClusterCounts();
   }
@@ -706,7 +710,7 @@ class DatasetController extends GetxController {
       _clusterColors[clusterIds[i]] = colors[i];
     }
 
-    _createClusterColors();
+    // _createClusterColors();
     _createClusterData();
     _createStaionClusterCounts();
   }
@@ -781,6 +785,7 @@ class DatasetController extends GetxController {
     Color color = uiGetColor(clusterPos);
     _clusterColors[clusterId] = color;
 
+    _createClusterData();
     _createStaionClusterCounts();
     update();
   }
@@ -792,7 +797,6 @@ class DatasetController extends GetxController {
   }
 
   void _createClusterColors() {
-    print('CREATED CLUSTER COLORS');
     _clusterColors = {};
 
     for (var i = 0; i < clusterIds.length; i++) {
@@ -801,9 +805,6 @@ class DatasetController extends GetxController {
   }
 
   void _createClusterData() {
-    print('--');
-    print(clusterIds);
-    print('CREATED CLUSTER DATA');
     clustersData = {};
     for (var i = 0; i < clusterIds.length; i++) {
       List<IPoint> ipoints = _clusters[clusterIds[i]]!;
@@ -812,8 +813,6 @@ class DatasetController extends GetxController {
           ClusterData(id: clusterIds[i], color: color, ipoints: ipoints);
       clustersData[clusterIds[i]]!.computeStatistics();
     }
-
-    print('DONEEEE');
   }
 
   bool areAllClustered() {
@@ -918,6 +917,18 @@ class DatasetController extends GetxController {
   Map<int, List<double>>? contFeatMap;
   Map<int, StationModel> stationsMap = {};
   Map<int, List<int>>? iaqis;
+  int? _maxIaqi;
+  int get maxIaqi {
+    if (_maxIaqi == null) {
+      List<int> maxIaqis = [];
+      for (var i = 0; i < iaqis!.keys.length; i++) {
+        maxIaqis.add(iaqis![iaqis!.keys.toList()[i]]!.reduce(max));
+      }
+      _maxIaqi = maxIaqis.reduce(max);
+    }
+    return _maxIaqi!;
+  }
+
   List<int>? aqi;
   List<IPoint>? subset;
 

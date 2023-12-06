@@ -14,43 +14,49 @@ class MultiChartPainter extends CustomPainter {
   final double maxValue;
   final List<IPoint> models;
   final PollutantModel pollutant;
-  MultiChartPainter({
+  final bool paintForeground;
+  const MultiChartPainter({
     required this.models,
     required this.minValue,
     required this.maxValue,
     required this.pollutant,
+    required this.paintForeground,
   });
 
-  late double _width;
-  late double _height;
-  late double _horizontalSpace;
-  late Canvas _canvas;
-  Color normalColor = Color.fromRGBO(190, 190, 190, 1);
+  final Color normalColor = const Color.fromRGBO(190, 190, 190, 1);
   int get timeLen => models.first.data.values.values.toList().first.length;
-  DatasetController datasetController = Get.find();
-  DashboardController dashboardController = Get.find();
+  DatasetController get datasetController => Get.find();
+  DashboardController get dashboardController => Get.find();
   // PollutantModel get pollutant => datasetController.projectedPollutant;
 
   @override
   void paint(Canvas canvas, Size size) {
+    final double _width;
+    final double _height;
+    final double _horizontalSpace;
+    final Canvas _canvas;
     _canvas = canvas;
     _width = size.width;
     _height = size.height;
     _horizontalSpace = _width / (timeLen - 1);
 
-    for (var i = 0; i < models.length; i++) {
-      if (!models[i].selected) {
-        paintModelLine(models[i]);
+    if (paintForeground) {
+      for (var i = 0; i < models.length; i++) {
+        if (models[i].selected) {
+          paintModelLine(models[i], _canvas, _horizontalSpace, _height);
+        }
       }
-    }
-    for (var i = 0; i < models.length; i++) {
-      if (models[i].selected) {
-        paintModelLine(models[i]);
+    } else {
+      for (var i = 0; i < models.length; i++) {
+        if (!models[i].selected) {
+          paintModelLine(models[i], _canvas, _horizontalSpace, _height);
+        }
       }
     }
   }
 
-  void paintModelLine(IPoint model) {
+  void paintModelLine(
+      IPoint model, Canvas canvas, double horizontalSpace, double height) {
     // if (datasetController.show_filtered && !model.withinFilter) {
     //   return;
     // }
@@ -64,14 +70,14 @@ class MultiChartPainter extends CustomPainter {
     }
 
     double value = min(values[0], maxValue);
-    path.moveTo(0, value2Heigh(value));
+    path.moveTo(0, value2Heigh(value, height));
     for (var i = 1; i < values.length; i++) {
       // print(model.values[pollutant.id]![i]);
       double value = min(values[i], maxValue);
       value = max(value, minValue);
       path.lineTo(
-        i * _horizontalSpace,
-        value2Heigh(value),
+        i * horizontalSpace,
+        value2Heigh(value, height),
       );
     }
 
@@ -126,19 +132,19 @@ class MultiChartPainter extends CustomPainter {
       }
     }
 
-    _canvas.drawPath(
+    canvas.drawPath(
       path,
       paint,
     );
   }
 
-  double value2Heigh(double value) {
-    return _height - uiRangeConverter(value, minValue, maxValue, 0, _height);
+  double value2Heigh(double value, double height) {
+    return height - uiRangeConverter(value, minValue, maxValue, 0, height);
     // return _height - (value / visSettings.datasetSettings.maxValue * _height);
   }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return false;
+    return true;
   }
 }

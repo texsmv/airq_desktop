@@ -19,12 +19,23 @@ class MultiChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return models.isNotEmpty
-        ? CustomPaint(
-            painter: MultiChartPainter(
-              models: models,
-              minValue: minValue,
-              maxValue: maxValue,
-              pollutant: pollutant,
+        ? RepaintBoundary(
+            child: CustomPaint(
+              key: Key(pollutant.name),
+              foregroundPainter: MultiChartPainter(
+                models: models,
+                minValue: minValue,
+                maxValue: maxValue,
+                pollutant: pollutant,
+                paintForeground: true,
+              ),
+              painter: MultiChartPainter(
+                models: models,
+                minValue: minValue,
+                maxValue: maxValue,
+                pollutant: pollutant,
+                paintForeground: false,
+              ),
             ),
           )
         : SizedBox();

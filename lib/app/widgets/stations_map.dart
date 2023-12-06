@@ -243,7 +243,7 @@ class _MarkerChartState extends State<MarkerChart> {
           datasetController.stations[index].name,
           style: const TextStyle(
             color: Color.fromRGBO(240, 190, 50, 1),
-            fontSize: 8,
+            fontSize: 12,
           ),
         ),
         const SizedBox(height: 2),

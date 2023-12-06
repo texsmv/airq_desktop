@@ -603,6 +603,7 @@ class ClusterItems extends GetView<DashboardController> {
 
   @override
   Widget build(BuildContext context) {
+    print(controller.clusterIds);
     return ListView.separated(
       separatorBuilder: (context, index) => const SizedBox(height: 6),
       itemBuilder: (context, index) {
