@@ -146,7 +146,7 @@ class StationTilePainter extends CustomPainter {
       ..style = PaintingStyle.fill;
 
     Paint emptyPaint = Paint()
-      ..color = const Color.fromRGBO(240, 190, 20, 1)
+      ..color = Color.fromARGB(255, 230, 230, 230)
       ..strokeWidth = 1
       ..style = PaintingStyle.fill;
 
