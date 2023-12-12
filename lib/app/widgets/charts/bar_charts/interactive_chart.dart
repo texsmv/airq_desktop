@@ -136,15 +136,7 @@ class _InteractiveHistogramState extends State<InteractiveHistogram> {
                               height: plotBarHeight(
                                 widget.allValues[index],
                               ),
-                              // child: Center(
-                              //   child: Text(
-                              //     '${widget.values[index].toString()}',
-                              //     style: const TextStyle(
-                              //       color: pTextColorPrimary,
-                              //       fontWeight: FontWeight.w500,
-                              //     ),
-                              //   ),
-                              // ),
+
                             ),
                           ),
                         ),

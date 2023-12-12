@@ -486,3 +486,34 @@ String uiWeekDayStr(int day) {
       return '';
   }
 }
+
+String uiSeasonByMonth(int month, String datasetName) {
+  String winter = '1-Winter';
+  String spring = '2-Spring';
+  String summer = '3-Summer';
+  String autumn = '4-Autumn';
+  switch (datasetName) {
+    case 'ontario':
+      if (month >= 3 && month <= 5) {
+        return spring;
+      } else if (month >= 6 && month <= 8) {
+        return summer;
+      } else if (month >= 9 && month <= 11) {
+        return autumn;
+      } else {
+        return winter;
+      }
+    case 'hongkong':
+      if (month >= 3 && month <= 5) {
+        return spring;
+      } else if (month >= 6 && month <= 8) {
+        return summer;
+      } else if (month >= 9 && month <= 11) {
+        return autumn;
+      } else {
+        return winter;
+      }
+    default:
+      return winter;
+  }
+}

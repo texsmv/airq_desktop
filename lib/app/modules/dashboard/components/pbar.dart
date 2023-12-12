@@ -1,6 +1,9 @@
 import 'package:airq_ui/app/constants/colors.dart';
 import 'package:airq_ui/app/constants/constants.dart';
+import 'package:airq_ui/app/modules/dashboard/controllers/dashboard_controller.dart';
 import 'package:airq_ui/app/routes/app_pages.dart';
+import 'package:airq_ui/app/widgets/iprojection/iprojection_controller.dart';
+import 'package:airq_ui/controllers/dataset_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -72,8 +75,18 @@ class _PBarState extends State<PBar> {
             ),
             const Spacer(),
             IconButton(
-              onPressed: () {
+              onPressed: () async {
+                await Get.delete<DatasetController>(force: true);
+                await Get.put(DatasetController(), permanent: true);
+
                 Get.offAllNamed(Routes.SPLASH);
+                Future.delayed(Duration(seconds: 3)).then((value) {
+                  Get.delete<IProjectionController>(tag: 'global');
+                  Get.delete<IProjectionController>(tag: 'local');
+                  Get.delete<IProjectionController>(tag: 'filter');
+                  Get.delete<IProjectionController>(tag: 'outlier');
+                  Get.delete<DashboardController>();
+                });
               },
               icon: const Icon(
                 Icons.exit_to_app,

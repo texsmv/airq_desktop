@@ -81,6 +81,7 @@ class DashboardController extends GetxController {
       fillMonths(selectedPoints);
       fillAllMonths();
     }
+    yearEnd = datasetController.years.length - 1;
     fillYears(selectedPoints);
     fillAllYears();
     fillStations(selectedPoints);
@@ -181,6 +182,11 @@ class DashboardController extends GetxController {
 
   void clusterByYear() {
     datasetController.clusterByYear();
+    update();
+  }
+
+  void clusterBySeason() {
+    datasetController.clusterBySeason();
     update();
   }
 
@@ -373,7 +379,8 @@ class DashboardController extends GetxController {
 
       if (withinDayRange &&
           withinMonthRange &&
-          withinYearRange & withinStations) {
+          withinYearRange &&
+          withinStations) {
         selection.add(ipoints[i]);
         ipoints[i].withinFilter = true;
       } else {
@@ -386,6 +393,7 @@ class DashboardController extends GetxController {
   void fillDays(List<IPoint> points) {
     dayCounts = List.generate(7, (index) => 0);
 
+    // List<IPoint> points = ipoints;
     for (var i = 0; i < points.length; i++) {
       WindowModel window = points[i].data as WindowModel;
       dayCounts[window.beginDate.weekday - 1]++;
@@ -413,6 +421,7 @@ class DashboardController extends GetxController {
 
   void fillStations(List<IPoint> points) {
     stationCounts = List.generate(stations.length, (index) => 0);
+    List<IPoint> points = ipoints;
     for (var i = 0; i < points.length; i++) {
       WindowModel window = points[i].data as WindowModel;
       int stationId = window.stationId;
@@ -496,9 +505,7 @@ class DashboardController extends GetxController {
   }
 
   void fillYears(List<IPoint> points) {
-    yearEnd = datasetController.years.length - 1;
     int firstYear = datasetController.years.first;
-
     yearCounts = List.generate(datasetController.years.length, (index) => 0);
 
     for (var i = 0; i < points.length; i++) {

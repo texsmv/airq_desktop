@@ -389,7 +389,7 @@ class MidPannel extends GetView<DashboardController> {
                         PollutantModel pollutant = pollutants[index];
 
                         return PCard(
-                          height: 150,
+                          height: 200,
                           width: double.infinity,
                           child: Column(
                             children: [

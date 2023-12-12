@@ -176,13 +176,31 @@ class IProjectionController extends GetxController {
     // } else {
     //   spoints = dashboardController.selectedPoints;
     // }
+
+    bool oneFound = false;
     for (var i = 0; i < spoints.length; i++) {
-      double x = points[i].getCanvasCoords(mode).dx;
-      double y = points[i].getCanvasCoords(mode).dy;
-      double dist = sqrt(pow(x - tapX, 2) + pow(y - tapY, 2));
-      if (dist < minDist) {
-        minDist = dist;
-        selected = spoints[i];
+      if (spoints[i].selected) {
+        oneFound = true;
+        double x = points[i].getCanvasCoords(mode).dx;
+        double y = points[i].getCanvasCoords(mode).dy;
+        double dist = sqrt(pow(x - tapX, 2) + pow(y - tapY, 2));
+        if (dist < minDist) {
+          minDist = dist;
+          selected = spoints[i];
+        }
+      }
+    }
+    // Check all if no one was selected
+    if (!oneFound) {
+      for (var i = 0; i < spoints.length; i++) {
+        oneFound = true;
+        double x = points[i].getCanvasCoords(mode).dx;
+        double y = points[i].getCanvasCoords(mode).dy;
+        double dist = sqrt(pow(x - tapX, 2) + pow(y - tapY, 2));
+        if (dist < minDist) {
+          minDist = dist;
+          selected = spoints[i];
+        }
       }
     }
     return selected;

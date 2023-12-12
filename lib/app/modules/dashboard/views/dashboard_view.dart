@@ -97,6 +97,21 @@ class DashboardView extends GetView<DashboardController> {
                                       ),
                                     ),
                                     const SizedBox(height: 10),
+                                    Visibility(
+                                      visible: controller.granularity !=
+                                          Granularity.annual,
+                                      child: SizedBox(
+                                        height: 25,
+                                        child: PButton(
+                                          onTap: () {
+                                            controller.clusterBySeason();
+                                            Get.back();
+                                          },
+                                          text: 'Season',
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
                                     SizedBox(
                                       height: 25,
                                       child: PButton(
@@ -183,13 +198,13 @@ class DashboardView extends GetView<DashboardController> {
                           onTap: () {
                             controller.pickMode.value =
                                 !controller.pickMode.value;
-                            controller.projectionController.clearSelection();
-                            controller.localProjectionController
-                                .clearSelection();
-                            controller.filterProjectionController
-                                .clearSelection();
-                            controller.outliersProjectionController
-                                .clearSelection();
+                            // controller.projectionController.clearSelection();
+                            // controller.localProjectionController
+                            //     .clearSelection();
+                            // controller.filterProjectionController
+                            //     .clearSelection();
+                            // controller.outliersProjectionController
+                            //     .clearSelection();
                           },
                         ),
                         ActionButton(
@@ -217,113 +232,5 @@ class DashboardView extends GetView<DashboardController> {
         ),
       ),
     );
-  }
-
-  List<Widget> dashOptions() {
-    //   SummaryController summaryController = Get.find<SummaryController>();
-    DatasetController datasetController = Get.find<DatasetController>();
-    return [
-      const Divider(),
-      const Text(
-        'Cluster by',
-        style: TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.w500,
-          color: pTextColorSecondary,
-        ),
-      ),
-      Column(
-        children: [
-          SizedBox(
-            height: 25,
-            child: PButton(onTap: controller.clusterByYear, text: 'Year'),
-          ),
-          Visibility(
-            visible: controller.granularity != Granularity.annual,
-            child: SizedBox(
-              height: 25,
-              child: PButton(
-                onTap: controller.clusterByMonth,
-                text: 'Month',
-              ),
-            ),
-          ),
-          SizedBox(
-            height: 25,
-            child: PButton(
-              onTap: controller.clusterByStation,
-              text: 'Station',
-            ),
-          ),
-          SizedBox(
-            height: 25,
-            child: PButton(
-              onTap: controller.kmeansClustering,
-              text: 'Automatic',
-            ),
-          ),
-          SizedBox(
-            height: 25,
-            child: PButton(
-              onTap: controller.clusterByOutlier,
-              text: 'Outliers',
-            ),
-          ),
-          SizedBox(
-            height: 25,
-            child: PButton(
-              onTap: controller.manualCluster,
-              text: 'Manual',
-            ),
-          ),
-          const SizedBox(height: 4),
-          SizedBox(
-            height: 25,
-            child: PButton(
-              onTap: controller.clearClusters,
-              text: 'Clear all',
-            ),
-          ),
-        ],
-      ),
-      GetBuilder<DashboardController>(
-        id: 'infoPoint',
-        builder: (_) {
-          return controller.infoPoint != null
-              ? Container(
-                  height: 300,
-                  child: Column(
-                    children: [
-                      Text(
-                          'Date: ${controller.infoPoint!.data.beginDate.toString().substring(0, 10)}'),
-                      Text(
-                          'Date: ${controller.infoPoint!.data.beginDate.toString().substring(0, 10)}'),
-                      controller.infoPoint!.cluster != null
-                          ? Text('Cluster: ${controller.infoPoint!.cluster}')
-                          : SizedBox(),
-                    ],
-                  ),
-                )
-              : SizedBox();
-        },
-      ),
-      // PButton(
-      //   onTap: () {
-      //     controller.contrastiveFeatures();
-      //   },
-      //   text: 'ContrastiveFeat',
-      // ),
-      PButton(
-        onTap: () {
-          controller.selectionCorrelationMatrix();
-        },
-        text: 'CorrelationMatrix',
-      ),
-      Container(
-        height: 700,
-        width: double.infinity,
-        child: GetBuilder<DashboardController>(builder: (_) => OutliersChart()),
-      ),
-    ];
   }
 }

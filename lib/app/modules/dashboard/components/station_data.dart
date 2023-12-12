@@ -114,8 +114,20 @@ class _StationDataState extends State<StationData> {
     if (position < 0) {
       return;
     }
-    scrollController.position.moveTo(windowSize * (position));
+
+    // print(scrollController.offset);
+    // print(scrollController.offset + listMaxWidth);
+    // print(windowSize * (position));
+
+    double newPosition = windowSize * (position);
+
+    if (newPosition < scrollController.offset ||
+        newPosition > (scrollController.offset + listMaxWidth)) {
+      scrollController.position.moveTo(windowSize * (position));
+    }
   }
+
+  double listMaxWidth = 100;
 
   @override
   Widget build(BuildContext context) {
@@ -150,136 +162,143 @@ class _StationDataState extends State<StationData> {
             SizedBox(
               width: double.infinity,
               height: double.infinity,
-              child: MouseRegion(
-                onHover: (event) {
-                  winPosX = event.localPosition.dx;
-                  winPosY = event.localPosition.dy;
-                  setState(() {});
-                  showInfoHover = true;
-                },
-                onEnter: (_) {
-                  setState(() {
+              child: LayoutBuilder(builder: (context, constraints) {
+                listMaxWidth = constraints.maxWidth;
+                return MouseRegion(
+                  onHover: (event) {
+                    winPosX = event.localPosition.dx;
+                    winPosY = event.localPosition.dy;
+                    setState(() {});
                     showInfoHover = true;
-                  });
-                },
-                onExit: (_) {
-                  setState(() {
-                    showInfoHover = false;
-                  });
-                },
-                child: ScrollConfiguration(
-                  behavior: MyCustomScrollBehavior(),
-                  child: ListView.builder(
-                    controller: scrollController,
-                    physics: const ClampingScrollPhysics(),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: widget.windows!.length,
-                    itemBuilder: (context, index) {
-                      DateTime date = widget.windows![index].beginDate;
-                      bool isSameMonth =
-                          widget.selectedWindow!.beginDate.month ==
-                              widget.windows![index].beginDate.month;
-                      bool isSelected = widget.selectedWindow!.id ==
-                          widget.windows![index].id;
-                      return SizedBox(
-                        width: windowSize,
-                        child: Column(
-                          children: [
-                            ...List.generate(
-                              controller.pollutants.length,
-                              (index2) => Expanded(
-                                child: MouseRegion(
-                                  onHover: (PointerHoverEvent event) {
-                                    double binSize = windowSize / nTimeBins;
-                                    int tPos =
-                                        (event.localPosition.dx / binSize)
-                                            .floor();
-                                    windowTPos = tPos;
-                                    hoveWindow = widget.windows![index];
-                                    hoveredPol =
-                                        controller.pollutants[index2].id;
-                                    // print((event.localPosition.dx / binSize)
-                                    //     .floor());
+                  },
+                  onEnter: (_) {
+                    setState(() {
+                      showInfoHover = true;
+                    });
+                  },
+                  onExit: (_) {
+                    setState(() {
+                      showInfoHover = false;
+                    });
+                  },
+                  child: ScrollConfiguration(
+                    behavior: MyCustomScrollBehavior(),
+                    child: ListView.builder(
+                      controller: scrollController,
+                      physics: const ClampingScrollPhysics(),
+                      scrollDirection: Axis.horizontal,
+                      itemCount: widget.windows!.length,
+                      itemBuilder: (context, index) {
+                        DateTime date = widget.windows![index].beginDate;
+                        bool isSameMonth =
+                            widget.selectedWindow!.beginDate.month ==
+                                widget.windows![index].beginDate.month;
+                        bool isSelected = widget.selectedWindow!.id ==
+                            widget.windows![index].id;
+                        return SizedBox(
+                          width: windowSize,
+                          child: Column(
+                            children: [
+                              ...List.generate(
+                                controller.pollutants.length,
+                                (index2) => Expanded(
+                                  child: MouseRegion(
+                                    onHover: (PointerHoverEvent event) {
+                                      double binSize = windowSize / nTimeBins;
+                                      int tPos =
+                                          (event.localPosition.dx / binSize)
+                                              .floor();
+                                      windowTPos = tPos;
+                                      hoveWindow = widget.windows![index];
+                                      hoveredPol =
+                                          controller.pollutants[index2].id;
+                                      // print((event.localPosition.dx / binSize)
+                                      //     .floor());
 
-                                    // print(event.position);
-                                    // event.localPosition;
-                                    // event.size;
-                                    // print(event.localPosition);
-                                    // print('Hover');
-                                  },
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      controller.selectedWindow =
-                                          widget.windows![index];
-                                      dashboardController.update();
+                                      // print(event.position);
+                                      // event.localPosition;
+                                      // event.size;
+                                      // print(event.localPosition);
+                                      // print('Hover');
                                     },
-                                    child: Container(
-                                      width: windowSize,
-                                      height: double.infinity,
-                                      color: widget.selectedWindow!.id ==
-                                              widget.windows![index].id
-                                          ? pColorPrimary.withOpacity(0.4)
-                                          : Colors.white,
-                                      // color: widget.windows![index].cluster != null
-                                      //     ? dashboardController.clusterColors[
-                                      //             widget.windows![index].cluster]!
-                                      //         .withOpacity(0.15)
-                                      //     : Colors.white,
-                                      // color: widget.windows![index].cluster
-                                      child: CustomPaint(
-                                        painter: BarChartPainter(
-                                          context: context,
-                                          color:
-                                              widget.windows![index].cluster !=
-                                                      null
-                                                  ? dashboardController
-                                                      .clusterColors[widget
-                                                          .windows![index]
-                                                          .cluster]!
-                                                      .withOpacity(0.85)
-                                                  : Color.fromRGBO(
-                                                      123, 123, 123, 1),
-                                          // color: widget.selectedWindow!.id ==
-                                          //         widget.windows![index].id
-                                          //     ? pColorPrimary
-                                          //     : Color.fromRGBO(123, 123, 123, 1),
-                                          minValue:
-                                              controller.minSmoothedValues[
-                                                  controller
-                                                      .pollutants[index2].id]!,
-                                          maxValue:
-                                              controller.maxSmoothedValues[
-                                                  controller
-                                                      .pollutants[index2].id]!,
-                                          values: widget.windows![index].values[
-                                              controller
-                                                  .pollutants[index2].id]!,
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        controller.selectedWindow =
+                                            widget.windows![index];
+                                        dashboardController.update();
+                                      },
+                                      child: Container(
+                                        width: windowSize,
+                                        height: double.infinity,
+                                        color: widget.selectedWindow!.id ==
+                                                widget.windows![index].id
+                                            ? pColorPrimary.withOpacity(0.4)
+                                            : Colors.white,
+                                        // color: widget.windows![index].cluster != null
+                                        //     ? dashboardController.clusterColors[
+                                        //             widget.windows![index].cluster]!
+                                        //         .withOpacity(0.15)
+                                        //     : Colors.white,
+                                        // color: widget.windows![index].cluster
+                                        child: CustomPaint(
+                                          painter: BarChartPainter(
+                                            context: context,
+                                            color: widget.windows![index]
+                                                        .cluster !=
+                                                    null
+                                                ? dashboardController
+                                                    .clusterColors[widget
+                                                        .windows![index]
+                                                        .cluster]!
+                                                    .withOpacity(0.85)
+                                                : Color.fromRGBO(
+                                                    123, 123, 123, 1),
+                                            // color: widget.selectedWindow!.id ==
+                                            //         widget.windows![index].id
+                                            //     ? pColorPrimary
+                                            //     : Color.fromRGBO(123, 123, 123, 1),
+                                            minValue:
+                                                controller.minSmoothedValues[
+                                                    controller
+                                                        .pollutants[index2]
+                                                        .id]!,
+                                            maxValue:
+                                                controller.maxSmoothedValues[
+                                                    controller
+                                                        .pollutants[index2]
+                                                        .id]!,
+                                            values:
+                                                widget.windows![index].values[
+                                                    controller
+                                                        .pollutants[index2]
+                                                        .id]!,
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
-                            Container(
-                              height: 12,
-                              child: Text(
-                                windowName(date, isSelected),
-                                style: const TextStyle(
-                                    fontSize: 11,
-                                    // color: isSameMonth
-                                    //     ? pTextColorSecondary
-                                    //     : Colors.transparent,
-                                    color: pTextColorSecondary),
+                              Container(
+                                height: 12,
+                                child: Text(
+                                  windowName(date, isSelected),
+                                  style: const TextStyle(
+                                      fontSize: 11,
+                                      // color: isSameMonth
+                                      //     ? pTextColorSecondary
+                                      //     : Colors.transparent,
+                                      color: pTextColorSecondary),
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
+                            ],
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ),
+                );
+              }),
             ),
             Positioned(
               left: winPosX + 10,

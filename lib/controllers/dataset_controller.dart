@@ -591,6 +591,30 @@ class DatasetController extends GetxController {
     _createStaionClusterCounts();
   }
 
+  void clusterBySeason() {
+    _resetClusters();
+    List<IPoint> points = _filteredPoints;
+
+    _clusters = {
+      '1-Winter': [],
+      '2-Spring': [],
+      '3-Summer': [],
+      '4-Autumn': [],
+    };
+
+    for (var i = 0; i < points.length; i++) {
+      var point = points[i];
+      String clusterId =
+          uiSeasonByMonth(point.data.beginDate.month, dataset.name);
+      point.cluster = clusterId;
+      _clusters[clusterId]!.add(point);
+    }
+
+    _createClusterColors();
+    _createClusterData();
+    _createStaionClusterCounts();
+  }
+
   Future<void> kmeansClustering() async {
     _resetClusters();
     List<IPoint> points = _filteredPoints;
