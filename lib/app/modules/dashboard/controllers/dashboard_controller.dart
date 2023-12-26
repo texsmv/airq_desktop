@@ -421,7 +421,6 @@ class DashboardController extends GetxController {
 
   void fillStations(List<IPoint> points) {
     stationCounts = List.generate(stations.length, (index) => 0);
-    List<IPoint> points = ipoints;
     for (var i = 0; i < points.length; i++) {
       WindowModel window = points[i].data as WindowModel;
       int stationId = window.stationId;
@@ -432,7 +431,6 @@ class DashboardController extends GetxController {
         }
       }
     }
-    // print('stationCounts: $stationCounts');
   }
 
   void fillAllStations() {

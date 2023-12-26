@@ -94,7 +94,6 @@ class _SelectionSummaryState extends State<SelectionSummary> {
         dates.add(temp.dateTime);
         temp.add(years: 1);
 
-        // print(dates);
         break;
       default:
     }

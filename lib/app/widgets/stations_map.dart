@@ -65,8 +65,6 @@ class _StationsMapState extends State<StationsMap> {
     }
     lat = lat / counter;
     lng = lng / counter;
-    // print('CORODS');
-    // print(LatLng(lat, lng));
     return LatLng(lat, lng);
   }
 
@@ -85,8 +83,6 @@ class _StationsMapState extends State<StationsMap> {
       stations.add(datasetController.stations[i]);
     }
     return List.generate(stations.length, (index) {
-      // print(index);
-      // print(LatLng(stations[index].latitude!, stations[index].longitude!));
       return Marker(
         width: 120.0,
         height: 80.0,
@@ -158,6 +154,15 @@ class MarkerChart extends StatefulWidget {
 class _MarkerChartState extends State<MarkerChart> {
   List<double> ratios = [];
   List<Color> colors = [];
+  List<bool> get isVisible {
+    if (_isVisible == null) {
+      _isVisible = List.generate(
+          dashboardController.stationCounts.length, (index) => false);
+    }
+    return _isVisible!;
+  }
+
+  List<bool>? _isVisible;
 
   DatasetController datasetController = Get.find<DatasetController>();
   DashboardController dashboardController = Get.find();
@@ -167,17 +172,19 @@ class _MarkerChartState extends State<MarkerChart> {
     if (!widget.clusterView) {
       return dashboardController.stationCounts[index] /
           dashboardController.stationCounts.reduce(max);
+      // return dashboardController.stationCounts[index] /
+      //     dashboardController.allStationCounts[index];
       // dashboardController.stationCounts.reduce(max);
     } else {
       return 1 / 1.5;
-      return dashboardController.allStationCounts[index] /
-          dashboardController.allStationCounts.reduce(max);
+      // return dashboardController.allStationCounts[index] /
+      //     dashboardController.allStationCounts.reduce(max);
     }
   }
 
   static const double minSize = 20.0;
   static const double maxSize = 60.0;
-  static const double minOpacity = 30.0;
+  // static const double minOpacity = 30.0;
   @override
   void didUpdateWidget(covariant MarkerChart oldWidget) {
     createLists();
@@ -212,7 +219,6 @@ class _MarkerChartState extends State<MarkerChart> {
               .windowsStations[dashboardController.infoPoint!.data.id]!.id ==
           dashboardController.stations[index].id) {
         return (minSize + maxSize) / 2;
-        ; // Dont know what is this for ....
       }
     }
 
@@ -239,38 +245,54 @@ class _MarkerChartState extends State<MarkerChart> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(
-          datasetController.stations[index].name,
-          style: const TextStyle(
-            color: Color.fromRGBO(240, 190, 50, 1),
-            fontSize: 12,
+        MouseRegion(
+          onEnter: (_) {
+            setState(() {
+              _isVisible![index] = true;
+            });
+          },
+          onExit: (_) {
+            setState(() {
+              _isVisible![index] = false;
+            });
+          },
+          child: Container(
+            height: markerSize(),
+            width: markerSize(),
+            child: widget.clusterView
+                ? CustomPaint(
+                    painter: MarkerChartPainter(
+                      colors: colors,
+                      ratios: ratios,
+                    ),
+                  )
+                : Container(
+                    decoration: BoxDecoration(
+                      // color: markerSize() == minSize
+                      //     ? chipColor(index).withOpacity(0.3)
+                      //     : chipColor(index),
+                      color: chipColor(index),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        dashboardController.stationCounts[index].toString(),
+                        style: TextStyle(fontSize: 9, color: Colors.white),
+                      ),
+                    ),
+                  ),
           ),
         ),
         const SizedBox(height: 2),
-        Container(
-          height: markerSize(),
-          width: markerSize(),
-          child: widget.clusterView
-              ? CustomPaint(
-                  painter: MarkerChartPainter(
-                    colors: colors,
-                    ratios: ratios,
-                  ),
-                )
-              : Container(
-                  decoration: BoxDecoration(
-                    color: markerSize() == minSize
-                        ? chipColor(index).withOpacity(0.3)
-                        : chipColor(index),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text(
-                      dashboardController.stationCounts[index].toString(),
-                      style: TextStyle(fontSize: 9, color: Colors.white),
-                    ),
-                  ),
-                ),
+        Visibility(
+          visible: isVisible[index],
+          child: Text(
+            datasetController.stations[index].name,
+            style: const TextStyle(
+              color: Color.fromRGBO(240, 190, 50, 1),
+              fontSize: 12,
+            ),
+          ),
         ),
       ],
     );
