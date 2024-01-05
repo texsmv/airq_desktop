@@ -404,7 +404,9 @@ class MidPannel extends GetView<DashboardController> {
                                           .maxSmoothedValues[pollutant.id]!,
                                       yMinValue: datasetController
                                           .minSmoothedValues[pollutant.id]!,
-                                      yAxisLabel: '',
+                                      yAxisLabel: uiPollutantUnit(
+                                          controller.dataset.name,
+                                          pollutant.name),
                                       xAxisLabel: controller.granularity !=
                                               Granularity.daily
                                           ? 'days'

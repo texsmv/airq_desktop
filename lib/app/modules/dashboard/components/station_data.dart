@@ -153,7 +153,13 @@ class _StationDataState extends State<StationData> {
                 controller.pollutants.length,
                 (index3) => RotatedBox(
                   quarterTurns: 3,
-                  child: Text(controller.pollutants[index3].name),
+                  child: Text(
+                    '${controller.pollutants[index3].name} (${uiPollutantUnit(controller.dataset.name, controller.pollutants[index3].name)})',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
             )),
@@ -257,16 +263,12 @@ class _StationDataState extends State<StationData> {
                                             //         widget.windows![index].id
                                             //     ? pColorPrimary
                                             //     : Color.fromRGBO(123, 123, 123, 1),
-                                            minValue:
-                                                controller.minSmoothedValues[
-                                                    controller
-                                                        .pollutants[index2]
-                                                        .id]!,
-                                            maxValue:
-                                                controller.maxSmoothedValues[
-                                                    controller
-                                                        .pollutants[index2]
-                                                        .id]!,
+                                            minValue: controller.minValues[
+                                                controller
+                                                    .pollutants[index2].id]!,
+                                            maxValue: controller.maxValues[
+                                                controller
+                                                    .pollutants[index2].id]!,
                                             values:
                                                 widget.windows![index].values[
                                                     controller
@@ -280,9 +282,10 @@ class _StationDataState extends State<StationData> {
                                 ),
                               ),
                               Container(
-                                height: 12,
+                                height: 30,
                                 child: Text(
                                   windowName(date, isSelected),
+                                  textAlign: TextAlign.center,
                                   style: const TextStyle(
                                       fontSize: 11,
                                       // color: isSameMonth
@@ -305,7 +308,7 @@ class _StationDataState extends State<StationData> {
               top: winPosY,
               child: showInfoHover
                   ? Container(
-                      width: 30,
+                      width: 50,
                       height: 18,
                       color: Colors.amber,
                       child: Text(hoveWindow == null

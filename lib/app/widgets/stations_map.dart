@@ -46,7 +46,7 @@ class _StationsMapState extends State<StationsMap> {
         ),
         MarkerLayer(
           markers: _markers(),
-        )
+        ),
       ],
     );
   }
@@ -276,7 +276,7 @@ class _MarkerChartState extends State<MarkerChart> {
                     ),
                     child: Center(
                       child: Text(
-                        dashboardController.stationCounts[index].toString(),
+                      dashboardController.stationCounts[index].toString(),
                         style: TextStyle(fontSize: 9, color: Colors.white),
                       ),
                     ),

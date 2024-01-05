@@ -7,6 +7,7 @@ import 'package:airq_ui/app/modules/dashboard/components/pbar.dart';
 import 'package:airq_ui/app/modules/dashboard/views/dash_view.dart';
 import 'package:airq_ui/app/widgets/common/light_button.dart';
 import 'package:airq_ui/app/widgets/common/pdialog.dart';
+import 'package:airq_ui/app/widgets/iprojection/iprojection_controller.dart';
 import 'package:airq_ui/app/widgets/side_bar.dart';
 import 'package:airq_ui/controllers/dataset_controller.dart';
 import 'package:flutter/material.dart';
@@ -198,6 +199,18 @@ class DashboardView extends GetView<DashboardController> {
                           onTap: () {
                             controller.pickMode.value =
                                 !controller.pickMode.value;
+                            Get.find<IProjectionController>(tag: 'global')
+                                .showInfo
+                                .value = false;
+                            Get.find<IProjectionController>(tag: 'local')
+                                .showInfo
+                                .value = false;
+                            Get.find<IProjectionController>(tag: 'filter')
+                                .showInfo
+                                .value = false;
+                            Get.find<IProjectionController>(tag: 'outlier')
+                                .showInfo
+                                .value = false;
                             // controller.projectionController.clearSelection();
                             // controller.localProjectionController
                             //     .clearSelection();

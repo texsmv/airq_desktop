@@ -63,7 +63,7 @@ class DashboardController extends GetxController {
   IProjectionController filterProjectionController =
       Get.put(IProjectionController(mode: 2), tag: 'filter');
   IProjectionController outliersProjectionController =
-      Get.put(IProjectionController(mode: 3), tag: 'outlier');
+    Get.put(IProjectionController(mode: 3), tag: 'outlier');
 
   @override
   void onReady() {
@@ -271,15 +271,15 @@ class DashboardController extends GetxController {
     }
     List<int> selectedIndex = List.generate(
         newSelectedPoints.length, (index) => newSelectedPoints[index].data.id);
-    if (selectedPoints.isNotEmpty) {
-      Map<String, double> ranks =
-          await repositoryPollutantRanking(selectedIndex);
+    // if (selectedPoints.isNotEmpty) {
+    //   Map<String, double> ranks =
+    //       await repositoryPollutantRanking(selectedIndex);
 
-      for (var poll in datasetController.pollutants) {
-        poll.selectionRank = ranks[poll.id.toString()]!;
-        // print
-      }
-    }
+    //   for (var poll in datasetController.pollutants) {
+    //     poll.selectionRank = ranks[poll.id.toString()]!;
+    //     // print
+    //   }
+    // }
 
     update();
   }
@@ -424,12 +424,7 @@ class DashboardController extends GetxController {
     for (var i = 0; i < points.length; i++) {
       WindowModel window = points[i].data as WindowModel;
       int stationId = window.stationId;
-      for (var i = 0; i < stations.length; i++) {
-        if (stationId == stations[i].id) {
-          stationCounts[i]++;
-          break;
-        }
-      }
+      stationCounts[stationId]++;
     }
   }
 
@@ -438,12 +433,13 @@ class DashboardController extends GetxController {
     for (var i = 0; i < ipoints.length; i++) {
       WindowModel window = ipoints[i].data as WindowModel;
 
-      for (var i = 0; i < stations.length; i++) {
-        if (window.stationId == stations[i].id) {
-          allStationCounts[i]++;
-          break;
-        }
-      }
+      allStationCounts[window.stationId]++;
+      // for (var i = 0; i < stations.length; i++) {
+      //   if (window.stationId == stations[i].id) {
+      //     allStationCounts[i]++;
+      //     break;
+      //   }
+      // }
     }
     // print('stationCounts: $stationCounts');
   }

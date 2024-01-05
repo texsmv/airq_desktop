@@ -26,6 +26,8 @@ class IProjectionController extends GetxController {
   double? _minY;
   double? _maxY;
 
+  RxBool showInfo = false.obs;
+
   double get minX {
     if (_minX != null) return _minX!;
     List<double> xValues = List.generate(
@@ -217,6 +219,15 @@ class IProjectionController extends GetxController {
         final List<IPoint> selectedPoints = selectPoints();
         onPointsSelected(selectedPoints);
         currSelectedPoints = selectedPoints;
+
+        Get.find<IProjectionController>(tag: 'global').showInfo.value = false;
+        Get.find<IProjectionController>(tag: 'local').showInfo.value = false;
+        Get.find<IProjectionController>(tag: 'filter').showInfo.value = false;
+        Get.find<IProjectionController>(tag: 'outlier').showInfo.value = false;
+
+        if (currSelectedPoints.isNotEmpty) {
+          showInfo.value = true;
+        }
         selectionBeginPosition = const Offset(0, 0);
         selectionEndPosition = const Offset(0, 0);
         allowSelection = true;

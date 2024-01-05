@@ -123,23 +123,25 @@ class _IProjectionState extends State<IProjection>
                         : controller.selectedBoxMaxOffset.dx,
                     // top: controller.selectedBoxMinOffset.dy - 50,
                     top: getTopDistance(),
-                    child: Visibility(
-                      visible: controller.currSelectedPoints.isNotEmpty,
-                      child: Container(
-                        width: INFO_BOX_WIDTH,
-                        child: Column(
-                          children: List.generate(
-                            datasetController.pollutants.length,
-                            (pindex) => Container(
-                              color: Colors.amber.withOpacity(0.6),
-                              height: INFO_BOX_HEIGHT,
-                              width: INFO_BOX_WIDTH,
-                              child: AutoSizeText(
-                                '${datasetController.pollutants[pindex].name}: ${controller.selectionStats[datasetController.pollutants[pindex].id]?.dx.toPrecision(2)}',
-                                style: TextStyle(
-                                  fontSize: 13,
+                    child: Obx(
+                      () => Visibility(
+                        visible: controller.showInfo.value,
+                        child: Container(
+                          width: INFO_BOX_WIDTH,
+                          child: Column(
+                            children: List.generate(
+                              datasetController.pollutants.length,
+                              (pindex) => Container(
+                                color: Colors.amber.withOpacity(0.6),
+                                height: INFO_BOX_HEIGHT,
+                                width: INFO_BOX_WIDTH,
+                                child: AutoSizeText(
+                                  '${datasetController.pollutants[pindex].name}: ${controller.selectionStats[datasetController.pollutants[pindex].id]?.dx.toPrecision(2)}',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                  ),
+                                  minFontSize: 9,
                                 ),
-                                minFontSize: 9,
                               ),
                             ),
                           ),

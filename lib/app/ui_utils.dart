@@ -151,23 +151,23 @@ Color uiClusterColor(String clusterId) {
 //   return ['pm25', 'pm10', 'o3', 'no2', 'co'].contains(pollName.toLowerCase());
 // }
 
-List<Color> colorList = [
+List<Color> colorList2 = [
   const Color.fromRGBO(2, 62, 138, 1),
   const Color.fromRGBO(251, 133, 0, 1),
   const Color.fromRGBO(255, 0, 109, 1),
+  const Color.fromRGBO(112, 224, 0, 1),
   const Color.fromRGBO(2, 48, 71, 1),
   const Color.fromRGBO(33, 158, 188, 1),
   const Color.fromRGBO(45, 106, 79, 1),
   const Color.fromRGBO(214, 40, 40, 1),
-  const Color.fromRGBO(112, 224, 0, 1),
   const Color.fromRGBO(255, 183, 3, 1),
   const Color.fromRGBO(131, 56, 236, 1),
   const Color.fromRGBO(119, 73, 54, 1),
 ];
 
 Color uiGetColor(int index) {
-  if (index < colorList.length) {
-    return colorList[index];
+  if (index < colorList2.length) {
+    return colorList2[index];
   }
   RandomColor _randomColor = RandomColor();
   return _randomColor.randomColor();
@@ -515,5 +515,37 @@ String uiSeasonByMonth(int month, String datasetName) {
       }
     default:
       return winter;
+  }
+}
+
+String uiPollutantUnit(String dataset, String pollName) {
+  if (dataset == 'ontario') {
+    switch (pollName) {
+      case 'NO':
+        return 'ppb';
+      case 'NO2':
+        return 'µg/m³';
+      case 'NOx':
+        return 'ppb';
+      case 'CO':
+        return 'mg/m³';
+      case 'O3':
+        return 'µg/m³';
+      case 'PM25':
+        return 'µg/m³';
+      case 'SO2':
+        return 'µg/m³';
+      default:
+        return '';
+    }
+  } else if (dataset == 'hongkong') {
+    switch (pollName) {
+      case 'CO':
+        return 'mg/m³';
+      default:
+        return 'µg/m³';
+    }
+  } else {
+    return '';
   }
 }

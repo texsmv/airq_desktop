@@ -64,9 +64,9 @@ class MultiChartPainter extends CustomPainter {
 
     List<double> values;
     if (dashboardController.showShape) {
-      values = model.data.smoothedValues[pollutant.id]!;
+      values = model.data.values[pollutant.id]!;
     } else {
-      values = model.data.smoothedValues[pollutant.id]!;
+      values = model.data.values[pollutant.id]!;
     }
 
     double value = min(values[0], maxValue);
@@ -145,6 +145,10 @@ class MultiChartPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return true;
+    if (paintForeground) {
+      return true;
+    } else {
+      return false;
+    }
   }
 }
