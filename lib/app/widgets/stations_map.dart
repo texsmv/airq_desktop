@@ -276,7 +276,7 @@ class _MarkerChartState extends State<MarkerChart> {
                     ),
                     child: Center(
                       child: Text(
-                      dashboardController.stationCounts[index].toString(),
+                        dashboardController.stationCounts[index].toString(),
                         style: TextStyle(fontSize: 9, color: Colors.white),
                       ),
                     ),
@@ -285,7 +285,8 @@ class _MarkerChartState extends State<MarkerChart> {
         ),
         const SizedBox(height: 2),
         Visibility(
-          visible: isVisible[index],
+          // visible: isVisible[index],
+          visible: true,
           child: Text(
             datasetController.stations[index].name,
             style: const TextStyle(
