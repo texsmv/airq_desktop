@@ -39,39 +39,39 @@ class LeftPannel extends GetView<DashboardController> {
       builder: (_) => Column(
         children: [
           // * MAP
-          // PCard(
-          //   // width: constraints.maxWidth * 0.2,
-          //   height: double.infinity,
-          //   expand: true,
-          //   child: RepaintBoundary(
-          //     child: Column(
-          //       children: [
-          //         Visibility(
-          //           visible:
-          //               // controller.clusterIds.isNotEmpty,
-          //               true,
-          //           child: Row(
-          //             children: [
-          //               Text('Cluster mode'),
-          //               Switch(
-          //                 value: controller.map_cluster_mode,
-          //                 onChanged: (value) {
-          //                   controller.map_cluster_mode = value;
-          //                   controller.update();
-          //                 },
-          //               ),
-          //             ],
-          //           ),
-          //         ),
-          //         Expanded(
-          //           child: StationsMap(
-          //             clusterView: controller.map_cluster_mode,
-          //           ),
-          //         ),
-          //       ],
-          //     ),
-          //   ),
-          // ),
+          PCard(
+            // width: constraints.maxWidth * 0.2,
+            height: double.infinity,
+            expand: true,
+            child: RepaintBoundary(
+              child: Column(
+                children: [
+                  Visibility(
+                    visible:
+                        // controller.clusterIds.isNotEmpty,
+                        true,
+                    child: Row(
+                      children: [
+                        Text('Cluster mode'),
+                        Switch(
+                          value: controller.map_cluster_mode,
+                          onChanged: (value) {
+                            controller.map_cluster_mode = value;
+                            controller.update();
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: StationsMap(
+                      clusterView: controller.map_cluster_mode,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
           const SizedBox(height: pCardSpace),
           PCard(
             expand: true,

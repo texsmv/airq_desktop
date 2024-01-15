@@ -82,36 +82,35 @@ class _StationsMapState extends State<StationsMap> {
       }
       stations.add(datasetController.stations[i]);
     }
-    return List.generate(stations.length, (index) {
+    return List.generate(dashboardController.stationCounts.length, (index) {
       return Marker(
         width: 120.0,
         height: 80.0,
         point: coords[index] != null
             ? LatLng(stations[index].latitude!, stations[index].longitude!)
             : LatLng(0, 0),
-        builder: (ctx) => Visibility(
-          visible: coords[index] != null,
-          child: GestureDetector(
-            onTap: () {
-              dashboardController.selectStation(stations[index]);
-            },
-            child: Container(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  MarkerChart(
-                    clusterColors: datasetController.clusterColors,
-                    clusterCounts: datasetController
-                        .clustersStationCounts[stations[index].id],
-                    maxCount: maxStationsCount,
-                    clusterView: widget.clusterView,
-                    index: index,
-                  )
-                ],
-              ),
-            ),
+        child:
+            // GestureDetector(
+            //   onTap: () {
+            //     dashboardController.selectStation(stations[index]);
+            //   },
+            //   child:
+            Container(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              MarkerChart(
+                clusterColors: datasetController.clusterColors,
+                clusterCounts:
+                    datasetController.clustersStationCounts[stations[index].id],
+                maxCount: maxStationsCount,
+                clusterView: widget.clusterView,
+                index: index,
+              )
+            ],
           ),
         ),
+        // ),
       );
     });
   }
@@ -121,6 +120,9 @@ class _StationsMapState extends State<StationsMap> {
   static const double maxSize = 60.0;
 
   int get maxStationsCount {
+    if (dashboardController.stationCounts.isEmpty) {
+      return 0;
+    }
     List<int> counts = List.generate(dashboardController.stationCounts.length,
         (index) => dashboardController.stationCounts[index]);
     return counts.reduce(max);
@@ -245,43 +247,31 @@ class _MarkerChartState extends State<MarkerChart> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        MouseRegion(
-          onEnter: (_) {
-            setState(() {
-              _isVisible![index] = true;
-            });
-          },
-          onExit: (_) {
-            setState(() {
-              _isVisible![index] = false;
-            });
-          },
-          child: Container(
-            height: markerSize(),
-            width: markerSize(),
-            child: widget.clusterView
-                ? CustomPaint(
-                    painter: MarkerChartPainter(
-                      colors: colors,
-                      ratios: ratios,
-                    ),
-                  )
-                : Container(
-                    decoration: BoxDecoration(
-                      // color: markerSize() == minSize
-                      //     ? chipColor(index).withOpacity(0.3)
-                      //     : chipColor(index),
-                      color: chipColor(index),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Text(
-                        dashboardController.stationCounts[index].toString(),
-                        style: TextStyle(fontSize: 9, color: Colors.white),
-                      ),
+        Container(
+          height: markerSize(),
+          width: markerSize(),
+          child: widget.clusterView
+              ? CustomPaint(
+                  painter: MarkerChartPainter(
+                    colors: colors,
+                    ratios: ratios,
+                  ),
+                )
+              : Container(
+                  decoration: BoxDecoration(
+                    // color: markerSize() == minSize
+                    //     ? chipColor(index).withOpacity(0.3)
+                    //     : chipColor(index),
+                    color: chipColor(index),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Text(
+                      dashboardController.stationCounts[index].toString(),
+                      style: TextStyle(fontSize: 9, color: Colors.white),
                     ),
                   ),
-          ),
+                ),
         ),
         const SizedBox(height: 2),
         Visibility(
