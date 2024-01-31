@@ -5,6 +5,7 @@ import 'package:airq_ui/app/widgets/common/pbutton.dart';
 import 'package:airq_ui/app/widgets/common/pdialog.dart';
 import 'package:airq_ui/controllers/dataset_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
 import 'package:numberpicker/numberpicker.dart';
 import 'package:rainbow_color/rainbow_color.dart';
@@ -131,13 +132,15 @@ double uiEuclideanDistance(List<double> vectorA, List<double> vectorB) {
 }
 
 void uiShowLoader() {
-  Get.dialog(const Center(
-    child: CircularProgressIndicator(),
-  ));
+  EasyLoading.show(maskType: EasyLoadingMaskType.black);
+  // Get.dialog(const Center(
+  //   child: CircularProgressIndicator(),
+  // ));
 }
 
 void uiHideLoader() {
-  Get.back();
+  // Get.back();
+  EasyLoading.dismiss();
 }
 
 Color uiClusterColor(String clusterId) {

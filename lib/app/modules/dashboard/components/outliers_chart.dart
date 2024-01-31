@@ -34,6 +34,7 @@ class _OutliersChartState extends State<OutliersChart> {
   Color selectedBorderColor = Colors.black;
 
   void createData() {
+    // print('Creating Data...');
     for (PollutantModel pollutant in datasetController.pollutants) {
       List<dynamic> coords = datasetController.fdaOutliers[pollutant.id]!;
       List<Color> fColors = [];
@@ -69,6 +70,7 @@ class _OutliersChartState extends State<OutliersChart> {
         fColors.add(fcolor);
         bColors.add(bcolor);
       }
+
       coordinates[pollutant.id] = coords;
       fillColors[pollutant.id] = fColors;
       borderColors[pollutant.id] = bColors;
@@ -101,8 +103,16 @@ class _OutliersChartState extends State<OutliersChart> {
     return ListView.separated(
       separatorBuilder: (context, index) => const SizedBox(height: 10),
       itemCount: datasetController.pollutants.length,
+      // itemCount: 1,
       itemBuilder: (context, index) {
         PollutantModel pollutant = datasetController.pollutants[index];
+
+        // print('X values');
+        // print(minValues[pollutant.id]![0]);
+        // print(maxValues[pollutant.id]![0]);
+        // print('Y values');
+        // print(minValues[pollutant.id]![1]);
+        // print(maxValues[pollutant.id]![1]);
         return GestureDetector(
           onTap: () {
             dashboardController.selectPollutant(pollutant.name);
@@ -124,7 +134,7 @@ class _OutliersChartState extends State<OutliersChart> {
               children: [
                 Text(pollutant.name),
                 Expanded(
-                  child: SizedBox(
+                  child: Container(
                     width: double.infinity,
                     height: double.infinity,
                     child: CustomPaint(

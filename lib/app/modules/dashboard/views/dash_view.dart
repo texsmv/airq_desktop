@@ -244,8 +244,9 @@ class RigthPannel extends GetView<DashboardController> {
                                   children: [
                                     Positioned.fill(
                                       child: Visibility(
-                                        visible:
-                                            !datasetController.show_filtered,
+                                        // visible:
+                                        //     !datasetController.show_filtered,
+                                        visible: true,
                                         child: IProjection(
                                           controller: controller
                                               .localProjectionController,
@@ -259,23 +260,23 @@ class RigthPannel extends GetView<DashboardController> {
                                         ),
                                       ),
                                     ),
-                                    Positioned.fill(
-                                      child: Visibility(
-                                        visible:
-                                            datasetController.show_filtered,
-                                        child: IProjection(
-                                          controller: controller
-                                              .outliersProjectionController,
-                                          points: controller.ipoints,
-                                          onPointsSelected:
-                                              controller.onPointsSelected,
-                                          onPointPicked:
-                                              controller.onPointPicked,
-                                          mode: 3,
-                                          pickMode: controller.pickMode.value,
-                                        ),
-                                      ),
-                                    ),
+                                    // Positioned.fill(
+                                    //   child: Visibility(
+                                    //     visible:
+                                    //         datasetController.show_filtered,
+                                    //     child: IProjection(
+                                    //       controller: controller
+                                    //           .outliersProjectionController,
+                                    //       points: controller.ipoints,
+                                    //       onPointsSelected:
+                                    //           controller.onPointsSelected,
+                                    //       onPointPicked:
+                                    //           controller.onPointPicked,
+                                    //       mode: 3,
+                                    //       pickMode: controller.pickMode.value,
+                                    //     ),
+                                    //   ),
+                                    // ),
                                   ],
                                 ),
                               ),
@@ -336,7 +337,8 @@ class MidPannel extends GetView<DashboardController> {
                             children: [
                               Positioned.fill(
                                 child: Visibility(
-                                  visible: !datasetController.show_filtered,
+                                  // visible: !datasetController.show_filtered,
+                                  visible: true,
                                   child: IProjection(
                                     controller: controller.projectionController,
                                     points: controller.ipoints,
@@ -348,21 +350,21 @@ class MidPannel extends GetView<DashboardController> {
                                   ),
                                 ),
                               ),
-                              Positioned.fill(
-                                child: Visibility(
-                                  visible: datasetController.show_filtered,
-                                  child: IProjection(
-                                    controller:
-                                        controller.filterProjectionController,
-                                    points: controller.ipoints,
-                                    onPointsSelected:
-                                        controller.onPointsSelected,
-                                    onPointPicked: controller.onPointPicked,
-                                    mode: 2,
-                                    pickMode: controller.pickMode.value,
-                                  ),
-                                ),
-                              ),
+                              // Positioned.fill(
+                              //   child: Visibility(
+                              //     visible: datasetController.show_filtered,
+                              //     child: IProjection(
+                              //       controller:
+                              //           controller.filterProjectionController,
+                              //       points: controller.ipoints,
+                              //       onPointsSelected:
+                              //           controller.onPointsSelected,
+                              //       onPointPicked: controller.onPointPicked,
+                              //       mode: 2,
+                              //       pickMode: controller.pickMode.value,
+                              //     ),
+                              //   ),
+                              // ),
                             ],
                           ),
                         ),

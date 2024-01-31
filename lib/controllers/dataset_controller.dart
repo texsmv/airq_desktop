@@ -137,7 +137,7 @@ class DatasetController extends GetxController {
   }
 
   Future<void> resetFilter() async {
-    clearClusters();
+    // clearClusters();
 
     uiShowLoader();
 
@@ -149,6 +149,12 @@ class DatasetController extends GetxController {
       filteredWindows: filtered,
       beta: 0,
     );
+
+    for (var i = 0; i < pollutants.length; i++) {
+      var fdamap = await repositoryGetFdaOutliers(_pollutants[i].id, filtered);
+      fdaOutliers[_pollutants[i].id] = fdamap['coords']!;
+      outliers[_pollutants[i].id] = fdamap['outliers']!;
+    }
     uiHideLoader();
 
     gerateSubset(map);
@@ -230,19 +236,32 @@ class DatasetController extends GetxController {
 
     if (project == true) {
       List<bool> filtered = List.generate(
-          _allPoints.length, (index) => _allPoints[index].withinFilter);
+          _allPoints.length, (index) => _allPoints[index].selected);
       _filteredPoints = [];
       for (var i = 0; i < _allPoints.length; i++) {
         if (_allPoints[i].selected) {
           _filteredPoints.add(_allPoints[i]);
         }
       }
+      // print('Projection');
+      // print(filtered.length);
 
       Map<String, List<dynamic>> map = await repositoryGetCustomProjection(
         neighbors: neighbors,
         filteredWindows: filtered,
         beta: double.parse(betaController.text),
       );
+
+      print(filtered.shape);
+      print(_filteredPoints.shape);
+      print('Outliers');
+      for (var i = 0; i < pollutants.length; i++) {
+        var fdamap = await repositoryGetFdaOutliers(i, filtered);
+        fdaOutliers[_pollutants[i].id] = fdamap['coords']!;
+        print('khe?');
+        print(fdamap['coords']!.shape);
+        outliers[_pollutants[i].id] = fdamap['outliers']!;
+      }
 
       gerateSubset(map);
 
@@ -392,18 +411,21 @@ class DatasetController extends GetxController {
     );
 
     // List<dynamic> coordsOut = await repositoryGetFdaOutliers(0);
-    var map = await repositoryGetFdaOutliers(0);
-    List<dynamic> coordsOut = map['coords']!;
-    List<dynamic> currOutliers = map['outliers']!;
+    // var map = await repositoryGetFdaOutliers(0);
+    // List<dynamic> coordsOut = map['coords']!;
+    // List<dynamic> currOutliers = map['outliers']!;
 
     for (var i = 0; i < _pollutants.length; i++) {
-      int pollPos =
-          _pollutants.indexWhere((element) => element.id == _pollutants[i].id);
-      var map = await repositoryGetFdaOutliers(pollPos);
-      fdaOutliers[_pollutants[i].id] = map['coords']!;
-      // List<dynamic> outliers = map['outliers']!;
-      //  = await repositoryGetFdaOutliers(pollPos);
+      // int pollPos =
+      //     _pollutants.indexWhere((element) => element.id == _pollutants[i].id);
+      var map =
+          await repositoryGetFdaOutliers(i, List.generate(n, (index) => true));
+      fdaOutliers[i] = map['coords']!;
+      outliers[i] = map['outliers']!;
     }
+
+    List<dynamic> coordsOut = fdaOutliers[_pollutants.first.id]!;
+    List<dynamic> currOutliers = outliers[_pollutants.first.id]!;
 
     _allPoints = [];
     for (var i = 0; i < n; i++) {
@@ -413,8 +435,8 @@ class DatasetController extends GetxController {
         data: windowModels[i],
         coordinates: Offset(coords[i][0], coords[i][1]),
         localCoordinates: Offset(coordsOut[1][i], coordsOut[0][i]),
-        highlightedCoordinates: Offset(0, 0),
-        outlierCoordinates: Offset(0, 0),
+        // highlightedCoordinates: Offset(0, 0),
+        // outlierCoordinates: Offset(0, 0),
       );
       point.isOutlier = currOutliers[i];
       _allPoints.add(point);
@@ -460,42 +482,29 @@ class DatasetController extends GetxController {
 
   Future<void> selectPollutant(PollutantModel pollutantModel) async {
     _projectedPollutant = pollutantModel;
+    // print(_projectedPollutant.id);
 
-    if (show_filtered) {
-      List<bool> filtered = List.generate(
-          _allPoints!.length, (index) => _allPoints![index].withinFilter);
-      Map<String, List<dynamic>> map = await repositoryGetCustomProjection(
-        neighbors: 10,
-        filteredWindows: filtered,
-        beta: 0,
-      );
-      List<dynamic> shapeCoords = map['shapeCoords']!;
-      List<dynamic> currOutliers = map['outliers']!;
-      int coord_pos = 0;
-      for (var i = 0; i < _allPoints!.length; i++) {
-        if (_allPoints[i].withinFilter) {
-          _allPoints[i].outlierCoordinates =
-              Offset(shapeCoords[1][coord_pos], shapeCoords[0][coord_pos]);
-          _allPoints[i].isOutlier = currOutliers[coord_pos];
-          coord_pos++;
-        } else {
-          _allPoints[i].outlierCoordinates =
-              Offset(shapeCoords[1][0], shapeCoords[0][0]);
-          _allPoints[i].isOutlier = 0;
-        }
-      }
-    } else {
-      int pollPos =
-          _pollutants.indexWhere((element) => element.id == pollutantModel.id);
-      var map = await repositoryGetFdaOutliers(pollPos);
-      List<dynamic> coordsOut = map['coords']!;
-      List<int> outliers = List<int>.from(map['outliers']!);
-
-      for (var i = 0; i < _allPoints!.length; i++) {
-        _allPoints[i].localCoordinates =
-            Offset(coordsOut[1][i], coordsOut[0][i]);
-        _allPoints[i].isOutlier = outliers[i];
-      }
+    List<dynamic> shapeCoords = fdaOutliers[pollutantModel.id]!;
+    List<dynamic> currOutliers = outliers[pollutantModel.id]!;
+    // int coord_pos = 0;
+    // print(_allPoints.length);
+    // print(filteredPoints.length);
+    // print(shapeCoords.shape);
+    // print(pollutantModel.name);
+    // print(pollutantModel.id);
+    for (var i = 0; i < filteredPoints.length; i++) {
+      // print(filteredPoints[i].data.id);
+      filteredPoints[i].localCoordinates =
+          Offset(shapeCoords[1][i], shapeCoords[0][i]);
+      filteredPoints[i].isOutlier = currOutliers[i];
+      // print(filteredPoints[i].outlierCoordinates);
+      // if (filteredPoints[i].withinFilter) {
+      //   coord_pos++;
+      // } else {
+      //   filteredPoints[i].outlierCoordinates =
+      //       Offset(shapeCoords[1][0], shapeCoords[0][0]);
+      //   filteredPoints[i].isOutlier = 0;
+      // }
     }
   }
 
@@ -869,38 +878,23 @@ class DatasetController extends GetxController {
 
   void gerateSubset(Map<String, List<dynamic>> dataMap) {
     List<dynamic> coords = dataMap['coords']!;
-    List<dynamic> currOutliers = dataMap['outliers']!;
-    List<dynamic> shapeCoords = dataMap['shapeCoords']!;
-    List<IPoint> spoints = [];
-    int coord_pos = 0;
+    List<dynamic> currOutliers = outliers[_projectedPollutant.id]!;
+    List<dynamic> shapeCoords = fdaOutliers[_projectedPollutant.id]!;
+    // print('Shape check');
+    // print(coords.shape);
+    // print(shapeCoords.shape);
+
+    // List<IPoint> spoints = [];
+    // int coord_pos = 0;
     List<IPoint> points = _filteredPoints;
     for (var i = 0; i < points.length; i++) {
-      if (points[i].withinFilter) {
-        points[i].highlightedCoordinates =
-            Offset(coords[coord_pos][0], coords[coord_pos][1]);
-        points[i].outlierCoordinates =
-            Offset(shapeCoords[1][coord_pos], shapeCoords[0][coord_pos]);
-        points[i].isOutlier = currOutliers[coord_pos];
-        coord_pos++;
-      } else {
-        points[i].highlightedCoordinates = Offset(coords[0][0], coords[0][1]);
-        points[i].outlierCoordinates =
-            Offset(shapeCoords[1][0], shapeCoords[0][0]);
-        points[i].isOutlier = 0;
-      }
+      points[i].coordinates = Offset(coords[i][0], coords[i][1]);
+      points[i].localCoordinates = Offset(shapeCoords[1][i], shapeCoords[0][i]);
+      points[i].isOutlier = currOutliers[i];
     }
-    subset = spoints;
-  }
 
-  void showSubset() async {
-    List<double> xcoords = List<double>.generate(
-        subset!.length, (index) => subset![index].coordinates.dx);
-    List<double> ycoords = List<double>.generate(
-        subset!.length, (index) => subset![index].coordinates.dy);
-
-    await Get.dialog(
-      PDialog(width: 1600, height: 700, child: SubsectProjection()),
-    );
+    print('HHHH');
+    print(_filteredPoints.length);
   }
 
   DateTime? _minYear;
@@ -931,6 +925,7 @@ class DatasetController extends GetxController {
   late List<List<double>> mainProjection;
 
   Map<int, List<dynamic>> fdaOutliers = {};
+  Map<int, List<dynamic>> outliers = {};
 
   late Map<int, double> _minValue;
   late Map<int, double> _maxValue;
@@ -954,7 +949,7 @@ class DatasetController extends GetxController {
   }
 
   List<int>? aqi;
-  List<IPoint>? subset;
+  // List<IPoint>? subset;
 
   Map<int, Map<String, int>> clustersStationCounts = {};
   Map<String, ClusterData> clustersData = {};

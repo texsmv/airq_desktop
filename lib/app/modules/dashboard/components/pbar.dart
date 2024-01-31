@@ -83,8 +83,8 @@ class _PBarState extends State<PBar> {
                 Future.delayed(Duration(seconds: 3)).then((value) {
                   Get.delete<IProjectionController>(tag: 'global');
                   Get.delete<IProjectionController>(tag: 'local');
-                  Get.delete<IProjectionController>(tag: 'filter');
-                  Get.delete<IProjectionController>(tag: 'outlier');
+                  // Get.delete<IProjectionController>(tag: 'filter');
+                  // Get.delete<IProjectionController>(tag: 'outlier');
                   Get.delete<DashboardController>();
                 });
               },

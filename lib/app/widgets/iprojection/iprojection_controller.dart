@@ -222,8 +222,8 @@ class IProjectionController extends GetxController {
 
         Get.find<IProjectionController>(tag: 'global').showInfo.value = false;
         Get.find<IProjectionController>(tag: 'local').showInfo.value = false;
-        Get.find<IProjectionController>(tag: 'filter').showInfo.value = false;
-        Get.find<IProjectionController>(tag: 'outlier').showInfo.value = false;
+        // Get.find<IProjectionController>(tag: 'filter').showInfo.value = false;
+        // Get.find<IProjectionController>(tag: 'outlier').showInfo.value = false;
 
         if (currSelectedPoints.isNotEmpty) {
           showInfo.value = true;

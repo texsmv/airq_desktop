@@ -91,7 +91,7 @@ class MyMenuController extends GetxController {
     int smoothWindow = await uiPickNumberInt(3, maxSmoothSize,
         defaultValue: defaultSmoothSize);
 
-    EasyLoading.show(status: 'Loading...');
+    EasyLoading.show(status: 'Loading...', maskType: EasyLoadingMaskType.black);
 
     List<String>? sStations = selectedStations[dataset.id];
     if (sStations == null) {

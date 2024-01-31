@@ -60,10 +60,10 @@ class DashboardController extends GetxController {
       Get.put(IProjectionController(mode: 0), tag: 'global');
   IProjectionController localProjectionController =
       Get.put(IProjectionController(mode: 1), tag: 'local');
-  IProjectionController filterProjectionController =
-      Get.put(IProjectionController(mode: 2), tag: 'filter');
-  IProjectionController outliersProjectionController =
-    Get.put(IProjectionController(mode: 3), tag: 'outlier');
+  // IProjectionController filterProjectionController =
+  //     Get.put(IProjectionController(mode: 2), tag: 'filter');
+  // IProjectionController outliersProjectionController =
+  //   Get.put(IProjectionController(mode: 3), tag: 'outlier');
 
   @override
   void onReady() {

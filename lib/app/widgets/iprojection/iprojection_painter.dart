@@ -102,11 +102,13 @@ class IProjectionPainter extends CustomPainter {
       point.canvasLocalCoordinates = canvasCoordinates;
     } else if (mode == 0) {
       point.canvasCoordinates = canvasCoordinates;
-    } else if (mode == 2) {
-      point.canvasHighlightedCoordinates = canvasCoordinates;
-    } else {
-      point.canvasOutlierCoordinates = canvasCoordinates;
     }
+    // else if (mode == 2) {
+    //   point.canvasHighlightedCoordinates = canvasCoordinates;
+    // }
+    // else {
+    //   point.canvasOutlierCoordinates = canvasCoordinates;
+    // }
 
     double radius = 5;
     if (point.selected) {

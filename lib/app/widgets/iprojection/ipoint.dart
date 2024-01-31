@@ -5,18 +5,18 @@ class IPoint {
   WindowModel data;
   Offset coordinates;
   Offset localCoordinates;
-  Offset highlightedCoordinates;
-  Offset outlierCoordinates;
-  late Offset canvasHighlightedCoordinates;
-  late Offset canvasOutlierCoordinates;
+  // Offset highlightedCoordinates;
+  // Offset outlierCoordinates;
+  // late Offset canvasHighlightedCoordinates;
+  // late Offset canvasOutlierCoordinates;
   late Offset canvasCoordinates;
   late Offset canvasLocalCoordinates;
   IPoint({
     required this.data,
     required this.coordinates,
     required this.localCoordinates,
-    required this.highlightedCoordinates,
-    required this.outlierCoordinates,
+    // required this.highlightedCoordinates,
+    // required this.outlierCoordinates,
   });
 
   String? get cluster => data.cluster;
@@ -34,24 +34,26 @@ class IPoint {
   Offset getCoords(int mode) {
     if (mode == 0) {
       return coordinates;
-    } else if (mode == 1) {
-      return localCoordinates;
-    } else if (mode == 2) {
-      return highlightedCoordinates;
     } else {
-      return outlierCoordinates;
+      return localCoordinates;
     }
+    // else if (mode == 2) {
+    //   return highlightedCoordinates;
+    // } else {
+    //   return outlierCoordinates;
+    // }
   }
 
   Offset getCanvasCoords(int mode) {
     if (mode == 0) {
       return canvasCoordinates;
-    } else if (mode == 1) {
-      return canvasLocalCoordinates;
-    } else if (mode == 2) {
-      return canvasHighlightedCoordinates;
     } else {
-      return canvasOutlierCoordinates;
+      return canvasLocalCoordinates;
     }
+    // else if (mode == 2) {
+    //   return canvasHighlightedCoordinates;
+    // } else {
+    //   return canvasOutlierCoordinates;
+    // }
   }
 }

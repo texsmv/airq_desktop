@@ -205,12 +205,12 @@ class DashboardView extends GetView<DashboardController> {
                             Get.find<IProjectionController>(tag: 'local')
                                 .showInfo
                                 .value = false;
-                            Get.find<IProjectionController>(tag: 'filter')
-                                .showInfo
-                                .value = false;
-                            Get.find<IProjectionController>(tag: 'outlier')
-                                .showInfo
-                                .value = false;
+                            // Get.find<IProjectionController>(tag: 'filter')
+                            //     .showInfo
+                            //     .value = false;
+                            // Get.find<IProjectionController>(tag: 'outlier')
+                            //     .showInfo
+                            //     .value = false;
                             // controller.projectionController.clearSelection();
                             // controller.localProjectionController
                             //     .clearSelection();

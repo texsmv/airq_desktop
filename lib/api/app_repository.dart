@@ -194,39 +194,24 @@ Future<Map<String, List<dynamic>>> repositoryGetCustomProjection({
   List<dynamic> coords = data['coords'];
   coords = coords.reshape([(coords.length / 2).floor(), 2]);
 
-  List<dynamic> cmean = data['cmean'];
-  List<dynamic> cvar = data['cvar'];
-  List<dynamic> outliers = data['outliers'];
-  List<dynamic> shapeCoords = [cmean, cvar];
+  // List<dynamic> cmean = data['cmean'];
+  // List<dynamic> cvar = data['cvar'];
+  // List<dynamic> outliers = data['outliers'];
+  // List<dynamic> shapeCoords = [cmean, cvar];
 
-  return {'coords': coords, 'outliers': outliers, 'shapeCoords': shapeCoords};
+  // return {'coords': coords, 'outliers': outliers, 'shapeCoords': shapeCoords};
+  return {'coords': coords};
 }
 
-Future<List<dynamic>> repositorySpatioTemporalSetProtings({
-  required double delta,
-  required double beta,
-  int neighbors = 15,
-}) async {
-  final response = await post(
-    Uri.parse("${hostUrl}spatioTemporalProjection"),
-    body: {
-      'neighbors': jsonEncode(neighbors),
-      'delta': jsonEncode(delta),
-      'beta': jsonEncode(beta)
-    },
-  );
-
-  List<dynamic> coords = jsonDecode(response.body)['coords'];
-  coords = coords.reshape([(coords.length / 2).floor(), 2]);
-
-  return coords;
-}
-
-Future<Map<String, List<dynamic>>> repositoryGetFdaOutliers(int pos) async {
+Future<Map<String, List<dynamic>>> repositoryGetFdaOutliers(
+  int pos,
+  List<bool> filteredWindows,
+) async {
   final response = await post(
     Uri.parse("${hostUrl}getFdaOutliers"),
     body: {
       'pollutantPosition': pos.toString(),
+      'itemsPositions': jsonEncode(filteredWindows),
     },
   );
 
