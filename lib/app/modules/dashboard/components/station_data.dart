@@ -308,13 +308,14 @@ class _StationDataState extends State<StationData> {
               top: winPosY,
               child: showInfoHover
                   ? Container(
-                      width: 50,
+                      width: 80,
                       height: 18,
                       color: Colors.amber,
-                      child: Text(hoveWindow == null
-                          ? 'null'
-                          : hoveWindow!.values[hoveredPol]![windowTPos]
-                              .toString()),
+                      child: Text(
+                        hoveWindow == null
+                            ? 'null'
+                            : '${controller.pollutants[hoveredPol].name}: ${hoveWindow!.values[hoveredPol]![windowTPos].toString()}',
+                      ),
                     )
                   : SizedBox(),
             ),

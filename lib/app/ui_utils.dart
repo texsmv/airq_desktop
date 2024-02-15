@@ -522,6 +522,7 @@ String uiSeasonByMonth(int month, String datasetName) {
 }
 
 String uiPollutantUnit(String dataset, String pollName) {
+  // return 'µg/m³';
   if (dataset == 'ontario') {
     switch (pollName) {
       case 'NO':
@@ -531,7 +532,7 @@ String uiPollutantUnit(String dataset, String pollName) {
       case 'NOx':
         return 'ppb';
       case 'CO':
-        return 'mg/m³';
+        return 'µg/m³';
       case 'O3':
         return 'µg/m³';
       case 'PM25':
@@ -542,12 +543,13 @@ String uiPollutantUnit(String dataset, String pollName) {
         return '';
     }
   } else if (dataset == 'hongkong') {
-    switch (pollName) {
-      case 'CO':
-        return 'mg/m³';
-      default:
-        return 'µg/m³';
-    }
+    return 'µg/m³';
+    // switch (pollName) {
+    //   case 'CO':
+    //     return 'mg/m³';
+    //   default:
+    //     return 'µg/m³';
+    // }
   } else {
     return '';
   }

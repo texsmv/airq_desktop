@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 double INFO_BOX_HEIGHT = 20;
-double INFO_BOX_WIDTH = 70;
+double INFO_BOX_WIDTH = 130;
 
 class IProjection extends StatefulWidget {
   final List<IPoint> points;
@@ -136,7 +136,7 @@ class _IProjectionState extends State<IProjection>
                                 height: INFO_BOX_HEIGHT,
                                 width: INFO_BOX_WIDTH,
                                 child: AutoSizeText(
-                                  '${datasetController.pollutants[pindex].name}: ${controller.selectionStats[datasetController.pollutants[pindex].id]?.dx.toPrecision(2)}',
+                                  '${datasetController.pollutants[pindex].name}: ${controller.selectionStats[datasetController.pollutants[pindex].id]?.dx.toPrecision(2)} µg/m³',
                                   style: TextStyle(
                                     fontSize: 13,
                                   ),

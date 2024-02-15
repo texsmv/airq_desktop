@@ -137,7 +137,7 @@ class DatasetController extends GetxController {
   }
 
   Future<void> resetFilter() async {
-    // clearClusters();
+    clearClusters();
 
     uiShowLoader();
 
@@ -252,14 +252,10 @@ class DatasetController extends GetxController {
         beta: double.parse(betaController.text),
       );
 
-      print(filtered.shape);
-      print(_filteredPoints.shape);
-      print('Outliers');
       for (var i = 0; i < pollutants.length; i++) {
         var fdamap = await repositoryGetFdaOutliers(i, filtered);
         fdaOutliers[_pollutants[i].id] = fdamap['coords']!;
-        print('khe?');
-        print(fdamap['coords']!.shape);
+
         outliers[_pollutants[i].id] = fdamap['outliers']!;
       }
 
@@ -455,7 +451,7 @@ class DatasetController extends GetxController {
         List.generate(pollutants.length, (index) => pollutants[index].name));
 
     if (data.isNotEmpty) {
-      aqi = data['aqi'];
+      // aqi = data['aqi'];
       iaqis = {};
       List<int> pollIds = [];
       for (var key in data.keys) {
@@ -468,7 +464,7 @@ class DatasetController extends GetxController {
       }
 
       for (var i = 0; i < _allPoints.length; i++) {
-        _allPoints[i].data.aqi = aqi![i];
+        // _allPoints[i].data.aqi = aqi![i];
         Map<int, int> iaqi = {};
         for (var key in pollIds) {
           iaqi[key] = iaqis![key]![i];
@@ -948,7 +944,7 @@ class DatasetController extends GetxController {
     return _maxIaqi!;
   }
 
-  List<int>? aqi;
+  // List<int>? aqi;
   // List<IPoint>? subset;
 
   Map<int, Map<String, int>> clustersStationCounts = {};
